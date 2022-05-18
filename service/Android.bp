@@ -20,8 +20,7 @@ filegroup {
     name: "service-permission-java-sources",
     srcs: [
         "java/**/*.java",
-        // Exclude Kotlin sources for T.
-        //"java/**/*.kt",
+        "java/**/*.kt",
     ],
     path: "java",
     visibility: ["//visibility:private"],
@@ -100,18 +99,18 @@ java_sdk_library {
         //"framework-permission",
         "framework-permission-s.impl",
         "framework-permission-s-shared",
+        "jsr305",
 
         // Soong fails to automatically add this dependency because all the
         // *.kt sources are inside a filegroup.
-        // Exclude Kotlin sources for T.
-        //"kotlin-annotations",
+        "kotlin-annotations",
     ],
     static_libs: [
-        // Exclude Kotlin sources for T.
-        //"kotlin-stdlib",
+        "kotlin-stdlib",
         "modules-utils-backgroundthread",
         "modules-utils-os",
         "safety-center-config",
+        "safety-center-internal-data",
         "safety-center-resources-lib",
         "service-permission-shared",
     ],

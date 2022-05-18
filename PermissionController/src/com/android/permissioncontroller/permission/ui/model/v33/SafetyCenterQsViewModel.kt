@@ -214,7 +214,7 @@ class SafetyCenterQsViewModel(
 }
 
 /**
- * Factory for a SafetyCenterQsViewModel
+ * Factory for a SafetyCenterViewModel
  *
  * @param app The current application
  * @param sessionId A session ID used in logs to identify this particular session
