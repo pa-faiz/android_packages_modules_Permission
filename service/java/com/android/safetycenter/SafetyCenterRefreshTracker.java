@@ -44,10 +44,20 @@ import javax.annotation.concurrent.NotThreadSafe;
 final class SafetyCenterRefreshTracker {
     private static final String TAG = "SafetyCenterRefreshTrac";
 
+    @NonNull private final SafetyCenterConfigReader mSafetyCenterConfigReader;
+
     @Nullable
     // TODO(b/229060064): Should we allow one refresh at a time per UserProfileGroup rather than
     //  one global refresh?
     private RefreshInProgress mRefreshInProgress = null;
+
+    /**
+     * Creates a {@link SafetyCenterRefreshTracker} using the given {@link
+     * SafetyCenterConfigReader}.
+     */
+    SafetyCenterRefreshTracker(@NonNull SafetyCenterConfigReader safetyCenterConfigReader) {
+        mSafetyCenterConfigReader = safetyCenterConfigReader;
+    }
 
     private int mRefreshCounter = 0;
 
@@ -55,33 +65,36 @@ final class SafetyCenterRefreshTracker {
      * Reports that a new refresh is in progress and returns the broadcast id associated with this
      * refresh.
      */
+    @NonNull
     String reportRefreshInProgress(
-            @NonNull SafetyCenterConfigReader.SafetyCenterConfigInternal configInternal,
-            @RefreshReason int refreshReason,
-            @NonNull UserProfileGroup userProfileGroup) {
+            @RefreshReason int refreshReason, @NonNull UserProfileGroup userProfileGroup) {
         if (mRefreshInProgress != null) {
             Log.w(TAG, "Replacing an ongoing refresh");
         }
 
-        List<Broadcast> broadcasts = configInternal.getBroadcasts();
+        List<Broadcast> broadcasts = mSafetyCenterConfigReader.getBroadcasts();
         String refreshBroadcastId =
                 Objects.hash(refreshReason, broadcasts, userProfileGroup) + "_" + mRefreshCounter++;
         mRefreshInProgress = new RefreshInProgress(refreshBroadcastId);
 
         for (int i = 0; i < broadcasts.size(); i++) {
             Broadcast broadcast = broadcasts.get(i);
-            for (int j = 0; j < broadcast.getSourceIdsForProfileOwner().size(); j++) {
+            List<String> profileOwnerSourceIds =
+                    broadcast.getSourceIdsForProfileOwner(refreshReason);
+            for (int j = 0; j < profileOwnerSourceIds.size(); j++) {
                 mRefreshInProgress.addSourceRefreshInFlight(
                         SafetySourceKey.of(
-                                broadcast.getSourceIdsForProfileOwner().get(j),
+                                profileOwnerSourceIds.get(j),
                                 userProfileGroup.getProfileOwnerUserId()));
             }
-            for (int j = 0; j < broadcast.getSourceIdsForManagedProfiles().size(); j++) {
-                for (int k = 0; k < userProfileGroup.getManagedProfilesUserIds().length; k++) {
+            List<String> managedProfilesSourceIds =
+                    broadcast.getSourceIdsForManagedProfiles(refreshReason);
+            for (int j = 0; j < managedProfilesSourceIds.size(); j++) {
+                int[] managedProfilesUserIds = userProfileGroup.getManagedProfilesUserIds();
+                for (int k = 0; k < managedProfilesUserIds.length; k++) {
                     mRefreshInProgress.addSourceRefreshInFlight(
                             SafetySourceKey.of(
-                                    broadcast.getSourceIdsForManagedProfiles().get(j),
-                                    userProfileGroup.getManagedProfilesUserIds()[k]));
+                                    managedProfilesSourceIds.get(j), managedProfilesUserIds[k]));
                 }
             }
         }
@@ -90,21 +103,25 @@ final class SafetyCenterRefreshTracker {
     }
 
     /**
-     * Reports that a source has completed its refresh.
+     * Reports that a source has completed its refresh, and returns whether this caused the refresh
+     * to complete.
      *
      * <p>If a source calls {@code reportSafetySourceError}, then this method is also used to mark
      * the refresh as completed.
      */
-    void reportSourceRefreshCompleted(
+    boolean reportSourceRefreshCompleted(
             @NonNull String sourceId, @NonNull String refreshBroadcastId, @UserIdInt int userId) {
         if (!checkMethodValid("reportSourceRefreshCompleted", refreshBroadcastId)) {
-            return;
+            return false;
         }
 
         mRefreshInProgress.markSourceRefreshAsComplete(SafetySourceKey.of(sourceId, userId));
-        if (mRefreshInProgress.isComplete()) {
-            mRefreshInProgress = null;
+        if (!mRefreshInProgress.isComplete()) {
+            return false;
         }
+
+        mRefreshInProgress = null;
+        return true;
     }
 
     /**

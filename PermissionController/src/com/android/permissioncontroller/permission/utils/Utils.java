@@ -182,7 +182,14 @@ public final class Utils {
     public static final String PROPERTY_PERMISSION_EVENTS_CHECK_OLD_FREQUENCY_MILLIS =
             "permission_events_check_old_frequency_millis";
 
-    /** The time an app needs to be unused in order to be hibernated */
+    /**
+     * Whether to store the exact time for permission changes. Only for use in tests and should
+     * not be modified in prod.
+     */
+    public static final String PROPERTY_PERMISSION_CHANGES_STORE_EXACT_TIME =
+            "permission_changes_store_exact_time";
+
+    /** The max amount of time permission data can stay in the storage before being scrubbed */
     public static final String PROPERTY_PERMISSION_DECISIONS_MAX_DATA_AGE_MILLIS =
             "permission_decisions_max_data_age_millis";
 
@@ -227,7 +234,6 @@ public final class Utils {
     private static final ArrayMap<String, Integer> PERM_GROUP_BACKGROUND_REQUEST_DETAIL_RES;
     private static final ArrayMap<String, Integer> PERM_GROUP_UPGRADE_REQUEST_RES;
     private static final ArrayMap<String, Integer> PERM_GROUP_UPGRADE_REQUEST_DETAIL_RES;
-    private static final ArrayMap<String, Integer> PERM_GROUP_CONTINUE_REQUEST_RES;
 
     /** Permission -> Sensor codes */
     private static final ArrayMap<String, Integer> PERM_SENSOR_CODES;
@@ -421,10 +427,6 @@ public final class Utils {
                 .put(CAMERA, R.string.permgroupupgraderequestdetail_camera);
         PERM_GROUP_UPGRADE_REQUEST_DETAIL_RES
                 .put(SENSORS,  R.string.permgroupupgraderequestdetail_sensors);
-
-        PERM_GROUP_CONTINUE_REQUEST_RES = new ArrayMap<>();
-        PERM_GROUP_CONTINUE_REQUEST_RES
-                .put(NOTIFICATIONS, R.string.permgrouprequestcontinue_notifications);
 
         PERM_SENSOR_CODES = new ArrayMap<>();
         if (SdkLevel.isAtLeastS()) {
@@ -1227,15 +1229,6 @@ public final class Utils {
      */
     public static int getUpgradeRequestDetail(String groupName) {
         return PERM_GROUP_UPGRADE_REQUEST_DETAIL_RES.getOrDefault(groupName, 0);
-    }
-
-    /**
-     * The resource id for the "continue allowing" message for a permission group
-     * @param groupName Permission group name
-     * @return The id or 0 if the permission group doesn't exist or have a message
-     */
-    public static int getContinueRequest(String groupName) {
-        return PERM_GROUP_CONTINUE_REQUEST_RES.getOrDefault(groupName, 0);
     }
 
     /**
