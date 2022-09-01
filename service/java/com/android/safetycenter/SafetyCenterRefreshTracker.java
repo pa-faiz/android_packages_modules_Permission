@@ -49,9 +49,6 @@ import javax.annotation.concurrent.NotThreadSafe;
 final class SafetyCenterRefreshTracker {
     private static final String TAG = "SafetyCenterRefreshTrac";
     private static final String PROPERTY_UNTRACKED_SOURCES = "safety_center_untracked_sources";
-    // TODO(b/236102780): update to "" after cl/456081904 is merged
-    public static final String DEFAULT_UNTRACKED_SOURCES =
-            "AndroidAccessibility,AndroidBackgroundLocation,AndroidPermissionAutoRevoke";
 
     @NonNull private final SafetyCenterConfigReader mSafetyCenterConfigReader;
 
@@ -110,12 +107,15 @@ final class SafetyCenterRefreshTracker {
             }
             List<String> managedProfilesSourceIds =
                     broadcast.getSourceIdsForManagedProfiles(refreshReason);
-            int[] managedProfilesUserIds = userProfileGroup.getManagedProfilesUserIds();
             for (int j = 0; j < managedProfilesSourceIds.size(); j++) {
                 String managedProfilesSourceId = managedProfilesSourceIds.get(j);
-                for (int k = 0; k < managedProfilesUserIds.length; k++) {
+                int[] managedRunningProfilesUserIds =
+                        userProfileGroup.getManagedRunningProfilesUserIds();
+                for (int k = 0; k < managedRunningProfilesUserIds.length; k++) {
+                    int managedRunningProfileUserId = managedRunningProfilesUserIds[k];
                     mRefreshInProgress.addSourceRefreshInFlight(
-                            SafetySourceKey.of(managedProfilesSourceId, managedProfilesUserIds[k]));
+                            SafetySourceKey.of(
+                                    managedProfilesSourceId, managedRunningProfileUserId));
                 }
             }
         }
@@ -246,9 +246,7 @@ final class SafetyCenterRefreshTracker {
         final long callingId = Binder.clearCallingIdentity();
         try {
             return DeviceConfig.getString(
-                    DeviceConfig.NAMESPACE_PRIVACY,
-                    PROPERTY_UNTRACKED_SOURCES,
-                    DEFAULT_UNTRACKED_SOURCES);
+                    DeviceConfig.NAMESPACE_PRIVACY, PROPERTY_UNTRACKED_SOURCES, "");
         } finally {
             Binder.restoreCallingIdentity(callingId);
         }
@@ -259,9 +257,9 @@ final class SafetyCenterRefreshTracker {
         @NonNull private final String mId;
         @RefreshReason private final int mReason;
         @NonNull private final UserProfileGroup mUserProfileGroup;
+        @NonNull private final ArraySet<String> mUntrackedSourcesIds;
 
-        @NonNull private final ArraySet<SafetySourceKey> mSourceRefreshInFlight = new ArraySet<>();
-        @NonNull private ArraySet<String> mUntrackedSourcesIds;
+        private final ArraySet<SafetySourceKey> mSourceRefreshInFlight = new ArraySet<>();
 
         /** Creates a {@link RefreshInProgress}. */
         RefreshInProgress(
