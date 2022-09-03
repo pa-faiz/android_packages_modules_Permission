@@ -34,6 +34,7 @@ import android.safetycenter.cts.testing.SafetyCenterFlags.deviceSupportsSafetyCe
 import android.safetycenter.cts.testing.SafetySourceCtsData
 import android.safetycenter.cts.testing.SafetySourceCtsData.Companion.CRITICAL_ISSUE_ID
 import android.safetycenter.cts.testing.SafetySourceCtsData.Companion.RECOMMENDATION_ISSUE_ID
+import android.safetycenter.cts.testing.SettingsPackage.getSettingsPackageName
 import android.safetycenter.cts.testing.UiTestHelper.assertSourceDataDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.assertSourceIssueDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.assertSourceIssueNotDisplayed
@@ -76,7 +77,7 @@ class SafetyCenterActivityTest {
         if (!shouldRunTests) {
             return
         }
-        safetyCenterCtsHelper.setEnabled(true)
+        safetyCenterCtsHelper.setup()
     }
 
     @After
@@ -92,15 +93,17 @@ class SafetyCenterActivityTest {
     fun launchActivity_withFlagEnabled_showsSecurityAndPrivacyTitle() {
         context.launchSafetyCenterActivity {
             // CollapsingToolbar title can't be found by text, so using description instead.
-            waitFindObject(By.desc("Security & Privacy"))
+            waitFindObject(By.desc("Security & privacy"))
         }
     }
 
     @Test
-    fun launchActivity_withFlagDisabled_showsSettingsTitle() {
+    fun launchActivity_withFlagDisabled_opensSettings() {
         safetyCenterCtsHelper.setEnabled(false)
 
-        context.launchSafetyCenterActivity { waitFindObject(By.text("Settings")) }
+        context.launchSafetyCenterActivity {
+            waitFindObject(By.pkg(context.getSettingsPackageName()))
+        }
     }
 
     @Test
@@ -141,6 +144,46 @@ class SafetyCenterActivityTest {
     }
 
     @Test
+    fun updatingSafetySourceData_withoutSubtitle_newIssueWithSubtitle() {
+        val initialDataToDisplay = safetySourceCtsData.informationWithIssue
+        val updatedDataToDisplay = safetySourceCtsData.informationWithSubtitleIssue
+
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, initialDataToDisplay)
+
+        context.launchSafetyCenterActivity {
+            assertSourceIssueDisplayed(safetySourceCtsData.informationIssue)
+
+            safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, updatedDataToDisplay)
+            getUiDevice()
+                .waitForWindowUpdate(/* from any window*/ null, DATA_UPDATE_TIMEOUT.toMillis())
+
+            assertSourceIssueDisplayed(safetySourceCtsData.informationIssueWithSubtitle)
+        }
+    }
+
+    @Test
+    fun updatingSafetySourceData_withSubtitle_newIssueWithoutSubtitle() {
+        val initialDataToDisplay = safetySourceCtsData.informationWithSubtitleIssue
+        val updatedDataToDisplay = safetySourceCtsData.informationWithIssue
+
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, initialDataToDisplay)
+
+        context.launchSafetyCenterActivity {
+            assertSourceIssueDisplayed(safetySourceCtsData.informationIssueWithSubtitle)
+
+            safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, updatedDataToDisplay)
+            getUiDevice()
+                .waitForWindowUpdate(/* from any window*/ null, DATA_UPDATE_TIMEOUT.toMillis())
+
+            waitTextNotDisplayed(
+                safetySourceCtsData.informationIssueWithSubtitle.subtitle.toString())
+            assertSourceIssueDisplayed(safetySourceCtsData.informationIssue)
+        }
+    }
+
+    @Test
     fun issueCard_greenIssue_noDismissalConfirmationAndDismisses() {
         safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
         safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, safetySourceCtsData.informationWithIssue)
@@ -150,7 +193,7 @@ class SafetyCenterActivityTest {
 
             assertSourceIssueNotDisplayed(safetySourceCtsData.informationIssue)
             assertSourceDataDisplayed(safetySourceCtsData.information)
-            findButton("Scan")
+            findButton("Scan device")
         }
     }
 
@@ -166,7 +209,7 @@ class SafetyCenterActivityTest {
             findButton("Dismiss").click()
 
             assertSourceIssueNotDisplayed(safetySourceCtsData.criticalResolvingIssue)
-            findButton("Scan")
+            findButton("Scan device")
         }
     }
 
@@ -188,7 +231,7 @@ class SafetyCenterActivityTest {
             findButton("Dismiss").click()
 
             assertSourceIssueNotDisplayed(safetySourceCtsData.criticalResolvingIssue)
-            findButton("Scan")
+            findButton("Scan device")
         }
     }
 
@@ -233,7 +276,7 @@ class SafetyCenterActivityTest {
         safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
         safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, safetySourceCtsData.information)
 
-        context.launchSafetyCenterActivity { findButton("Scan") }
+        context.launchSafetyCenterActivity { findButton("Scan device") }
     }
 
     @Test
@@ -241,7 +284,7 @@ class SafetyCenterActivityTest {
         safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
         safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, safetySourceCtsData.informationWithIssue)
 
-        context.launchSafetyCenterActivity { waitButtonNotDisplayed("Scan") }
+        context.launchSafetyCenterActivity { waitButtonNotDisplayed("Scan device") }
     }
 
     @Test
@@ -440,6 +483,7 @@ class SafetyCenterActivityTest {
     companion object {
         private const val EXPAND_ISSUE_GROUP_QS_FRAGMENT_KEY = "expand_issue_group_qs_fragment_key"
         private val DIALOG_ROTATION_TIMEOUT = Duration.ofSeconds(1)
+        private val DATA_UPDATE_TIMEOUT = Duration.ofSeconds(1)
 
         private fun UiDevice.rotate() {
             if (isNaturalOrientation) {

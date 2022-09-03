@@ -86,10 +86,12 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         ((TextView) holder.findViewById(R.id.issue_card_summary)).setText(mIssue.getSummary());
 
         CharSequence subtitle = mIssue.getSubtitle();
+        TextView subtitleTextView = (TextView) holder.findViewById(R.id.issue_card_subtitle);
         if (TextUtils.isEmpty(subtitle)) {
-            holder.findViewById(R.id.issue_card_subtitle).setVisibility(View.GONE);
+            subtitleTextView.setVisibility(View.GONE);
         } else {
-            ((TextView) holder.findViewById(R.id.issue_card_subtitle)).setText(subtitle);
+            subtitleTextView.setText(subtitle);
+            subtitleTextView.setVisibility(View.VISIBLE);
         }
 
         LinearLayout buttonList =
@@ -124,6 +126,10 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
                             ? new ConfirmDismissalOnClickListener()
                             : new DismissOnClickListener());
             dismissButton.setVisibility(View.VISIBLE);
+
+            SafetyCenterTouchTarget.configureSize(
+                    dismissButton,
+                    R.dimen.safety_center_icon_button_touch_target_size);
         } else {
             dismissButton.setVisibility(View.GONE);
         }
@@ -195,8 +201,18 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         Button button =
                 isFirstButton ? createFirstButton(context) : createSubsequentButton(context);
         button.setText(action.getLabel());
-        button.setOnClickListener(
-                view -> mSafetyCenterViewModel.executeIssueAction(mIssue, action));
+        button.setEnabled(!action.isInFlight());
+        button.setOnClickListener((view) -> {
+            if (action.willResolve()) {
+                // Disable the button to prevent double-taps.
+                // We ideally want to do this on any button press, however out of an abundance of
+                // caution we only do it with actions that indicate they will resolve (and therefore
+                // we can rely on a model update to redraw state). We expect the model to update
+                // with either isInFlight() or simply removing/updating the issue.
+                button.setEnabled(false);
+            }
+            mSafetyCenterViewModel.executeIssueAction(mIssue, action);
+        });
         return button;
     }
 
