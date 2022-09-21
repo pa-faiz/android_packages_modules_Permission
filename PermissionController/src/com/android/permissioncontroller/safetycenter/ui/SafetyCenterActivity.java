@@ -28,6 +28,7 @@ import android.safetycenter.SafetyCenterManager;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
+import androidx.fragment.app.Fragment;
 
 import com.android.permissioncontroller.Constants;
 import com.android.permissioncontroller.PermissionControllerStatsLog;
@@ -39,6 +40,7 @@ import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity;
 public final class SafetyCenterActivity extends CollapsingToolbarBaseActivity {
 
     private static final String TAG = SafetyCenterActivity.class.getSimpleName();
+    private static final String PRIVACY_CONTROLS_ACTION = "android.settings.PRIVACY_CONTROLS";
     private SafetyCenterManager mSafetyCenterManager;
 
     @Override
@@ -48,16 +50,19 @@ public final class SafetyCenterActivity extends CollapsingToolbarBaseActivity {
 
         if (maybeRedirectIfDisabled()) return;
 
-        logPrivacySourceMetric();
-
-        setTitle(getString(R.string.safety_center_dashboard_page_title));
+        Fragment frag;
+        if (getIntent().getAction().equals(PRIVACY_CONTROLS_ACTION)) {
+            setTitle(R.string.privacy_controls_title);
+            frag = PrivacyControlsFragment.newInstance();
+        } else {
+            logPrivacySourceMetric();
+            setTitle(getString(R.string.safety_center_dashboard_page_title));
+            frag = new SafetyCenterScrollWrapperFragment();
+        }
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(
-                            R.id.content_frame,
-                            SafetyCenterDashboardFragment.newInstance(
-                                    /* isQuickSettingsFragment= */ false))
+                    .add(R.id.content_frame, frag)
                     .commitNow();
         }
     }
@@ -93,8 +98,7 @@ public final class SafetyCenterActivity extends CollapsingToolbarBaseActivity {
                     privacySource,
                     uid,
                     PRIVACY_SIGNAL_NOTIFICATION_INTERACTION__ACTION__NOTIFICATION_CLICKED,
-                    sessionId
-            );
+                    sessionId);
         }
     }
 }

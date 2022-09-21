@@ -30,6 +30,7 @@
     <LinearLayout
         android:id="@+id/grant_singleton"
         android:importantForAccessibility="no"
+        android:focusable="false"
         style="@style/PermissionGrantSingleton">
 
         <!-- The dialog -->
@@ -62,6 +63,7 @@
 
             </LinearLayout>
 
+            <!-- location (precise/approximate) animations -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

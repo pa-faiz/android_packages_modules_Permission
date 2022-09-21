@@ -35,9 +35,9 @@ import com.android.safetycenter.internaldata.SafetyCenterIssueKey
 object SafetyCenterCtsData {
 
     /** The default [SafetyCenterData] returned by the Safety Center APIs. */
-    val DEFAULT =
+    val DEFAULT: SafetyCenterData =
         SafetyCenterData(
-            SafetyCenterStatus.Builder("Looks good", "No problems found")
+            SafetyCenterStatus.Builder("", "")
                 .setSeverityLevel(OVERALL_SEVERITY_LEVEL_UNKNOWN)
                 .build(),
             emptyList(),

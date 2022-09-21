@@ -68,7 +68,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SafetyCenterUnsupportedTest {
     private val context: Context = getApplicationContext()
-    private val packageManager = context.packageManager
     private val safetyCenterCtsHelper = SafetyCenterCtsHelper(context)
     private val safetySourceCtsData = SafetySourceCtsData(context)
     private val safetyCenterManager = context.getSystemService(SafetyCenterManager::class.java)!!
@@ -130,7 +129,7 @@ class SafetyCenterUnsupportedTest {
         safetyCenterManager.setSafetyCenterConfigForTestsWithPermission(SINGLE_SOURCE_CONFIG)
         safetyCenterManager.setSafetySourceDataWithPermission(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.criticalWithResolvingIssue,
+            safetySourceCtsData.criticalWithResolvingGeneralIssue,
             EVENT_SOURCE_STATE_CHANGED)
 
         val apiSafetySourceData =
@@ -291,7 +290,7 @@ class SafetyCenterUnsupportedTest {
         safetyCenterManager.setSafetyCenterConfigForTestsWithPermission(SINGLE_SOURCE_CONFIG)
         safetyCenterManager.setSafetySourceDataWithPermission(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.criticalWithResolvingIssue,
+            safetySourceCtsData.criticalWithResolvingGeneralIssue,
             EVENT_SOURCE_STATE_CHANGED)
         val listener = SafetyCenterCtsListener()
         safetyCenterManager.addOnSafetyCenterDataChangedListenerWithPermission(
@@ -317,7 +316,7 @@ class SafetyCenterUnsupportedTest {
         safetyCenterManager.setSafetyCenterConfigForTestsWithPermission(SINGLE_SOURCE_CONFIG)
         safetyCenterManager.setSafetySourceDataWithPermission(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.criticalWithResolvingIssue,
+            safetySourceCtsData.criticalWithResolvingGeneralIssue,
             EVENT_SOURCE_STATE_CHANGED)
         val listener = SafetyCenterCtsListener()
         safetyCenterManager.addOnSafetyCenterDataChangedListenerWithPermission(
@@ -347,7 +346,7 @@ class SafetyCenterUnsupportedTest {
         safetyCenterManager.setSafetyCenterConfigForTestsWithPermission(SINGLE_SOURCE_CONFIG)
         safetyCenterManager.setSafetySourceDataWithPermission(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.criticalWithResolvingIssue,
+            safetySourceCtsData.criticalWithResolvingGeneralIssue,
             EVENT_SOURCE_STATE_CHANGED)
         val apiSafetySourceDataBeforeClearing =
             safetyCenterManager.getSafetySourceDataWithPermission(SINGLE_SOURCE_ID)

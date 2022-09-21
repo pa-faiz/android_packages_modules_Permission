@@ -22,7 +22,6 @@ import android.safetycenter.SafetyEvent
 import android.safetycenter.SafetySourceData
 import android.safetycenter.config.SafetyCenterConfig
 import android.safetycenter.config.SafetySource.SAFETY_SOURCE_TYPE_STATIC
-import android.safetycenter.cts.testing.Coroutines.TIMEOUT_LONG
 import android.safetycenter.cts.testing.SafetyCenterApisWithShellPermissions.addOnSafetyCenterDataChangedListenerWithPermission
 import android.safetycenter.cts.testing.SafetyCenterApisWithShellPermissions.clearAllSafetySourceDataForTestsWithPermission
 import android.safetycenter.cts.testing.SafetyCenterApisWithShellPermissions.clearSafetyCenterConfigForTestsWithPermission
@@ -39,7 +38,6 @@ import com.google.common.util.concurrent.MoreExecutors.directExecutor
 class SafetyCenterCtsHelper(private val context: Context) {
 
     private val safetyCenterManager = context.getSystemService(SafetyCenterManager::class.java)!!
-    private val safetyCenterFlagsSnapshot = SafetyCenterFlags.snapshot
     private val listeners = mutableListOf<SafetyCenterCtsListener>()
 
     private var currentConfigContainsCtsSource = false
@@ -49,11 +47,7 @@ class SafetyCenterCtsHelper(private val context: Context) {
      * values. To be called before each test.
      */
     fun setup() {
-        SafetyCenterFlags.showErrorEntriesOnTimeout = false
-        SafetyCenterFlags.replaceLockScreenIconAction = true
-        SafetyCenterFlags.resolveActionTimeout = TIMEOUT_LONG
-        SafetyCenterFlags.refreshTimeout = TIMEOUT_LONG
-        SafetyCenterFlags.untrackedSources = emptySet()
+        SafetyCenterFlags.setup()
         setEnabled(true)
     }
 
@@ -128,8 +122,8 @@ class SafetyCenterCtsHelper(private val context: Context) {
     }
 
     private fun resetFlags() {
-        setEnabled(safetyCenterFlagsSnapshot.isSafetyCenterEnabled())
-        SafetyCenterFlags.reset(safetyCenterFlagsSnapshot)
+        setEnabled(SafetyCenterFlags.snapshot.isSafetyCenterEnabled())
+        SafetyCenterFlags.reset()
     }
 
     private fun setEnabledWaitingForBroadcastIdle(value: Boolean) {
