@@ -20,18 +20,19 @@ import android.Manifest.permission.INTERACT_ACROSS_USERS
 import android.Manifest.permission.INTERACT_ACROSS_USERS_FULL
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.content.Intent.ACTION_SAFETY_CENTER
 import android.os.UserHandle
 import android.safetycenter.SafetyCenterData
-import android.safetycenter.SafetyCenterEntry
 import android.safetycenter.SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_CRITICAL_WARNING
 import android.safetycenter.SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNKNOWN
 import android.safetycenter.SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNSPECIFIED
 import android.safetycenter.SafetyCenterEntry.SEVERITY_UNSPECIFIED_ICON_TYPE_PRIVACY
+import android.safetycenter.SafetyCenterEntryGroup
+import android.safetycenter.SafetyCenterEntryOrGroup
 import android.safetycenter.SafetyCenterManager
 import android.safetycenter.SafetyCenterStaticEntry
 import android.safetycenter.SafetyCenterStaticEntryGroup
-import android.safetycenter.SafetyCenterEntryGroup
-import android.safetycenter.SafetyCenterEntryOrGroup
 import android.safetycenter.SafetySourceData
 import android.safetycenter.cts.testing.SafetyCenterActivityLauncher.launchSafetyCenterActivity
 import android.safetycenter.cts.testing.SafetyCenterApisWithShellPermissions.getSafetyCenterDataWithPermission
@@ -52,6 +53,7 @@ import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.ISSUE_ONLY_SOURCE
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_ALL_PROFILE_CONFIG
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_ALL_PROFILE_ID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_CONFIG
+import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_GROUP_ID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_ID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.STATIC_ALL_OPTIONAL_ID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.STATIC_BAREBONE_ID
@@ -68,13 +70,14 @@ import android.safetycenter.cts.testing.UiTestHelper.waitAllTextNotDisplayed
 import androidx.test.core.app.ApplicationProvider
 import com.android.bedstead.harrier.BedsteadJUnit4
 import com.android.bedstead.harrier.DeviceState
-import com.android.bedstead.harrier.OptionalBoolean.TRUE
 import com.android.bedstead.harrier.annotations.EnsureHasNoWorkProfile
 import com.android.bedstead.harrier.annotations.EnsureHasSecondaryUser
 import com.android.bedstead.harrier.annotations.EnsureHasWorkProfile
 import com.android.bedstead.harrier.annotations.Postsubmit
 import com.android.bedstead.harrier.annotations.enterprise.EnsureHasDeviceOwner
+import com.android.bedstead.nene.types.OptionalBoolean.TRUE
 import com.android.safetycenter.resources.SafetyCenterResourcesContext
+import com.google.common.base.Preconditions.checkState
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.After
@@ -184,7 +187,8 @@ class SafetyCenterMultiUsersTest {
                     userId = deviceState.workProfile().id(),
                     title = "Paste")
                 .setPendingIntent(
-                    createRedirectPendingIntentForUser(deviceState.workProfile().userHandle()))
+                    createSafetyCenterRedirectPendingIntentForUser(
+                        deviceState.workProfile().userHandle()))
 
     private val staticAllOptionalForWork
         get() = staticAllOptionalForWorkBuilder.build()
@@ -201,13 +205,13 @@ class SafetyCenterMultiUsersTest {
     private val rigidEntry =
         SafetyCenterStaticEntry.Builder("OK")
             .setSummary("OK")
-            .setPendingIntent(safetySourceCtsData.redirectPendingIntent)
+            .setPendingIntent(safetySourceCtsData.safetyCenterRedirectPendingIntent)
             .build()
 
     private val rigidEntryUpdated =
         SafetyCenterStaticEntry.Builder("Unspecified title")
             .setSummary("Unspecified summary")
-            .setPendingIntent(safetySourceCtsData.redirectPendingIntent)
+            .setPendingIntent(safetySourceCtsData.safetyCenterRedirectPendingIntent)
             .build()
 
     private val rigidEntryForWorkBuilder
@@ -215,7 +219,8 @@ class SafetyCenterMultiUsersTest {
             SafetyCenterStaticEntry.Builder("Paste")
                 .setSummary("OK")
                 .setPendingIntent(
-                    createRedirectPendingIntentForUser(deviceState.workProfile().userHandle()))
+                    createSafetyCenterRedirectPendingIntentForUser(
+                        deviceState.workProfile().userHandle()))
 
     private val rigidEntryForWork
         get() = rigidEntryForWorkBuilder.build()
@@ -231,8 +236,23 @@ class SafetyCenterMultiUsersTest {
     private val rigidEntryForWorkUpdated =
         SafetyCenterStaticEntry.Builder("Unspecified title for Work")
             .setSummary("Unspecified summary")
-            .setPendingIntent(safetySourceCtsData.redirectPendingIntent)
+            .setPendingIntent(safetySourceCtsData.safetyCenterRedirectPendingIntent)
             .build()
+
+    private val safetyCenterDataForSecondaryUser
+        get() =
+            SafetyCenterData(
+                safetyCenterCtsData.safetyCenterStatusUnknown,
+                emptyList(),
+                listOf(
+                    SafetyCenterEntryOrGroup(
+                        safetyCenterCtsData.safetyCenterEntryDefault(
+                            SINGLE_SOURCE_ALL_PROFILE_ID,
+                            deviceState.secondaryUser().id(),
+                            pendingIntent =
+                                createSafetyCenterRedirectPendingIntentForUser(
+                                    deviceState.secondaryUser().userHandle())))),
+                emptyList())
 
     @Before
     fun assumeDeviceSupportsSafetyCenterToRunTests() {
@@ -310,6 +330,29 @@ class SafetyCenterMultiUsersTest {
                 SINGLE_SOURCE_ALL_PROFILE_ID)
 
         assertThat(apiSafetySourceDataForWork).isEqualTo(dataForWork)
+    }
+
+    @Test
+    @EnsureHasSecondaryUser(installInstrumentedApp = TRUE)
+    @Postsubmit(reason = "Test takes too much time to setup")
+    fun getSafetySourceData_afterSecondaryUserRemoved_returnsNull() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_ALL_PROFILE_CONFIG)
+        val secondaryUserSafetyCenterManager =
+            getSafetyCenterManagerForUser(deviceState.secondaryUser().userHandle())
+        val dataForSecondaryUser = safetySourceCtsData.information
+        secondaryUserSafetyCenterManager.setSafetySourceDataWithInteractAcrossUsersPermission(
+            SINGLE_SOURCE_ALL_PROFILE_ID, dataForSecondaryUser)
+        checkState(
+            secondaryUserSafetyCenterManager.getSafetySourceDataWithInteractAcrossUsersPermission(
+                SINGLE_SOURCE_ALL_PROFILE_ID) == dataForSecondaryUser)
+
+        deviceState.secondaryUser().remove()
+
+        assertThat(
+                secondaryUserSafetyCenterManager
+                    .getSafetySourceDataWithInteractAcrossUsersPermission(
+                        SINGLE_SOURCE_ALL_PROFILE_ID))
+            .isNull()
     }
 
     @Test
@@ -543,6 +586,105 @@ class SafetyCenterMultiUsersTest {
     }
 
     @Test
+    @EnsureHasSecondaryUser(installInstrumentedApp = TRUE)
+    @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
+    @Postsubmit(reason = "Test takes too much time to setup")
+    fun getSafetyCenterData_withDataForDifferentUserProfileGroup_shouldBeUnaffected() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_ALL_PROFILE_CONFIG)
+        val dataForPrimaryUser = safetySourceCtsData.information
+        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ALL_PROFILE_ID, dataForPrimaryUser)
+        val dataForPrimaryUserWorkProfile = safetySourceCtsData.informationWithIssueForWork
+        val managedSafetyCenterManager =
+            getSafetyCenterManagerForUser(deviceState.workProfile().userHandle())
+        managedSafetyCenterManager.setSafetySourceDataWithInteractAcrossUsersPermission(
+            SINGLE_SOURCE_ALL_PROFILE_ID, dataForPrimaryUserWorkProfile)
+
+        val secondaryUserSafetyCenterManager =
+            getSafetyCenterManagerForUser(deviceState.secondaryUser().userHandle())
+        val apiSafetyCenterDataForSecondaryUser =
+            secondaryUserSafetyCenterManager.getSafetyCenterDataWithInteractAcrossUsersPermission()
+
+        assertThat(apiSafetyCenterDataForSecondaryUser).isEqualTo(safetyCenterDataForSecondaryUser)
+    }
+
+    @Test
+    @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
+    @Postsubmit(reason = "Test takes too much time to setup")
+    fun getSafetyCenterData_afterManagedProfileRemoved_returnsDefaultData() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_ALL_PROFILE_CONFIG)
+        val managedSafetyCenterManager =
+            getSafetyCenterManagerForUser(deviceState.workProfile().userHandle())
+        val safetyCenterDataWithWorkProfile =
+            SafetyCenterData(
+                safetyCenterCtsData.safetyCenterStatusUnknown,
+                emptyList(),
+                listOf(
+                    SafetyCenterEntryOrGroup(
+                        SafetyCenterEntryGroup.Builder(
+                                SafetyCenterCtsData.entryGroupId(SINGLE_SOURCE_GROUP_ID), "OK")
+                            .setSeverityLevel(ENTRY_SEVERITY_LEVEL_UNKNOWN)
+                            .setSummary(
+                                safetyCenterResourcesContext.getStringByName(
+                                    "group_unknown_summary"))
+                            .setEntries(
+                                listOf(
+                                    safetyCenterCtsData.safetyCenterEntryDefault(
+                                        SINGLE_SOURCE_ALL_PROFILE_ID),
+                                    safetyCenterCtsData.safetyCenterEntryDefault(
+                                        SINGLE_SOURCE_ALL_PROFILE_ID,
+                                        deviceState.workProfile().id(),
+                                        title = "Paste",
+                                        pendingIntent =
+                                            createSafetyCenterRedirectPendingIntentForUser(
+                                                deviceState.workProfile().userHandle()))))
+                            .build())),
+                emptyList())
+        checkState(
+            safetyCenterManager.getSafetyCenterDataWithPermission() ==
+                safetyCenterDataWithWorkProfile)
+        checkState(
+            managedSafetyCenterManager.getSafetyCenterDataWithInteractAcrossUsersPermission() ==
+                safetyCenterDataWithWorkProfile)
+
+        deviceState.workProfile().remove()
+
+        val safetyCenterDataForPrimaryUser =
+            SafetyCenterData(
+                safetyCenterCtsData.safetyCenterStatusUnknown,
+                emptyList(),
+                listOf(
+                    SafetyCenterEntryOrGroup(
+                        safetyCenterCtsData.safetyCenterEntryDefault(
+                            SINGLE_SOURCE_ALL_PROFILE_ID))),
+                emptyList())
+        assertThat(safetyCenterManager.getSafetyCenterDataWithPermission())
+            .isEqualTo(safetyCenterDataForPrimaryUser)
+        assertThat(
+                managedSafetyCenterManager.getSafetyCenterDataWithInteractAcrossUsersPermission())
+            .isEqualTo(SafetyCenterCtsData.DEFAULT)
+    }
+
+    @Test
+    @EnsureHasSecondaryUser(installInstrumentedApp = TRUE)
+    @Postsubmit(reason = "Test takes too much time to setup")
+    fun getSafetyCenterData_afterSecondaryUserRemoved_returnsDefaultData() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_ALL_PROFILE_CONFIG)
+        val secondaryUserSafetyCenterManager =
+            getSafetyCenterManagerForUser(deviceState.secondaryUser().userHandle())
+        checkState(
+            secondaryUserSafetyCenterManager
+                .getSafetyCenterDataWithInteractAcrossUsersPermission() ==
+                safetyCenterDataForSecondaryUser)
+
+        deviceState.secondaryUser().remove()
+
+        assertThat(
+                secondaryUserSafetyCenterManager
+                    .getSafetyCenterDataWithInteractAcrossUsersPermission())
+            .isEqualTo(SafetyCenterCtsData.DEFAULT)
+    }
+
+    @Test
     @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
     fun setSafetySourceData_primaryProfileIssueOnlySource_shouldNotBeAbleToSetDataToWorkProfile() {
@@ -697,46 +839,6 @@ class SafetyCenterMultiUsersTest {
         assertThat(apiSafetySourceDataForPrimaryUser).isEqualTo(null)
     }
 
-    @Test
-    @EnsureHasSecondaryUser(installInstrumentedApp = TRUE)
-    @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
-    @Postsubmit(reason = "Test takes too much time to setup")
-    fun getSafetyCenterData_withDataForDifferentUserProfileGroup_shouldBeUnaffected() {
-        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_ALL_PROFILE_CONFIG)
-        val dataForPrimaryUser = safetySourceCtsData.information
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ALL_PROFILE_ID, dataForPrimaryUser)
-        val dataForPrimaryUserWorkProfile = safetySourceCtsData.informationWithIssueForWork
-        val managedSafetyCenterManager =
-            getSafetyCenterManagerForUser(deviceState.workProfile().userHandle())
-        managedSafetyCenterManager.setSafetySourceDataWithInteractAcrossUsersPermission(
-            SINGLE_SOURCE_ALL_PROFILE_ID, dataForPrimaryUserWorkProfile)
-
-        val secondaryUserSafetyCenterManager =
-            getSafetyCenterManagerForUser(deviceState.secondaryUser().userHandle())
-        val apiSafetyCenterDataForSecondaryUser =
-            secondaryUserSafetyCenterManager.getSafetyCenterDataWithInteractAcrossUsersPermission()
-
-        val entry =
-            SafetyCenterEntry.Builder(
-                    SafetyCenterCtsData.entryId(
-                        SINGLE_SOURCE_ALL_PROFILE_ID, deviceState.secondaryUser().id()),
-                    "OK")
-                .setSeverityLevel(ENTRY_SEVERITY_LEVEL_UNKNOWN)
-                .setSummary("OK")
-                .setPendingIntent(
-                    createRedirectPendingIntentForUser(deviceState.secondaryUser().userHandle()))
-                .setSeverityUnspecifiedIconType(
-                    SafetyCenterEntry.SEVERITY_UNSPECIFIED_ICON_TYPE_NO_RECOMMENDATION)
-                .build()
-        val safetyCenterDataForSecondaryUser =
-            SafetyCenterData(
-                safetyCenterCtsData.safetyCenterStatusUnknown,
-                emptyList(),
-                listOf(SafetyCenterEntryOrGroup(entry)),
-                emptyList())
-        assertThat(apiSafetyCenterDataForSecondaryUser).isEqualTo(safetyCenterDataForSecondaryUser)
-    }
-
     private fun findWorkPolicyInfo() {
         context.launchSafetyCenterActivity {
             // TODO(b/233188021): This needs to use the Enterprise API to override the "work"
@@ -756,9 +858,10 @@ class SafetyCenterMultiUsersTest {
         }
     }
 
-    private fun createRedirectPendingIntentForUser(user: UserHandle): PendingIntent {
+    private fun createSafetyCenterRedirectPendingIntentForUser(user: UserHandle): PendingIntent {
         return callWithShellPermissionIdentity(INTERACT_ACROSS_USERS) {
-            SafetySourceCtsData.createRedirectPendingIntent(getContextForUser(user))
+            SafetySourceCtsData.createRedirectPendingIntent(
+                getContextForUser(user), Intent(ACTION_SAFETY_CENTER))
         }
     }
 
