@@ -440,6 +440,7 @@ public class LocationAccessCheck {
             } finally {
                 synchronized (sLock) {
                     service.mAddLocationNotificationIfNeededTask = null;
+                    Log.v(LOG_TAG, "LocationAccessCheck privacy job marked complete.");
                 }
             }
         }
@@ -450,6 +451,10 @@ public class LocationAccessCheck {
         synchronized (sLock) {
             List<UserPackage> packages = getLocationUsersLocked(ops);
             ArraySet<UserPackage> alreadyNotifiedPackages = loadAlreadyNotifiedPackagesLocked();
+            if (DEBUG) {
+                Log.v(LOG_TAG, "location packages: " + packages);
+                Log.v(LOG_TAG, "already notified packages: " + alreadyNotifiedPackages);
+            }
             throwInterruptedExceptionIfTaskIsCanceled();
             // Send these issues to safety center
             if (isSafetyCenterBgLocationReminderEnabled()) {
@@ -465,6 +470,9 @@ public class LocationAccessCheck {
                 throwInterruptedExceptionIfTaskIsCanceled();
 
                 if (packages.isEmpty()) {
+                    if (DEBUG) {
+                        Log.v(LOG_TAG, "No package found to send a notification");
+                    }
                     return;
                 }
 
@@ -1177,6 +1185,7 @@ public class LocationAccessCheck {
             Log.v(LOG_TAG, "LocationAccessCheck privacy job is started");
             synchronized (LocationAccessCheck.sLock) {
                 if (mAddLocationNotificationIfNeededTask != null) {
+                    Log.v(LOG_TAG, "LocationAccessCheck old job not completed yet.");
                     return false;
                 }
 
@@ -1197,6 +1206,7 @@ public class LocationAccessCheck {
          */
         @Override
         public boolean onStopJob(JobParameters params) {
+            Log.v(LOG_TAG, "LocationAccessCheck privacy source onStopJob called.");
             AddLocationNotificationIfNeededTask task;
             synchronized (sLock) {
                 if (mAddLocationNotificationIfNeededTask == null) {
