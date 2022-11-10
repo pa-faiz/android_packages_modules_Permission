@@ -27,11 +27,13 @@ import android.view.accessibility.AccessibilityManager;
 import androidx.annotation.RequiresApi;
 
 import com.android.modules.utils.build.SdkLevel;
+import com.android.permissioncontroller.permission.utils.KotlinUtils;
 import com.android.permissioncontroller.permission.utils.Utils;
 import com.android.permissioncontroller.privacysources.SafetyCenterAccessibilityListener;
 import com.android.permissioncontroller.role.model.Role;
 import com.android.permissioncontroller.role.model.Roles;
 import com.android.permissioncontroller.role.ui.SpecialAppAccessListActivity;
+import com.android.permissioncontroller.role.utils.RoleUiBehaviorUtils;
 
 public final class PermissionControllerApplication extends Application {
 
@@ -47,6 +49,9 @@ public final class PermissionControllerApplication extends Application {
         updateSpecialAppAccessListActivityEnabledState();
         if (SdkLevel.isAtLeastT()) {
             addAccessibilityListener();
+        }
+        if (Utils.isHealthPermissionUiEnabled()) {
+            KotlinUtils.INSTANCE.addHealthPermissions(this);
         }
     }
 
@@ -64,7 +69,7 @@ public final class PermissionControllerApplication extends Application {
         for (int i = 0; i < rolesSize; i++) {
             Role role = roles.valueAt(i);
 
-            if (!role.isAvailable(this) || !role.isVisible(this)) {
+            if (!role.isAvailable(this) || !RoleUiBehaviorUtils.isVisible(role, this)) {
                 continue;
             }
             if (!role.isExclusive()) {

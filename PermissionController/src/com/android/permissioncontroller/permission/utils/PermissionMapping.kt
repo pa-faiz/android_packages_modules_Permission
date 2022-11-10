@@ -19,6 +19,8 @@ package com.android.permissioncontroller.permission.utils
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
+import android.healthconnect.HealthPermissions.HEALTH_PERMISSION_GROUP
+import android.util.Log
 import com.android.modules.utils.build.SdkLevel
 
 /**
@@ -26,6 +28,8 @@ import com.android.modules.utils.build.SdkLevel
  * Permission settings screens and grant dialog. It also includes methods related to that mapping.
  */
 object PermissionMapping {
+
+    private val LOG_TAG = "PermissionMapping"
 
     @JvmField
     val SENSOR_DATA_PERMISSIONS: List<String> =
@@ -52,6 +56,8 @@ object PermissionMapping {
     /** Set of groups that will be able to receive one-time grant */
     private val ONE_TIME_PERMISSION_GROUPS: MutableSet<String> = mutableSetOf()
 
+    private val HEALTH_PERMISSIONS_SET: MutableSet<String> = mutableSetOf()
+
     init {
         PLATFORM_PERMISSIONS[Manifest.permission.READ_CONTACTS] = Manifest.permission_group.CONTACTS
         PLATFORM_PERMISSIONS[Manifest.permission.WRITE_CONTACTS] =
@@ -62,6 +68,9 @@ object PermissionMapping {
         PLATFORM_PERMISSIONS[Manifest.permission.WRITE_CALENDAR] =
             Manifest.permission_group.CALENDAR
 
+        // Any updates to the permissions for the SMS permission group must also be made in
+        // Permissions {@link com.android.permissioncontroller.role.model.Permissions} in the role
+        // library
         PLATFORM_PERMISSIONS[Manifest.permission.SEND_SMS] = Manifest.permission_group.SMS
         PLATFORM_PERMISSIONS[Manifest.permission.RECEIVE_SMS] = Manifest.permission_group.SMS
         PLATFORM_PERMISSIONS[Manifest.permission.READ_SMS] = Manifest.permission_group.SMS
@@ -114,6 +123,9 @@ object PermissionMapping {
                 Manifest.permission_group.NEARBY_DEVICES
         }
 
+        // Any updates to the permissions for the CALL_LOG permission group must also be made in
+        // Permissions {@link com.android.permissioncontroller.role.model.Permissions} in the role
+        // library
         PLATFORM_PERMISSIONS[Manifest.permission.READ_CALL_LOG] = Manifest.permission_group.CALL_LOG
         PLATFORM_PERMISSIONS[Manifest.permission.WRITE_CALL_LOG] =
             Manifest.permission_group.CALL_LOG
@@ -273,5 +285,32 @@ object PermissionMapping {
     @JvmStatic
     fun supportsOneTimeGrant(permissionGroup: String?): Boolean {
         return ONE_TIME_PERMISSION_GROUPS.contains(permissionGroup)
+    }
+
+    /**
+     * Adds health permissions as platform permissions.
+     */
+    @JvmStatic
+    fun addHealthPermissionsToPlatform(permissions: Set<String>) {
+        if (permissions.isEmpty()) {
+            Log.w(LOG_TAG, "No health connect permissions found.")
+            return
+        }
+
+        PLATFORM_PERMISSION_GROUPS[HEALTH_PERMISSION_GROUP] = mutableListOf()
+
+        for (permission in permissions) {
+            PLATFORM_PERMISSIONS[permission] = HEALTH_PERMISSION_GROUP
+            PLATFORM_PERMISSION_GROUPS[HEALTH_PERMISSION_GROUP]?.add(permission)
+            HEALTH_PERMISSIONS_SET.add(permission)
+        }
+    }
+
+    /**
+     * Returns true if the given permission is a health platform permission.
+     */
+    @JvmStatic
+    fun isHealthPermission(permissionName: String): Boolean {
+        return HEALTH_PERMISSIONS_SET.contains(permissionName)
     }
 }

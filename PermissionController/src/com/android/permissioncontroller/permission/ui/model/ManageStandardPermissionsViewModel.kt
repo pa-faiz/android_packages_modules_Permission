@@ -19,6 +19,7 @@ package com.android.permissioncontroller.permission.ui.model
 import android.Manifest
 import android.app.Application
 import android.content.Intent
+import android.healthconnect.HealthPermissions.HEALTH_PERMISSION_GROUP
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.AndroidViewModel
@@ -71,6 +72,12 @@ class ManageStandardPermissionsViewModel(
         val groupName = args.getString(Intent.EXTRA_PERMISSION_GROUP_NAME)
         if (groupName == Manifest.permission_group.NOTIFICATIONS) {
             Utils.navigateToNotificationSettings(fragment.context!!)
+            return
+        }
+        if (Utils.isHealthPermissionUiEnabled() &&
+                groupName == HEALTH_PERMISSION_GROUP) {
+            // TODO(b/248358404): Redirect to the health connect UI, health permissions list for
+            //  all apps.
             return
         }
         fragment.findNavController().navigateSafe(R.id.manage_to_perm_apps, args)
