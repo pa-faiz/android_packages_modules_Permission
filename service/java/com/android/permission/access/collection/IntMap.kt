@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.permission.access.util
+package com.android.permission.access.collection
 
 import android.util.SparseArray
 
@@ -45,6 +45,13 @@ inline fun <T> IntMap<T>.copy(copyValue: (T) -> T): IntMap<T> =
         }
     }
 
+inline fun <T, R> IntMap<T>.firstNotNullOfOrNullIndexed(transform: (Int, Int, T) -> R): R? {
+    for (index in 0 until size) {
+        transform(index, keyAt(index), valueAt(index))?.let { return it }
+    }
+    return null
+}
+
 inline fun <T> IntMap<T>.forEachIndexed(action: (Int, Int, T) -> Unit) {
     for (index in 0 until size) {
         action(index, keyAt(index), valueAt(index))
@@ -69,8 +76,64 @@ inline fun <T> IntMap<T>.getOrPut(key: Int, defaultValue: () -> T): T {
 }
 
 @Suppress("NOTHING_TO_INLINE")
+inline fun <T> IntMap<T>?.getWithDefault(key: Int, defaultValue: T): T {
+    this ?: return defaultValue
+    val index = indexOfKey(key)
+    return if (index >= 0) valueAt(index) else defaultValue
+}
+
+inline val <T> IntMap<T>.lastIndex: Int
+    get() = size - 1
+
+@Suppress("NOTHING_TO_INLINE")
 inline operator fun <T> IntMap<T>.minusAssign(key: Int) {
     remove(key)
+}
+
+inline fun <T> IntMap<T>.noneIndexed(predicate: (Int, Int, T) -> Boolean): Boolean {
+    for (index in 0 until size) {
+        if (predicate(index, keyAt(index), valueAt(index))) {
+            return false
+        }
+    }
+    return true
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> IntMap<T>.putWithDefault(key: Int, value: T, defaultValue: T): T {
+    val index = indexOfKey(key)
+    if (index >= 0) {
+        val oldValue = valueAt(index)
+        if (value != oldValue) {
+            if (value == defaultValue) {
+                removeAt(index)
+            } else {
+                setValueAt(index, value)
+            }
+        }
+        return oldValue
+    } else {
+        if (value != defaultValue) {
+            put(key, value)
+        }
+        return defaultValue
+    }
+}
+
+inline fun <T> IntMap<T>.removeAllIndexed(predicate: (Int, Int, T) -> Boolean) {
+    for (index in lastIndex downTo 0) {
+        if (predicate(index, keyAt(index), valueAt(index))) {
+            removeAt(index)
+        }
+    }
+}
+
+inline fun <T> IntMap<T>.retainAllIndexed(predicate: (Int, Int, T) -> Boolean) {
+    for (index in lastIndex downTo 0) {
+        if (!predicate(index, keyAt(index), valueAt(index))) {
+            removeAt(index)
+        }
+    }
 }
 
 inline val <T> IntMap<T>.size: Int

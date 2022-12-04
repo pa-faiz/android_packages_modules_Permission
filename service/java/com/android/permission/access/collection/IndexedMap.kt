@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.permission.access.util
+package com.android.permission.access.collection
 
 import android.util.ArrayMap
 
@@ -76,8 +76,55 @@ inline fun <K, V> IndexedMap<K, V>.getOrPut(key: K, defaultValue: () -> V): V {
 }
 
 @Suppress("NOTHING_TO_INLINE")
+inline fun <K, V> IndexedMap<K, V>?.getWithDefault(key: K, defaultValue: V): V {
+    this ?: return defaultValue
+    val index = indexOfKey(key)
+    return if (index >= 0) valueAt(index) else defaultValue
+}
+
+inline val <K, V> IndexedMap<K, V>.lastIndex: Int
+    get() = size - 1
+
+@Suppress("NOTHING_TO_INLINE")
 inline operator fun <K, V> IndexedMap<K, V>.minusAssign(key: K) {
     remove(key)
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <K, V> IndexedMap<K, V>.putWithDefault(key: K, value: V, defaultValue: V): V {
+    val index = indexOfKey(key)
+    if (index >= 0) {
+        val oldValue = valueAt(index)
+        if (value != oldValue) {
+            if (value == defaultValue) {
+                removeAt(index)
+            } else {
+                setValueAt(index, value)
+            }
+        }
+        return oldValue
+    } else {
+        if (value != defaultValue) {
+            put(key, value)
+        }
+        return defaultValue
+    }
+}
+
+inline fun <K, V> IndexedMap<K, V>.removeAllIndexed(predicate: (Int, K, V) -> Boolean) {
+    for (index in lastIndex downTo 0) {
+        if (predicate(index, keyAt(index), valueAt(index))) {
+            removeAt(index)
+        }
+    }
+}
+
+inline fun <K, V> IndexedMap<K, V>.retainAllIndexed(predicate: (Int, K, V) -> Boolean) {
+    for (index in lastIndex downTo 0) {
+        if (!predicate(index, keyAt(index), valueAt(index))) {
+            removeAt(index)
+        }
+    }
 }
 
 @Suppress("NOTHING_TO_INLINE")

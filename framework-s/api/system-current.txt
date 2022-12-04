@@ -151,6 +151,7 @@ package android.safetycenter {
     method public int describeContents();
     method @NonNull public java.util.List<android.safetycenter.SafetyCenterIssue.Action> getActions();
     method @Nullable public CharSequence getAttributionTitle();
+    method @Nullable public String getGroupId();
     method @NonNull public String getId();
     method public int getSeverityLevel();
     method @Nullable public CharSequence getSubtitle();
@@ -195,6 +196,7 @@ package android.safetycenter {
     method @NonNull public android.safetycenter.SafetyCenterIssue.Builder setActions(@NonNull java.util.List<android.safetycenter.SafetyCenterIssue.Action>);
     method @NonNull public android.safetycenter.SafetyCenterIssue.Builder setAttributionTitle(@Nullable CharSequence);
     method @NonNull public android.safetycenter.SafetyCenterIssue.Builder setDismissible(boolean);
+    method @NonNull public android.safetycenter.SafetyCenterIssue.Builder setGroupId(@Nullable String);
     method @NonNull public android.safetycenter.SafetyCenterIssue.Builder setId(@NonNull String);
     method @NonNull public android.safetycenter.SafetyCenterIssue.Builder setSeverityLevel(int);
     method @NonNull public android.safetycenter.SafetyCenterIssue.Builder setShouldConfirmDismissal(boolean);
@@ -233,6 +235,7 @@ package android.safetycenter {
     field public static final int REFRESH_REASON_DEVICE_REBOOT = 300; // 0x12c
     field public static final int REFRESH_REASON_OTHER = 600; // 0x258
     field public static final int REFRESH_REASON_PAGE_OPEN = 100; // 0x64
+    field public static final int REFRESH_REASON_PERIODIC = 700; // 0x2bc
     field public static final int REFRESH_REASON_RESCAN_BUTTON_CLICK = 200; // 0xc8
     field public static final int REFRESH_REASON_SAFETY_CENTER_ENABLED = 500; // 0x1f4
   }
@@ -470,6 +473,7 @@ package android.safetycenter.config {
   }
 
   public final class SafetySource implements android.os.Parcelable {
+    method public boolean areNotificationsAllowed();
     method public int describeContents();
     method @NonNull public String getId();
     method public int getInitialDisplayState();
@@ -505,6 +509,7 @@ package android.safetycenter.config {
     method @NonNull public android.safetycenter.config.SafetySource.Builder setIntentAction(@Nullable String);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setLoggingAllowed(boolean);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setMaxSeverityLevel(int);
+    method @NonNull public android.safetycenter.config.SafetySource.Builder setNotificationsAllowed(boolean);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setPackageName(@Nullable String);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setProfile(int);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setRefreshOnPageOpenAllowed(boolean);
