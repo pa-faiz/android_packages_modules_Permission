@@ -26,6 +26,7 @@ import android.safetycenter.config.SafetySource.SAFETY_SOURCE_TYPE_ISSUE_ONLY
 import android.safetycenter.config.SafetySource.SAFETY_SOURCE_TYPE_STATIC
 import android.safetycenter.config.SafetySourcesGroup
 import android.safetycenter.cts.testing.SettingsPackage.getSettingsPackageName
+import com.android.modules.utils.build.SdkLevel
 
 /**
  * A class that provides [SafetyCenterConfig] objects and associated constants to facilitate setting
@@ -271,6 +272,20 @@ object SafetyCenterCtsConfigs {
         singleSourceConfig(
             issueOnlyAllProfileSafetySourceBuilder(ISSUE_ONLY_ALL_PROFILE_SOURCE_ID).build())
 
+    /**
+     * A Simple [SafetyCenterConfig] with an issue only source inside a [SafetySourcesGroup] with
+     * null title.
+     */
+    val ISSUE_ONLY_SOURCE_NO_GROUP_TITLE_CONFIG =
+        SafetyCenterConfig.Builder()
+            .addSafetySourcesGroup(
+                safetySourcesGroupBuilder(SINGLE_SOURCE_GROUP_ID)
+                    .setTitleResId(Resources.ID_NULL)
+                    .addSafetySource(
+                        issueOnlySafetySourceBuilder(ISSUE_ONLY_ALL_OPTIONAL_ID).build())
+                    .build())
+            .build()
+
     /** A dynamic source with [OTHER_PACKAGE_NAME] */
     val DYNAMIC_OTHER_PACKAGE_SAFETY_SOURCE =
         dynamicSafetySourceBuilder(DYNAMIC_OTHER_PACKAGE_ID)
@@ -296,8 +311,12 @@ object SafetyCenterCtsConfigs {
                     .build())
             .addSafetySourcesGroup(
                 safetySourcesGroupBuilder(MULTIPLE_SOURCES_GROUP_ID_2)
+                    .setTitleResId(android.R.string.copy)
+                    .setSummaryResId(android.R.string.cancel)
                     .addSafetySource(
                         dynamicSafetySourceBuilder(SOURCE_ID_3)
+                            .setTitleResId(android.R.string.copy)
+                            .setSummaryResId(android.R.string.cancel)
                             .setRefreshOnPageOpenAllowed(false)
                             .build())
                     .build())
@@ -504,6 +523,12 @@ object SafetyCenterCtsConfigs {
                             .setMaxSeverityLevel(SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION)
                             .setSearchTermsResId(android.R.string.ok)
                             .setLoggingAllowed(false)
+                            .apply {
+                                if (SdkLevel.isAtLeastU()) {
+                                    setNotificationsAllowed(true)
+                                    setDeduplicationGroup("group")
+                                }
+                            }
                             .build())
                     .addSafetySource(
                         dynamicSafetySourceBuilder(DYNAMIC_DISABLED_ID)
@@ -549,6 +574,12 @@ object SafetyCenterCtsConfigs {
                         issueOnlySafetySourceBuilder(ISSUE_ONLY_ALL_OPTIONAL_ID)
                             .setMaxSeverityLevel(SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION)
                             .setLoggingAllowed(false)
+                            .apply {
+                                if (SdkLevel.isAtLeastU()) {
+                                    setNotificationsAllowed(true)
+                                    setDeduplicationGroup("group")
+                                }
+                            }
                             .build())
                     .build())
             .addSafetySourcesGroup(
@@ -614,6 +645,12 @@ object SafetyCenterCtsConfigs {
                         issueOnlyAllProfileSafetySourceBuilder(ISSUE_ONLY_ALL_OPTIONAL_ID)
                             .setMaxSeverityLevel(SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION)
                             .setLoggingAllowed(false)
+                            .apply {
+                                if (SdkLevel.isAtLeastU()) {
+                                    setNotificationsAllowed(true)
+                                    setDeduplicationGroup("group")
+                                }
+                            }
                             .build())
                     .build())
             .addSafetySourcesGroup(

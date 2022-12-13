@@ -43,13 +43,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.permissioncontroller.R;
 import com.android.permissioncontroller.permission.ui.handheld.SettingsWithLargeHeader;
 import com.android.permissioncontroller.permission.ui.model.v31.PermissionUsageViewModelNew;
-import com.android.permissioncontroller.permission.ui.model.v31.PermissionUsageViewModelNew.PermissionGroupWithUsageCount;
 import com.android.permissioncontroller.permission.utils.KotlinUtils;
 import com.android.settingslib.HelpUtils;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -319,24 +317,24 @@ public class PermissionUsageV2Fragment extends SettingsWithLargeHeader {
                     PERMISSION_USAGE_FRAGMENT_INTERACTION__ACTION__SEE_OTHER_PERMISSIONS_CLICKED);
         });
         boolean displayShowSystemToggle = permissionUsagesUiData.getDisplayShowSystemToggle();
-        List<PermissionUsageViewModelNew.PermissionGroupWithUsageCount>
-                permissionGroupWithUsageCounts =
-                        permissionUsagesUiData.getPermissionGroupsWithUsageCount();
-        Collections.sort(
-                permissionGroupWithUsageCounts,
-                Comparator.comparing(
-                    (PermissionGroupWithUsageCount permissionGroupWithUsageCount) ->
-                                PERMISSION_GROUP_ORDER.getOrDefault(
-                                        permissionGroupWithUsageCount.getPermGroup(),
-                                        DEFAULT_ORDER))
+        Map<String, Integer> permissionGroupWithUsageCounts =
+                permissionUsagesUiData.getPermissionGroupsWithUsageCount();
+        List<Map.Entry<String, Integer>> permissionGroupWithUsageCountsEntries =
+                new ArrayList(permissionGroupWithUsageCounts.entrySet());
+
+        permissionGroupWithUsageCountsEntries.sort(Comparator.comparing(
+                (Map.Entry<String, Integer> permissionGroupWithUsageCount) ->
+                        PERMISSION_GROUP_ORDER.getOrDefault(
+                                permissionGroupWithUsageCount.getKey(),
+                                DEFAULT_ORDER))
                 .thenComparing(
-                    (PermissionGroupWithUsageCount permissionGroupWithUsageCount) ->
-                                KotlinUtils.INSTANCE
-                                        .getPermGroupLabel(
-                                                context,
-                                                permissionGroupWithUsageCount
-                                                        .getPermGroup())
-                                        .toString()));
+                    (Map.Entry<String, Integer> permissionGroupWithUsageCount) ->
+                        KotlinUtils.INSTANCE
+                                .getPermGroupLabel(
+                                        context,
+                                        permissionGroupWithUsageCount
+                                                .getKey())
+                                .toString()));
 
         if (mHasSystemApps != displayShowSystemToggle) {
             mHasSystemApps = displayShowSystemToggle;
@@ -348,33 +346,25 @@ public class PermissionUsageV2Fragment extends SettingsWithLargeHeader {
                         context, permissionUsagesUiData.getShow7DaysUsage());
         screen.addPreference(mGraphic);
 
-        Map<String, Integer> permissionGroupUsageCounts = new HashMap<>();
-        for (PermissionUsageViewModelNew.PermissionGroupWithUsageCount groupWithUsage :
-                permissionGroupWithUsageCounts) {
-            permissionGroupUsageCounts.put(
-                    groupWithUsage.getPermGroup(), groupWithUsage.getAppCount());
-        }
-        mGraphic.setUsages(permissionGroupUsageCounts);
+        mGraphic.setUsages(permissionGroupWithUsageCounts);
 
         // Add the preference header.
         PreferenceCategory category = new PreferenceCategory(context);
         screen.addPreference(category);
         CharSequence advancedInfoSummary =
-                getAdvancedInfoSummaryString(context, permissionGroupWithUsageCounts);
+                getAdvancedInfoSummaryString(context, permissionGroupWithUsageCountsEntries);
         screen.setSummary(advancedInfoSummary);
 
         addUIContent(
                 context,
-                permissionGroupWithUsageCounts,
+                permissionGroupWithUsageCountsEntries,
                 category,
                 permissionUsagesUiData.getShowSystemAppPermissions(),
                 permissionUsagesUiData.getShow7DaysUsage());
     }
 
     private CharSequence getAdvancedInfoSummaryString(
-            Context context,
-            List<PermissionUsageViewModelNew.PermissionGroupWithUsageCount>
-                    permissionGroupWithUsageCounts) {
+            Context context, List<Map.Entry<String, Integer>> permissionGroupWithUsageCounts) {
         int size = permissionGroupWithUsageCounts.size();
         if (size <= PERMISSION_USAGE_INITIAL_EXPANDED_CHILDREN_COUNT - 1) {
             return "";
@@ -385,18 +375,18 @@ public class PermissionUsageV2Fragment extends SettingsWithLargeHeader {
             String permGroupName =
                     permissionGroupWithUsageCounts
                             .get(PERMISSION_USAGE_INITIAL_EXPANDED_CHILDREN_COUNT - 1)
-                            .getPermGroup();
+                            .getKey();
             return KotlinUtils.INSTANCE.getPermGroupLabel(context, permGroupName);
         }
 
         String permGroupName1 =
                 permissionGroupWithUsageCounts
                         .get(PERMISSION_USAGE_INITIAL_EXPANDED_CHILDREN_COUNT - 1)
-                        .getPermGroup();
+                        .getKey();
         String permGroupName2 =
                 permissionGroupWithUsageCounts
                         .get(PERMISSION_USAGE_INITIAL_EXPANDED_CHILDREN_COUNT)
-                        .getPermGroup();
+                        .getKey();
         CharSequence permGroupLabel1 =
                 KotlinUtils.INSTANCE.getPermGroupLabel(context, permGroupName1);
         CharSequence permGroupLabel2 =
@@ -424,18 +414,18 @@ public class PermissionUsageV2Fragment extends SettingsWithLargeHeader {
     /** Use the usages and permApps that are previously constructed to add UI content to the page */
     private void addUIContent(
             Context context,
-            List<PermissionGroupWithUsageCount> permissionGroupWithUsageCounts,
+            List<Map.Entry<String, Integer>> permissionGroupWithUsageCounts,
             PreferenceCategory category,
             boolean showSystem,
             boolean show7Days) {
         for (int i = 0; i < permissionGroupWithUsageCounts.size(); i++) {
-            PermissionGroupWithUsageCount permissionGroupWithUsageCount =
+            Map.Entry<String, Integer> permissionGroupWithUsageCount =
                     permissionGroupWithUsageCounts.get(i);
             PermissionUsageV2ControlPreference permissionUsagePreference =
                     new PermissionUsageV2ControlPreference(
                             context,
-                            permissionGroupWithUsageCount.getPermGroup(),
-                            permissionGroupWithUsageCount.getAppCount(),
+                            permissionGroupWithUsageCount.getKey(),
+                            permissionGroupWithUsageCount.getValue(),
                             showSystem,
                             mSessionId,
                             show7Days);

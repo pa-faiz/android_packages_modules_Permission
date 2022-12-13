@@ -67,6 +67,18 @@
     <!-- Title for the dialog button to get more info about a permission. [CHAR LIMIT=15] -->
     <string name="grant_dialog_button_more_info">More info</string>
 
+    <!-- Title for the dialog button to allow access to all photos. [CHAR LIMIT=60] -->
+    <string name="grant_dialog_button_allow_all_photos">Allow access to all photos</string>
+
+    <!-- Title for the dialog button to allow access to select photos to be shared. [CHAR LIMIT=60] -->
+    <string name="grant_dialog_button_allow_selected_photos">Select photos</string>
+
+    <!-- Title for the dialog button to allow access to select more photos to be shared. [CHAR LIMIT=60] -->
+    <string name="grant_dialog_button_allow_more_selected_photos">Select more photos</string>
+
+    <!-- Title for the dialog button to not allow access to select more photos to be shared. [CHAR LIMIT=60] -->
+    <string name="grant_dialog_button_dont_allow_more_selected_photos">Don\u2019t select more photos</string>
+
     <!-- Title for the dialog button to deny a permission grant despite a warning of implications. [CHAR LIMIT=30] -->
     <string name="grant_dialog_button_deny_anyway">Don\u2019t allow anyway</string>
 
@@ -592,6 +604,12 @@
 
     <!-- Title for the dialog button to allow a permission grant only when the app is in the foreground. [CHAR LIMIT=60] -->
     <string name="app_permission_button_allow_foreground">Allow only while using the app</string>
+
+    <!-- Title for the dialog button to allow the user to allow all photos. [CHAR LIMIT=60] -->
+    <string name="app_permission_button_allow_all_photos">Allow all photos</string>
+
+    <!-- Title for the dialog button to allow the user to select photos. [CHAR LIMIT=60] -->
+    <string name="app_permission_button_select_photos">Allow selected photos</string>
 
     <!-- Title for the dialog button to require an app to ask for a permission next time they need it. [CHAR LIMIT=60] -->
     <string name="app_permission_button_ask">Ask every time</string>
@@ -1434,6 +1452,10 @@ Allow <xliff:g id="app_name" example="Gmail">%4$s</xliff:g> to upload a bug repo
     <string name="permgrouprequest_read_media_visual">Allow &lt;b><xliff:g id="app_name" example="Gmail">%1$s</xliff:g>&lt;/b> to access photos and videos on this device?</string>
 
     <!-- Message shown to the user when the apps requests permission from this group. If ever possible this should stay below 80 characters (assuming the parameters takes 20 characters). Don't abbreviate until the message reaches 120 characters though. [CHAR LIMIT=120] -->
+    <string name="permgrouprequest_more_photos">Grant
+        &lt;b><xliff:g id="app_name" example="Gmail">%1$s</xliff:g>&lt;/b> access to more photos?</string>
+
+    <!-- Message shown to the user when the apps requests permission from this group. If ever possible this should stay below 80 characters (assuming the parameters takes 20 characters). Don't abbreviate until the message reaches 120 characters though. [CHAR LIMIT=120] -->
     <string name="permgrouprequest_microphone">Allow
         &lt;b><xliff:g id="app_name" example="Gmail">%1$s</xliff:g>&lt;/b> to record audio?</string>
     <!-- Subtitle of the message shown to the user when the apps requests permission to use the microphone only while app is in foreground [CHAR LIMIT=150]-->
@@ -1690,5 +1712,14 @@ Allow <xliff:g id="app_name" example="Gmail">%4$s</xliff:g> to upload a bug repo
     <string name="show_password_title">Show passwords</string>
     <!-- Summary for toggle controlling whether to show the first letter while typing passwords. [CHAR LIMIT=NONE] -->
     <string name="show_password_summary">Display characters briefly as you type</string>
+
+    <!-- TODO(b/259279178): update with finalized permission rationale strings -->
+    <!-- Template for the permission rationale message when an app requests a permission. Third
+    parties are other organizations outside of the app developer. These could be companies or even
+    governmental organizations. But because we aren't able to be inclusive of all possibilities,
+    phrasing should be as generic as possible while still helping users understand they aren't just
+    sharing data with the developer company. [CHAR LIMIT=100] -->
+    <string name="permission_rationale_message_template">This app stated it may share
+        <xliff:g id="permission_name" example="location">%s</xliff:g> data with third parties</string>
 
 </resources>

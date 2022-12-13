@@ -22,6 +22,7 @@ import static android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE;
 import static android.Manifest.permission.START_TASKS_FROM_RECENTS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.safetycenter.SafetyCenterManager.REFRESH_REASON_OTHER;
 import static android.safetycenter.SafetyCenterManager.RefreshReason;
 import static android.safetycenter.SafetyEvent.SAFETY_EVENT_TYPE_RESOLVING_ACTION_FAILED;
@@ -141,11 +142,19 @@ public final class SafetyCenterService extends SystemService {
 
     @GuardedBy("mApiLock")
     @NonNull
+    private final PendingIntentFactory mPendingIntentFactory;
+
+    @GuardedBy("mApiLock")
+    @NonNull
     private final SafetyCenterDataFactory mSafetyCenterDataFactory;
 
     @GuardedBy("mApiLock")
     @NonNull
     private final SafetyCenterListeners mSafetyCenterListeners;
+
+    @GuardedBy("mApiLock")
+    @NonNull
+    private final SafetyCenterNotificationSender mNotificationSender;
 
     @GuardedBy("mApiLock")
     private boolean mSafetyCenterIssueCacheWriteScheduled;
@@ -172,6 +181,7 @@ public final class SafetyCenterService extends SystemService {
         StatsdLogger statsdLogger = new StatsdLogger(context, mSafetyCenterConfigReader);
         mSafetyCenterRefreshTracker = new SafetyCenterRefreshTracker(statsdLogger);
         mSafetyCenterIssueCache = new SafetyCenterIssueCache(mSafetyCenterConfigReader);
+        mPendingIntentFactory = new PendingIntentFactory(context, mSafetyCenterResourcesContext);
         mSafetyCenterRepository =
                 new SafetyCenterRepository(
                         context,
@@ -184,10 +194,16 @@ public final class SafetyCenterService extends SystemService {
                         mSafetyCenterResourcesContext,
                         mSafetyCenterConfigReader,
                         mSafetyCenterRefreshTracker,
-                        new PendingIntentFactory(context, mSafetyCenterResourcesContext),
+                        mPendingIntentFactory,
                         mSafetyCenterIssueCache,
                         mSafetyCenterRepository);
         mSafetyCenterListeners = new SafetyCenterListeners(mSafetyCenterDataFactory);
+        mNotificationSender =
+                new SafetyCenterNotificationSender(
+                        context,
+                        new SafetyCenterNotificationFactory(context),
+                        mSafetyCenterIssueCache,
+                        mSafetyCenterRepository);
         mSafetyCenterBroadcastDispatcher =
                 new SafetyCenterBroadcastDispatcher(
                         context, mSafetyCenterConfigReader, mSafetyCenterRefreshTracker);
@@ -283,6 +299,9 @@ public final class SafetyCenterService extends SystemService {
                                 safetySourceData, safetySourceId, safetyEvent, packageName, userId);
                 mSafetyCenterListeners.deliverUpdateForUserProfileGroup(
                         userProfileGroup, hasUpdate, null);
+                if (hasUpdate) {
+                    mNotificationSender.updateNotifications(userId);
+                }
                 scheduleWriteSafetyCenterIssueCacheFileIfNeededLocked();
             }
         }
@@ -344,6 +363,9 @@ public final class SafetyCenterService extends SystemService {
                 }
                 mSafetyCenterListeners.deliverUpdateForUserProfileGroup(
                         userProfileGroup, hasUpdate, safetyCenterErrorDetails);
+                if (hasUpdate) {
+                    mNotificationSender.updateNotifications(userId);
+                }
             }
         }
 
@@ -356,6 +378,23 @@ public final class SafetyCenterService extends SystemService {
                 return;
             }
             startRefreshingSafetySources(refreshReason, userId);
+        }
+
+        @Override
+        @RequiresApi(UPSIDE_DOWN_CAKE)
+        public void refreshSpecificSafetySources(
+                @RefreshReason int refreshReason,
+                @UserIdInt int userId,
+                @NonNull List<String> safetySourceIds) {
+            getContext()
+                    .enforceCallingPermission(MANAGE_SAFETY_CENTER, "refreshSpecificSafetySources");
+            requireNonNull(safetySourceIds, "safetySourceIds cannot be null");
+            RefreshReasons.validate(refreshReason);
+            if (!enforceCrossUserPermission("refreshSpecificSafetySources", userId)
+                    || !checkApiEnabled("refreshSpecificSafetySources")) {
+                return;
+            }
+            startRefreshingSafetySources(refreshReason, userId, safetySourceIds);
         }
 
         @Override
@@ -492,6 +531,7 @@ public final class SafetyCenterService extends SystemService {
                 }
                 mSafetyCenterListeners.deliverUpdateForUserProfileGroup(
                         userProfileGroup, true, null);
+                mNotificationSender.updateNotifications(userId);
             }
         }
 
@@ -541,7 +581,12 @@ public final class SafetyCenterService extends SystemService {
 
                 Integer taskId =
                         safetyCenterIssueId.hasTaskId() ? safetyCenterIssueId.getTaskId() : null;
-                if (!dispatchPendingIntent(safetySourceIssueAction.getPendingIntent(), taskId)) {
+                PendingIntent issueActionPendingIntent =
+                        mPendingIntentFactory.maybeOverridePendingIntent(
+                                safetyCenterIssueKey.getSafetySourceId(),
+                                safetySourceIssueAction.getPendingIntent(),
+                                false);
+                if (!dispatchPendingIntent(issueActionPendingIntent, taskId)) {
                     Log.w(
                             TAG,
                             "Error dispatching action: "
@@ -991,19 +1036,27 @@ public final class SafetyCenterService extends SystemService {
             mSafetyCenterListeners.clearForUser(userId);
             mSafetyCenterRefreshTracker.clearRefreshForUser(userId);
             mSafetyCenterListeners.deliverUpdateForUserProfileGroup(userProfileGroup, true, null);
+            mNotificationSender.updateNotifications(userId);
             scheduleWriteSafetyCenterIssueCacheFileIfNeededLocked();
         }
     }
 
     private void startRefreshingSafetySources(
             @RefreshReason int refreshReason, @UserIdInt int userId) {
+        startRefreshingSafetySources(refreshReason, userId, null);
+    }
+
+    private void startRefreshingSafetySources(
+            @RefreshReason int refreshReason,
+            @UserIdInt int userId,
+            @Nullable List<String> safetySourceIds) {
         UserProfileGroup userProfileGroup = UserProfileGroup.from(getContext(), userId);
         synchronized (mApiLock) {
             mSafetyCenterRepository.clearSafetySourceErrors(userProfileGroup);
 
             String refreshBroadcastId =
                     mSafetyCenterBroadcastDispatcher.sendRefreshSafetySources(
-                            refreshReason, userProfileGroup);
+                            refreshReason, userProfileGroup, safetySourceIds);
             if (refreshBroadcastId == null) {
                 return;
             }

@@ -48,7 +48,9 @@ package android.safetycenter {
 
   public final class SafetyCenterData implements android.os.Parcelable {
     ctor public SafetyCenterData(@NonNull android.safetycenter.SafetyCenterStatus, @NonNull java.util.List<android.safetycenter.SafetyCenterIssue>, @NonNull java.util.List<android.safetycenter.SafetyCenterEntryOrGroup>, @NonNull java.util.List<android.safetycenter.SafetyCenterStaticEntryGroup>);
+    ctor public SafetyCenterData(@NonNull android.safetycenter.SafetyCenterStatus, @NonNull java.util.List<android.safetycenter.SafetyCenterIssue>, @NonNull java.util.List<android.safetycenter.SafetyCenterEntryOrGroup>, @NonNull java.util.List<android.safetycenter.SafetyCenterStaticEntryGroup>, @NonNull java.util.List<android.safetycenter.SafetyCenterIssue>);
     method public int describeContents();
+    method @NonNull public java.util.List<android.safetycenter.SafetyCenterIssue> getDismissedIssues();
     method @NonNull public java.util.List<android.safetycenter.SafetyCenterEntryOrGroup> getEntriesOrGroups();
     method @NonNull public java.util.List<android.safetycenter.SafetyCenterIssue> getIssues();
     method @NonNull public java.util.List<android.safetycenter.SafetyCenterStaticEntryGroup> getStaticEntryGroups();
@@ -216,6 +218,7 @@ package android.safetycenter {
     method @Nullable @RequiresPermission(android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE) public android.safetycenter.SafetySourceData getSafetySourceData(@NonNull String);
     method @RequiresPermission(anyOf={android.Manifest.permission.READ_SAFETY_CENTER_STATUS, android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE}) public boolean isSafetyCenterEnabled();
     method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void refreshSafetySources(int);
+    method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void refreshSpecificSafetySources(int, @NonNull java.util.List<java.lang.String>);
     method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void removeOnSafetyCenterDataChangedListener(@NonNull android.safetycenter.SafetyCenterManager.OnSafetyCenterDataChangedListener);
     method @RequiresPermission(android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE) public void reportSafetySourceError(@NonNull String, @NonNull android.safetycenter.SafetySourceErrorDetails);
     method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void setSafetyCenterConfigForTests(@NonNull android.safetycenter.config.SafetyCenterConfig);
@@ -356,6 +359,7 @@ package android.safetycenter {
     method @NonNull public java.util.List<android.safetycenter.SafetySourceIssue.Action> getActions();
     method @Nullable public CharSequence getAttributionTitle();
     method @Nullable public android.safetycenter.SafetySourceIssue.Notification getCustomNotification();
+    method @Nullable public String getDeduplicationId();
     method @NonNull public String getId();
     method public int getIssueCategory();
     method @NonNull public String getIssueTypeId();
@@ -368,6 +372,7 @@ package android.safetycenter {
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.safetycenter.SafetySourceIssue> CREATOR;
     field public static final int ISSUE_CATEGORY_ACCOUNT = 200; // 0xc8
+    field public static final int ISSUE_CATEGORY_DATA = 400; // 0x190
     field public static final int ISSUE_CATEGORY_DEVICE = 100; // 0x64
     field public static final int ISSUE_CATEGORY_GENERAL = 300; // 0x12c
     field public static final int NOTIFICATION_BEHAVIOR_DELAYED = 200; // 0xc8
@@ -401,6 +406,7 @@ package android.safetycenter {
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder clearActions();
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setAttributionTitle(@Nullable CharSequence);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setCustomNotification(@Nullable android.safetycenter.SafetySourceIssue.Notification);
+    method @NonNull public android.safetycenter.SafetySourceIssue.Builder setDeduplicationId(@Nullable String);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setIssueCategory(int);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setNotificationBehavior(int);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setOnDismissPendingIntent(@Nullable android.app.PendingIntent);
@@ -475,6 +481,7 @@ package android.safetycenter.config {
   public final class SafetySource implements android.os.Parcelable {
     method public boolean areNotificationsAllowed();
     method public int describeContents();
+    method @Nullable public String getDeduplicationGroup();
     method @NonNull public String getId();
     method public int getInitialDisplayState();
     method @Nullable public String getIntentAction();
@@ -504,6 +511,7 @@ package android.safetycenter.config {
   public static final class SafetySource.Builder {
     ctor public SafetySource.Builder(int);
     method @NonNull public android.safetycenter.config.SafetySource build();
+    method @NonNull public android.safetycenter.config.SafetySource.Builder setDeduplicationGroup(@Nullable String);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setId(@Nullable String);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setInitialDisplayState(int);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setIntentAction(@Nullable String);

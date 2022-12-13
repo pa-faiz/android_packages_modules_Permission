@@ -45,16 +45,20 @@ import com.airbnb.lottie.LottieCompositionFactory
 import com.airbnb.lottie.LottieDrawable
 import com.android.modules.utils.build.SdkLevel
 import com.android.permissioncontroller.R
+import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.ALLOW_ALL_PHOTOS_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.ALLOW_ALWAYS_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.ALLOW_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.ALLOW_FOREGROUND_BUTTON
+import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.ALLOW_MORE_SELECTED_PHOTOS_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.ALLOW_ONE_TIME_BUTTON
+import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.ALLOW_SELECTED_PHOTOS_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.COARSE_RADIO_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.DENY_AND_DONT_ASK_AGAIN_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.DENY_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.DIALOG_WITH_BOTH_LOCATIONS
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.DIALOG_WITH_COARSE_LOCATION_ONLY
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.DIALOG_WITH_FINE_LOCATION_ONLY
+import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.DONT_ALLOW_MORE_SELECTED_PHOTOS_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.FINE_RADIO_BUTTON
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.LOCATION_ACCURACY_LAYOUT
 import com.android.permissioncontroller.permission.ui.GrantPermissionsActivity.NEXT_BUTTON
@@ -67,9 +71,11 @@ import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandle
 import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.CANCELED
 import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.DENIED
 import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.DENIED_DO_NOT_ASK_AGAIN
+import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.DENIED_MORE_PHOTOS
 import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.GRANTED_ALWAYS
 import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.GRANTED_FOREGROUND_ONLY
 import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.GRANTED_ONE_TIME
+import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.GRANTED_USER_SELECTED
 import com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.ResultListener
 
 class GrantPermissionsViewHandlerImpl(
@@ -89,6 +95,7 @@ class GrantPermissionsViewHandlerImpl(
     private var groupIcon: Icon? = null
     private var groupMessage: CharSequence? = null
     private var detailMessage: CharSequence? = null
+    private var permissionRationaleMessage: CharSequence? = null
     private val buttonVisibilities = BooleanArray(NEXT_BUTTON) { false }
     private val locationVisibilities = BooleanArray(NEXT_LOCATION_DIALOG) { false }
     private var selectedPrecision: Int = 0
@@ -104,6 +111,8 @@ class GrantPermissionsViewHandlerImpl(
     private var iconView: ImageView? = null
     private var messageView: TextView? = null
     private var detailMessageView: TextView? = null
+    private var permissionRationaleView: View? = null
+    private var permissionRationaleMessageView: TextView? = null
     private var buttons: Array<Button?> = arrayOfNulls(NEXT_BUTTON)
     private var locationViews: Array<View?> = arrayOfNulls(NEXT_LOCATION_DIALOG)
     private var rootView: ViewGroup? = null
@@ -115,6 +124,8 @@ class GrantPermissionsViewHandlerImpl(
         arguments.putParcelable(ARG_GROUP_ICON, groupIcon)
         arguments.putCharSequence(ARG_GROUP_MESSAGE, groupMessage)
         arguments.putCharSequence(ARG_GROUP_DETAIL_MESSAGE, detailMessage)
+        arguments.putCharSequence(ARG_GROUP_PERMISSION_RATIONALE_MESSAGE,
+            permissionRationaleMessage)
         arguments.putBooleanArray(ARG_DIALOG_BUTTON_VISIBILITIES, buttonVisibilities)
         arguments.putBooleanArray(ARG_DIALOG_LOCATION_VISIBILITIES, locationVisibilities)
         arguments.putInt(ARG_DIALOG_SELECTED_PRECISION, selectedPrecision)
@@ -127,6 +138,8 @@ class GrantPermissionsViewHandlerImpl(
         groupCount = savedInstanceState.getInt(ARG_GROUP_COUNT)
         groupIndex = savedInstanceState.getInt(ARG_GROUP_INDEX)
         detailMessage = savedInstanceState.getCharSequence(ARG_GROUP_DETAIL_MESSAGE)
+        permissionRationaleMessage =
+            savedInstanceState.getCharSequence(ARG_GROUP_PERMISSION_RATIONALE_MESSAGE)
         setButtonVisibilities(savedInstanceState.getBooleanArray(ARG_DIALOG_BUTTON_VISIBILITIES))
         setLocationVisibilities(savedInstanceState.getBooleanArray(
             ARG_DIALOG_LOCATION_VISIBILITIES))
@@ -136,14 +149,15 @@ class GrantPermissionsViewHandlerImpl(
     }
 
     override fun updateUi(
-        groupName: String,
+        groupName: String?,
         groupCount: Int,
         groupIndex: Int,
         icon: Icon?,
         message: CharSequence?,
         detailMessage: CharSequence?,
-        buttonVisibilities: BooleanArray,
-        locationVisibilities: BooleanArray
+        permissionRationaleMessage: CharSequence?,
+        buttonVisibilities: BooleanArray?,
+        locationVisibilities: BooleanArray?
     ) {
 
         this.groupName = groupName
@@ -152,6 +166,7 @@ class GrantPermissionsViewHandlerImpl(
         groupIcon = icon
         groupMessage = message
         this.detailMessage = detailMessage
+        this.permissionRationaleMessage = permissionRationaleMessage
         setButtonVisibilities(buttonVisibilities)
         setLocationVisibilities(locationVisibilities)
 
@@ -164,6 +179,7 @@ class GrantPermissionsViewHandlerImpl(
     private fun updateAll() {
         updateDescription()
         updateDetailDescription()
+        updatePermissionRationale()
         updateButtons()
         updateLocationVisibilities()
 
@@ -205,6 +221,10 @@ class GrantPermissionsViewHandlerImpl(
         detailMessageView = rootView.findViewById(R.id.detail_message)
         detailMessageView!!.movementMethod = LinkMovementMethod.getInstance()
         iconView = rootView.findViewById(R.id.permission_icon)
+
+        permissionRationaleView = rootView.findViewById(R.id.permission_rationale_container)
+        permissionRationaleMessageView = rootView.findViewById(R.id.permission_rationale_message)
+        permissionRationaleView!!.setOnClickListener(this)
 
         val buttons = arrayOfNulls<Button>(NEXT_BUTTON)
         val numButtons = BUTTON_RES_ID_TO_NUM.size()
@@ -296,6 +316,16 @@ class GrantPermissionsViewHandlerImpl(
         } else {
             detailMessageView!!.text = detailMessage
             detailMessageView!!.visibility = View.VISIBLE
+        }
+    }
+
+    private fun updatePermissionRationale() {
+        val message = permissionRationaleMessage
+        if (message == null || message.isEmpty()) {
+            permissionRationaleView!!.visibility = View.GONE
+        } else {
+            permissionRationaleMessageView!!.text = message
+            permissionRationaleView!!.visibility = View.VISIBLE
         }
     }
 
@@ -406,6 +436,11 @@ class GrantPermissionsViewHandlerImpl(
     override fun onClick(view: View) {
         val id = view.id
 
+        if (id == R.id.permission_rationale_container) {
+            // TODO(b/256913489): Implement Permission rationale details activity
+            return
+        }
+
         if (id == R.id.permission_location_accuracy_radio_fine) {
             (locationViews[FINE_RADIO_BUTTON] as RadioButton).isChecked = true
             selectedPrecision = FINE_RADIO_BUTTON
@@ -445,6 +480,7 @@ class GrantPermissionsViewHandlerImpl(
         }
 
         when (BUTTON_RES_ID_TO_NUM.get(id, -1)) {
+            ALLOW_ALL_PHOTOS_BUTTON,
             ALLOW_BUTTON -> {
                 view.performAccessibilityAction(
                     AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS, null)
@@ -468,6 +504,16 @@ class GrantPermissionsViewHandlerImpl(
                     AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS, null)
                 resultListener.onPermissionGrantResult(groupName, affectedForegroundPermissions,
                     GRANTED_ONE_TIME)
+            }
+            ALLOW_SELECTED_PHOTOS_BUTTON, ALLOW_MORE_SELECTED_PHOTOS_BUTTON -> {
+                view.performAccessibilityAction(
+                    AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS, null)
+                resultListener.onPermissionGrantResult(groupName, affectedForegroundPermissions,
+                    GRANTED_USER_SELECTED)
+            }
+            DONT_ALLOW_MORE_SELECTED_PHOTOS_BUTTON -> {
+                resultListener.onPermissionGrantResult(groupName, affectedForegroundPermissions,
+                    DENIED_MORE_PHOTOS)
             }
             DENY_BUTTON, NO_UPGRADE_BUTTON, NO_UPGRADE_OT_BUTTON -> {
                 view.performAccessibilityAction(
@@ -498,6 +544,7 @@ class GrantPermissionsViewHandlerImpl(
     }
 
     companion object {
+        private val TAG = GrantPermissionsViewHandlerImpl::class.java.simpleName
 
         const val ARG_GROUP_NAME = "ARG_GROUP_NAME"
         const val ARG_GROUP_COUNT = "ARG_GROUP_COUNT"
@@ -505,6 +552,8 @@ class GrantPermissionsViewHandlerImpl(
         const val ARG_GROUP_ICON = "ARG_GROUP_ICON"
         const val ARG_GROUP_MESSAGE = "ARG_GROUP_MESSAGE"
         private const val ARG_GROUP_DETAIL_MESSAGE = "ARG_GROUP_DETAIL_MESSAGE"
+        private const val ARG_GROUP_PERMISSION_RATIONALE_MESSAGE =
+            "ARG_GROUP_PERMISSION_RATIONALE_MESSAGE"
         private const val ARG_DIALOG_BUTTON_VISIBILITIES = "ARG_DIALOG_BUTTON_VISIBILITIES"
         private const val ARG_DIALOG_LOCATION_VISIBILITIES = "ARG_DIALOG_LOCATION_VISIBILITIES"
         private const val ARG_DIALOG_SELECTED_PRECISION = "ARG_DIALOG_SELECTED_PRECISION"
@@ -533,6 +582,14 @@ class GrantPermissionsViewHandlerImpl(
                 NO_UPGRADE_OT_BUTTON)
             BUTTON_RES_ID_TO_NUM.put(R.id.permission_no_upgrade_one_time_and_dont_ask_again_button,
                 NO_UPGRADE_OT_AND_DONT_ASK_AGAIN_BUTTON)
+            BUTTON_RES_ID_TO_NUM.put(R.id.permission_allow_all_photos_button,
+                ALLOW_ALL_PHOTOS_BUTTON)
+            BUTTON_RES_ID_TO_NUM.put(R.id.permission_allow_selected_photos_button,
+                ALLOW_SELECTED_PHOTOS_BUTTON)
+            BUTTON_RES_ID_TO_NUM.put(R.id.permission_allow_more_selected_photos_button,
+                ALLOW_MORE_SELECTED_PHOTOS_BUTTON)
+            BUTTON_RES_ID_TO_NUM.put(R.id.permission_dont_allow_more_selected_photos_button,
+                DONT_ALLOW_MORE_SELECTED_PHOTOS_BUTTON)
 
             LOCATION_RES_ID_TO_NUM.put(R.id.permission_location_accuracy, LOCATION_ACCURACY_LAYOUT)
             LOCATION_RES_ID_TO_NUM.put(R.id.permission_location_accuracy_radio_fine,

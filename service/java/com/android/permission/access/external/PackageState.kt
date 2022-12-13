@@ -22,14 +22,17 @@ interface PackageState {
     val androidPackage: AndroidPackage?
     val appId: Int
     val isSystem: Boolean
+    val isUpdatedSystemApp: Boolean
     val packageName: String
     val userStates: SparseArray<PackageUserState>
     val hasSharedUser: Boolean
     val sharedUserAppId: Int
+    val signingDetails: SigningDetails
 }
 
 interface AndroidPackage {
     val packageName: String
+    val apexModuleName: String?
     val appId: Int
     val isPrivileged: Boolean
     val isOem: Boolean
@@ -41,6 +44,7 @@ interface AndroidPackage {
     val permissions: List<ParsedPermission>
     val permissionGroups: List<ParsedPermissionGroup>
     val requestedPermissions: List<String>
+    val implicitPermissions: List<String>
 }
 
 interface ParsedPermission {

@@ -18,6 +18,8 @@ package com.android.permissioncontroller.permission.ui;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission_group.READ_MEDIA_VISUAL;
+import static android.healthconnect.HealthPermissions.HEALTH_PERMISSION_GROUP;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.CANCELED;
@@ -26,7 +28,10 @@ import static com.android.permissioncontroller.permission.ui.GrantPermissionsVie
 import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.GRANTED_ALWAYS;
 import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.GRANTED_FOREGROUND_ONLY;
 import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.GRANTED_ONE_TIME;
+import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.GRANTED_USER_SELECTED;
 import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.LINKED_TO_SETTINGS;
+import static com.android.permissioncontroller.permission.ui.model.GrantPermissionsViewModel.APP_PERMISSION_REQUEST_CODE;
+import static com.android.permissioncontroller.permission.ui.model.GrantPermissionsViewModel.PHOTO_PICKER_REQUEST_CODE;
 import static com.android.permissioncontroller.permission.utils.Utils.getRequestMessage;
 
 import android.Manifest;
@@ -36,6 +41,7 @@ import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Icon;
+import android.icu.lang.UCharacter;
 import android.os.Bundle;
 import android.os.Process;
 import android.text.Annotation;
@@ -71,6 +77,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -85,7 +92,7 @@ public class GrantPermissionsActivity extends SettingsActivity
             + "_REQUEST_ID";
     public static final String ANNOTATION_ID = "link";
 
-    public static final int NEXT_BUTTON = 11;
+    public static final int NEXT_BUTTON = 15;
     public static final int ALLOW_BUTTON = 0;
     public static final int ALLOW_ALWAYS_BUTTON = 1; // Used in auto
     public static final int ALLOW_FOREGROUND_BUTTON = 2;
@@ -97,6 +104,10 @@ public class GrantPermissionsActivity extends SettingsActivity
     public static final int NO_UPGRADE_OT_BUTTON = 8; // one-time
     public static final int NO_UPGRADE_OT_AND_DONT_ASK_AGAIN_BUTTON = 9; // one-time
     public static final int LINK_TO_SETTINGS = 10;
+    public static final int ALLOW_ALL_PHOTOS_BUTTON = 11;
+    public static final int ALLOW_SELECTED_PHOTOS_BUTTON = 12;
+    public static final int ALLOW_MORE_SELECTED_PHOTOS_BUTTON = 13;
+    public static final int DONT_ALLOW_MORE_SELECTED_PHOTOS_BUTTON = 14;
 
     public static final int NEXT_LOCATION_DIALOG = 6;
     public static final int LOCATION_ACCURACY_LAYOUT = 0;
@@ -110,7 +121,7 @@ public class GrantPermissionsActivity extends SettingsActivity
             ACCESS_COARSE_LOCATION, 0,
             ACCESS_FINE_LOCATION, 1);
 
-    private static final int APP_PERMISSION_REQUEST_CODE = 1;
+    public static final String INTENT_PHOTOS_SELECTED = "intent_extra_result";
 
     /**
      * A map of the currently shown GrantPermissionsActivity for this user, per package and task ID
@@ -195,7 +206,7 @@ public class GrantPermissionsActivity extends SettingsActivity
             // If this app is below the android T targetSdk, filter out the POST_NOTIFICATIONS
             // permission, if present
             mRequestedPermissions = GrantPermissionsViewModel.Companion
-                    .filterNotificationPermissionIfNeededSync(
+                    .filterPermissionsIfNeededSync(
                             mTargetPackage, mRequestedPermissions);
         }
 
@@ -378,6 +389,15 @@ public class GrantPermissionsActivity extends SettingsActivity
         if (info.getSendToSettingsImmediately()) {
             mViewModel.sendDirectlyToSettings(this, info.getGroupName());
             return;
+        } else if (info.getOpenPhotoPicker()) {
+            mViewModel.openPhotoPicker(this, GRANTED_USER_SELECTED);
+            return;
+        }
+
+        if (Utils.isHealthPermissionUiEnabled() && HEALTH_PERMISSION_GROUP.equals(
+                info.getGroupName())) {
+            mViewModel.handleHealthConnectPermissions(this);
+            return;
         }
 
         CharSequence appLabel = KotlinUtils.INSTANCE.getPackageLabel(getApplication(),
@@ -408,6 +428,9 @@ public class GrantPermissionsActivity extends SettingsActivity
             case STORAGE_SUPERGROUP_MESSAGE_PRE_Q:
                 icon = Icon.createWithResource(getPackageName(), mStoragePermGroupIcon);
                 messageId = R.string.permgrouprequest_storage_pre_q;
+                break;
+            case MORE_PHOTOS_MESSAGE:
+                messageId = R.string.permgrouprequest_more_photos;
                 break;
         }
 
@@ -465,6 +488,16 @@ public class GrantPermissionsActivity extends SettingsActivity
             setTitle(message);
         }
 
+        CharSequence permissionRationaleMessage = null;
+        if (info.getShowPermissionRationale()) {
+            String permissionGroupLabel =
+                    KotlinUtils.INSTANCE.getPermGroupLabel(this, info.getGroupName())
+                            .toString();
+
+            permissionRationaleMessage = getString(R.string.permission_rationale_message_template,
+                    UCharacter.toLowerCase(permissionGroupLabel));
+        }
+
         ArrayList<Integer> idxs = new ArrayList<>();
         mButtonVisibilities = new boolean[info.getButtonVisibilities().size()];
         for (int i = 0; i < info.getButtonVisibilities().size(); i++) {
@@ -480,7 +513,8 @@ public class GrantPermissionsActivity extends SettingsActivity
         }
 
         mViewHandler.updateUi(info.getGroupName(), mTotalRequests, mCurrentRequestIdx, icon,
-                message, detailMessage, mButtonVisibilities, mLocationVisibilities);
+                message, detailMessage, permissionRationaleMessage, mButtonVisibilities,
+                mLocationVisibilities);
         if (showingNewGroup) {
             mCurrentRequestIdx++;
         }
@@ -541,30 +575,21 @@ public class GrantPermissionsActivity extends SettingsActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Consumer<Intent> callback = mViewModel.getActivityResultCallback();
-
-        if (requestCode == APP_PERMISSION_REQUEST_CODE && callback != null) {
-            callback.accept(data);
-            mViewModel.setActivityResultCallback(null);
+        if (callback == null || (requestCode != APP_PERMISSION_REQUEST_CODE
+                && requestCode != PHOTO_PICKER_REQUEST_CODE)) {
+            return;
         }
+        if (requestCode == PHOTO_PICKER_REQUEST_CODE) {
+            data = new Intent("").putExtra(INTENT_PHOTOS_SELECTED, resultCode == RESULT_OK);
+        }
+        callback.accept(data);
+        mViewModel.setActivityResultCallback(null);
     }
 
     @Override
     public void onPermissionGrantResult(String name,
             @GrantPermissionsViewHandler.Result int result) {
-        if (checkKgm(name, null, result)) {
-            return;
-        }
-
-        if (name == null || name.equals(mPreMergeShownGroupName)) {
-            mPreMergeShownGroupName = null;
-        }
-
-        logGrantPermissionActivityButtons(name, null, result);
-        mViewModel.onPermissionGrantResult(name, null, result);
-        showNextRequest();
-        if (result == CANCELED) {
-            setResultAndFinish();
-        }
+        onPermissionGrantResult(name, null, result);
     }
 
     @Override
@@ -574,8 +599,14 @@ public class GrantPermissionsActivity extends SettingsActivity
             return;
         }
 
-        if (name != null && name.equals(mPreMergeShownGroupName)) {
+        if (name == null || name.equals(mPreMergeShownGroupName)) {
             mPreMergeShownGroupName = null;
+        }
+
+        if (Objects.equals(READ_MEDIA_VISUAL, name)
+                && result == GrantPermissionsViewHandler.GRANTED_USER_SELECTED) {
+            mViewModel.openPhotoPicker(this, result);
+            return;
         }
 
         logGrantPermissionActivityButtons(name, affectedForegroundPermissions, result);

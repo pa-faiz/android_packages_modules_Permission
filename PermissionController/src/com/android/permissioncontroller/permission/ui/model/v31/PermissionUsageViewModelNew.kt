@@ -97,7 +97,7 @@ class PermissionUsageViewModelNew(
     private fun AllLightPackageOpsLiveData.buildPermissionGroupsWithUsageCounts(
         startTime: Long,
         showSystem: Boolean,
-    ): List<PermissionGroupWithUsageCount> {
+    ): Map<String, Int> {
         val permissionUsageCountMap: MutableMap<String, Int> = HashMap()
         for (permissionGroup: String in getAllEligiblePermissionGroups()) {
             permissionUsageCountMap[permissionGroup] = 0
@@ -120,9 +120,7 @@ class PermissionUsageViewModelNew(
                     permissionUsageCountMap.getOrDefault(permissionGroup, 0) + 1
             }
         }
-        return ArrayList(permissionUsageCountMap.entries).map {
-            PermissionGroupWithUsageCount(it.key, it.value)
-        }
+        return permissionUsageCountMap
     }
 
     /**
@@ -236,20 +234,23 @@ class PermissionUsageViewModelNew(
         val showSystemAppPermissions: Boolean,
         /** Whether to show usage data for 7 days or 1 day. */
         val show7DaysUsage: Boolean,
-        /** [PermissionGroupWithUsageCount] instances for display in UI */
-        // TODO(b/257314894): Consider replacing with a simple Map<String, Integer>.
-        val permissionGroupsWithUsageCount: List<PermissionGroupWithUsageCount>,
+        /** Map instances for display in UI */
+        val permissionGroupsWithUsageCount: Map<String, Int>,
     )
-
-    /**
-     * Data class to associate permission groups with the number of apps that recently accessed
-     * them.
-     */
-    data class PermissionGroupWithUsageCount(val permGroup: String, val appCount: Int)
 
     /** LiveData object for [PermissionUsagesUiData]. */
     val permissionUsagesUiLiveData =
         object : SmartUpdateMediatorLiveData<@JvmSuppressWildcards PermissionUsagesUiData>() {
+
+            private var appPermGroupListPopulated: Boolean = false
+            private val getAppPermGroupUiInfoLiveData = { appPermissionId: AppPermissionId ->
+                AppPermGroupUiInfoLiveData[
+                        Triple(
+                                appPermissionId.packageName,
+                                appPermissionId.permissionGroup,
+                                appPermissionId.userHandle,
+                        )]
+            }
 
             init {
                 addSource(mAllLightPackageOpsLiveData) { update() }
@@ -263,6 +264,7 @@ class PermissionUsageViewModelNew(
                 }
 
                 if (appPermGroupUiInfoLiveDataList.isEmpty()) {
+                    val appPermissionIds = mutableListOf<AppPermissionId>()
                     val allPackages = mAllLightPackageOpsLiveData.value?.keys ?: setOf()
                     for (packageWithUserHandle: Pair<String, UserHandle> in allPackages) {
                         val lastPermissionGroupAccessTimesMs =
@@ -270,33 +272,42 @@ class PermissionUsageViewModelNew(
                                 ?.get(packageWithUserHandle)
                                 ?.lastPermissionGroupAccessTimesMs
                                 ?: mapOf()
+
                         for (permissionGroupToAccess in lastPermissionGroupAccessTimesMs) {
-                            val permissionForPackageWithUserHandle =
-                                AppPermissionId(
+                            appPermissionIds.add(AppPermissionId(
                                     packageWithUserHandle.first,
                                     packageWithUserHandle.second,
                                     permissionGroupToAccess.key,
-                                )
-                            val appPermGroupUiInfoLiveData =
-                                AppPermGroupUiInfoLiveData[
-                                    Triple(
-                                        packageWithUserHandle.first,
-                                        permissionGroupToAccess.key,
-                                        packageWithUserHandle.second,
-                                    )]
-
-                            appPermGroupUiInfoLiveDataList[permissionForPackageWithUserHandle] =
-                                appPermGroupUiInfoLiveData
-                            addSource(appPermGroupUiInfoLiveData) { update() }
+                            ))
                         }
                     }
-                }
 
-                if (!appPermGroupUiInfoLiveDataList.all { it.value.isInitialized }) {
+                    setSourcesToDifference(
+                        appPermissionIds,
+                        appPermGroupUiInfoLiveDataList,
+                        getAppPermGroupUiInfoLiveData) {
+                        update()
+                    }
+                    appPermGroupListPopulated = true
+
                     return
                 }
 
-                value = buildPermissionUsagesUiData()
+                if (appPermGroupUiInfoLiveDataList.any { !it.value.isInitialized }) {
+                    return
+                }
+
+                if (isInitialized && appPermGroupUiInfoLiveDataList.any { it.value.isStale }) {
+                    return
+                }
+
+                val uiData = buildPermissionUsagesUiData()
+                // We include this check as we don't want UX updates unless the data to be displayed
+                // has changed. SmartUpdateMediatorLiveData sends updates if the data has changed OR
+                // if the data has changed from stale to fresh.
+                if (value != uiData) {
+                    value = uiData
+                }
             }
         }
 

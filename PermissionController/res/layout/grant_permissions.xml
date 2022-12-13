@@ -62,6 +62,29 @@
 
             </LinearLayout>
 
+            <!-- permission rationale  -->
+            <LinearLayout
+                android:id="@+id/permission_rationale_container"
+                style="@style/PermissionGrantPermissionRationaleContent">
+
+                <ImageView
+                    android:id="@+id/permission_rationale_icon"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_shield_exclamation_outline"
+                    style="@style/PermissionGrantPermissionRationaleIcon" />
+
+                <TextView
+                    android:id="@+id/permission_rationale_message"
+                    style="@style/PermissionGrantPermissionRationaleMessage" />
+
+                <ImageView
+                    android:id="@+id/permission_rationale_more_info_icon"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_more_info_arrow"
+                    style="@style/PermissionGrantPermissionRationaleMoreInfoIcon" />
+
+            </LinearLayout>
+
             <!-- location (precise/approximate) animations -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -118,8 +141,28 @@
                     style="@style/PermissionGrantButtonAllowOneTime" />
 
                 <com.android.permissioncontroller.permission.ui.widget.SecureButton
+                    android:id="@+id/permission_allow_all_photos_button"
+                    android:text="@string/grant_dialog_button_allow_all_photos"
+                    style="@style/PermissionGrantButtonAllowAllPhotos" />
+
+                <com.android.permissioncontroller.permission.ui.widget.SecureButton
+                    android:id="@+id/permission_allow_more_selected_photos_button"
+                    android:text="@string/grant_dialog_button_allow_more_selected_photos"
+                    style="@style/PermissionGrantButtonAllowMorePhotos" />
+
+                <com.android.permissioncontroller.permission.ui.widget.SecureButton
+                    android:id="@+id/permission_allow_selected_photos_button"
+                    android:text="@string/grant_dialog_button_allow_selected_photos"
+                    style="@style/PermissionGrantButtonAllowSelectedPhotos" />
+
+                <com.android.permissioncontroller.permission.ui.widget.SecureButton
                     android:id="@+id/permission_deny_button"
                     android:text="@string/grant_dialog_button_deny"
+                    style="@style/PermissionGrantButtonDeny" />
+
+                <com.android.permissioncontroller.permission.ui.widget.SecureButton
+                    android:id="@+id/permission_dont_allow_more_selected_photos_button"
+                    android:text="@string/grant_dialog_button_dont_allow_more_selected_photos"
                     style="@style/PermissionGrantButtonDeny" />
 
                 <com.android.permissioncontroller.permission.ui.widget.SecureButton
