@@ -361,6 +361,7 @@ package android.safetycenter {
     method @Nullable public android.safetycenter.SafetySourceIssue.Notification getCustomNotification();
     method @Nullable public String getDeduplicationId();
     method @NonNull public String getId();
+    method public int getIssueActionability();
     method public int getIssueCategory();
     method @NonNull public String getIssueTypeId();
     method public int getNotificationBehavior();
@@ -371,10 +372,15 @@ package android.safetycenter {
     method @NonNull public CharSequence getTitle();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.safetycenter.SafetySourceIssue> CREATOR;
+    field public static final int ISSUE_ACTIONABILITY_AUTOMATIC = 200; // 0xc8
+    field public static final int ISSUE_ACTIONABILITY_MANUAL = 0; // 0x0
+    field public static final int ISSUE_ACTIONABILITY_TIP = 100; // 0x64
     field public static final int ISSUE_CATEGORY_ACCOUNT = 200; // 0xc8
     field public static final int ISSUE_CATEGORY_DATA = 400; // 0x190
     field public static final int ISSUE_CATEGORY_DEVICE = 100; // 0x64
     field public static final int ISSUE_CATEGORY_GENERAL = 300; // 0x12c
+    field public static final int ISSUE_CATEGORY_PASSWORDS = 500; // 0x1f4
+    field public static final int ISSUE_CATEGORY_PERSONAL_SAFETY = 600; // 0x258
     field public static final int NOTIFICATION_BEHAVIOR_DELAYED = 200; // 0xc8
     field public static final int NOTIFICATION_BEHAVIOR_IMMEDIATELY = 300; // 0x12c
     field public static final int NOTIFICATION_BEHAVIOR_NEVER = 100; // 0x64
@@ -407,6 +413,7 @@ package android.safetycenter {
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setAttributionTitle(@Nullable CharSequence);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setCustomNotification(@Nullable android.safetycenter.SafetySourceIssue.Notification);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setDeduplicationId(@Nullable String);
+    method @NonNull public android.safetycenter.SafetySourceIssue.Builder setIssueActionability(int);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setIssueCategory(int);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setNotificationBehavior(int);
     method @NonNull public android.safetycenter.SafetySourceIssue.Builder setOnDismissPendingIntent(@Nullable android.app.PendingIntent);
@@ -486,6 +493,7 @@ package android.safetycenter.config {
     method public int getInitialDisplayState();
     method @Nullable public String getIntentAction();
     method public int getMaxSeverityLevel();
+    method @Nullable public String getOptionalPackageName();
     method @NonNull public String getPackageName();
     method public int getProfile();
     method @StringRes public int getSearchTermsResId();
@@ -537,9 +545,11 @@ package android.safetycenter.config {
     method public int getType();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.safetycenter.config.SafetySourcesGroup> CREATOR;
-    field public static final int SAFETY_SOURCES_GROUP_TYPE_COLLAPSIBLE = 0; // 0x0
+    field @Deprecated public static final int SAFETY_SOURCES_GROUP_TYPE_COLLAPSIBLE = 0; // 0x0
     field public static final int SAFETY_SOURCES_GROUP_TYPE_HIDDEN = 2; // 0x2
-    field public static final int SAFETY_SOURCES_GROUP_TYPE_RIGID = 1; // 0x1
+    field @Deprecated public static final int SAFETY_SOURCES_GROUP_TYPE_RIGID = 1; // 0x1
+    field public static final int SAFETY_SOURCES_GROUP_TYPE_STATEFUL = 0; // 0x0
+    field public static final int SAFETY_SOURCES_GROUP_TYPE_STATELESS = 1; // 0x1
     field public static final int STATELESS_ICON_TYPE_NONE = 0; // 0x0
     field public static final int STATELESS_ICON_TYPE_PRIVACY = 1; // 0x1
   }
@@ -552,6 +562,7 @@ package android.safetycenter.config {
     method @NonNull public android.safetycenter.config.SafetySourcesGroup.Builder setStatelessIconType(int);
     method @NonNull public android.safetycenter.config.SafetySourcesGroup.Builder setSummaryResId(@StringRes int);
     method @NonNull public android.safetycenter.config.SafetySourcesGroup.Builder setTitleResId(@StringRes int);
+    method @NonNull public android.safetycenter.config.SafetySourcesGroup.Builder setType(int);
   }
 
 }
