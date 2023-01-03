@@ -242,11 +242,14 @@ class SafetySourceCtsData(private val context: Context) {
      * A [SafetySourceIssue.Builder] with a [SEVERITY_LEVEL_RECOMMENDATION] and a redirecting
      * [Action].
      */
-    fun defaultRecommendationIssueBuilder() =
+    fun defaultRecommendationIssueBuilder(
+        title: String = "Recommendation issue title",
+        summary: String = "Recommendation issue summary"
+    ) =
         SafetySourceIssue.Builder(
                 RECOMMENDATION_ISSUE_ID,
-                "Recommendation issue title",
-                "Recommendation issue summary",
+                title,
+                summary,
                 SEVERITY_LEVEL_RECOMMENDATION,
                 ISSUE_TYPE_ID)
             .addAction(
@@ -261,6 +264,14 @@ class SafetySourceCtsData(private val context: Context) {
      * redirecting [Action].
      */
     val recommendationGeneralIssue = defaultRecommendationIssueBuilder().build()
+
+    /**
+     * A [SafetySourceIssue] with a [SEVERITY_LEVEL_RECOMMENDATION], general category, redirecting
+     * [Action] and with deduplication id.
+     */
+    @RequiresApi(UPSIDE_DOWN_CAKE)
+    fun recommendationIssueWithDeduplicationId(deduplicationId: String) =
+        defaultRecommendationIssueBuilder().setDeduplicationId(deduplicationId).build()
 
     /**
      * A [SafetySourceIssue] with a [SEVERITY_LEVEL_RECOMMENDATION], account category and a
@@ -417,6 +428,14 @@ class SafetySourceCtsData(private val context: Context) {
      * .
      */
     val criticalResolvingGeneralIssue = defaultCriticalResolvingIssueBuilder().build()
+
+    /**
+     * General [SafetySourceIssue] with a [SEVERITY_LEVEL_CRITICAL_WARNING] and with deduplication
+     * info and a resolving [Action].
+     */
+    @RequiresApi(UPSIDE_DOWN_CAKE)
+    fun criticalIssueWithDeduplicationId(deduplicationId: String) =
+        defaultCriticalResolvingIssueBuilder().setDeduplicationId(deduplicationId).build()
 
     /**
      * Account related [SafetySourceIssue] with a [SEVERITY_LEVEL_CRITICAL_WARNING] and a resolving

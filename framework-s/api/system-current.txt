@@ -218,7 +218,7 @@ package android.safetycenter {
     method @Nullable @RequiresPermission(android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE) public android.safetycenter.SafetySourceData getSafetySourceData(@NonNull String);
     method @RequiresPermission(anyOf={android.Manifest.permission.READ_SAFETY_CENTER_STATUS, android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE}) public boolean isSafetyCenterEnabled();
     method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void refreshSafetySources(int);
-    method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void refreshSpecificSafetySources(int, @NonNull java.util.List<java.lang.String>);
+    method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void refreshSafetySources(int, @NonNull java.util.List<java.lang.String>);
     method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void removeOnSafetyCenterDataChangedListener(@NonNull android.safetycenter.SafetyCenterManager.OnSafetyCenterDataChangedListener);
     method @RequiresPermission(android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE) public void reportSafetySourceError(@NonNull String, @NonNull android.safetycenter.SafetySourceErrorDetails);
     method @RequiresPermission(android.Manifest.permission.MANAGE_SAFETY_CENTER) public void setSafetyCenterConfigForTests(@NonNull android.safetycenter.config.SafetyCenterConfig);
@@ -494,6 +494,7 @@ package android.safetycenter.config {
     method @Nullable public String getIntentAction();
     method public int getMaxSeverityLevel();
     method @Nullable public String getOptionalPackageName();
+    method @NonNull public java.util.Set<java.lang.String> getPackageCertificateHashes();
     method @NonNull public String getPackageName();
     method public int getProfile();
     method @StringRes public int getSearchTermsResId();
@@ -518,6 +519,7 @@ package android.safetycenter.config {
 
   public static final class SafetySource.Builder {
     ctor public SafetySource.Builder(int);
+    method @NonNull public android.safetycenter.config.SafetySource.Builder addPackageCertificateHash(@NonNull String);
     method @NonNull public android.safetycenter.config.SafetySource build();
     method @NonNull public android.safetycenter.config.SafetySource.Builder setDeduplicationGroup(@Nullable String);
     method @NonNull public android.safetycenter.config.SafetySource.Builder setId(@Nullable String);

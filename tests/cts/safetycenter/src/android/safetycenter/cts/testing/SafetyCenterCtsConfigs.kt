@@ -18,6 +18,7 @@ package android.safetycenter.cts.testing
 
 import android.content.Context
 import android.content.res.Resources
+import android.os.Build
 import android.safetycenter.SafetySourceData
 import android.safetycenter.config.SafetyCenterConfig
 import android.safetycenter.config.SafetySource
@@ -26,6 +27,7 @@ import android.safetycenter.config.SafetySource.SAFETY_SOURCE_TYPE_ISSUE_ONLY
 import android.safetycenter.config.SafetySource.SAFETY_SOURCE_TYPE_STATIC
 import android.safetycenter.config.SafetySourcesGroup
 import android.safetycenter.cts.testing.SettingsPackage.getSettingsPackageName
+import androidx.annotation.RequiresApi
 import com.android.modules.utils.build.SdkLevel
 
 /**
@@ -76,6 +78,44 @@ object SafetyCenterCtsConfigs {
     val SEVERITY_ZERO_CONFIG =
         singleSourceConfig(
             dynamicSafetySourceBuilder(SINGLE_SOURCE_ID).setMaxSeverityLevel(0).build())
+
+    /**
+     * SHA256 hash of a package certificate.
+     *
+     * <p>This is a fake certificate, and can be used to test failure cases, or to test a list of
+     * certificates when only one match is required.
+     */
+    const val PACKAGE_CERT_HASH_FAKE = "feed12"
+
+    /** SHA256 hashes of the certificate(s) known to sign the CTS tests. */
+    private val PACKAGE_CERT_HASHES_CTS =
+        listOf(
+            "6cecc50e34ae31bfb5678986d6d6d3736c571ded2f2459527793e1f054eb0c9b",
+            "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc")
+
+    /** An invalid SHA256 hash (not a byte string, not even number of chars). */
+    const val PACKAGE_CERT_HASH_INVALID = "0124ppl"
+
+    /** A simple [SafetyCenterConfig] for CTS tests with a fake/incorrect package cert hash. */
+    val SINGLE_SOURCE_WITH_FAKE_CERT: SafetyCenterConfig
+        @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        get() =
+            singleSourceConfig(
+                dynamicSafetySourceBuilder(SINGLE_SOURCE_ID)
+                    .addPackageCertificateHash(PACKAGE_CERT_HASH_FAKE)
+                    .build())
+
+    /**
+     * A simple [SafetyCenterConfig] for CTS tests with a invalid package cert hash (not a
+     * hex-formatted byte string).
+     */
+    val SINGLE_SOURCE_WITH_INVALID_CERT: SafetyCenterConfig
+        @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        get() =
+            singleSourceConfig(
+                dynamicSafetySourceBuilder(SINGLE_SOURCE_ID)
+                    .addPackageCertificateHash(PACKAGE_CERT_HASH_INVALID)
+                    .build())
 
     /**
      * A simple [SafetyCenterConfig] for CTS tests with a source that does not support refresh on
@@ -264,6 +304,10 @@ object SafetyCenterCtsConfigs {
     /** Package name for the [DYNAMIC_OTHER_PACKAGE_ID] source. */
     const val OTHER_PACKAGE_NAME = "other_package_name"
 
+    private const val DEDUPLICATION_GROUP_1 = "deduplication_group_1"
+    private const val DEDUPLICATION_GROUP_2 = "deduplication_group_2"
+    private const val DEDUPLICATION_GROUP_3 = "deduplication_group_3"
+
     /** A Simple [SafetyCenterConfig] with an issue only source. */
     val ISSUE_ONLY_SOURCE_CONFIG =
         singleSourceConfig(issueOnlySafetySourceBuilder(ISSUE_ONLY_ALL_OPTIONAL_ID).build())
@@ -322,6 +366,45 @@ object SafetyCenterCtsConfigs {
                             .build())
                     .build())
             .build()
+
+    /**
+     * A simple [SafetyCenterConfig] for CTS tests with multiple sources with deduplication info.
+     */
+    val multipleSourcesWithDeduplicationInfoConfig: SafetyCenterConfig
+        @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        get() =
+            SafetyCenterConfig.Builder()
+                .addSafetySourcesGroup(
+                    safetySourcesGroupBuilder(MULTIPLE_SOURCES_GROUP_ID_1)
+                        .addSafetySource(
+                            issueOnlySafetySourceWithDuplicationInfo(
+                                SOURCE_ID_1, DEDUPLICATION_GROUP_1))
+                        .addSafetySource(
+                            issueOnlySafetySourceWithDuplicationInfo(
+                                SOURCE_ID_2, DEDUPLICATION_GROUP_1))
+                        .addSafetySource(
+                            issueOnlySafetySourceWithDuplicationInfo(
+                                SOURCE_ID_3, DEDUPLICATION_GROUP_2))
+                        .addSafetySource(
+                            issueOnlySafetySourceWithDuplicationInfo(
+                                SOURCE_ID_4, DEDUPLICATION_GROUP_3))
+                        .build())
+                .addSafetySourcesGroup(
+                    safetySourcesGroupBuilder(MULTIPLE_SOURCES_GROUP_ID_2)
+                        .addSafetySource(
+                            issueOnlySafetySourceWithDuplicationInfo(
+                                SOURCE_ID_5, DEDUPLICATION_GROUP_1))
+                        .addSafetySource(
+                            issueOnlySafetySourceWithDuplicationInfo(
+                                SOURCE_ID_6, DEDUPLICATION_GROUP_3))
+                        .build())
+                .addSafetySourcesGroup(
+                    safetySourcesGroupBuilder(MULTIPLE_SOURCES_GROUP_ID_3)
+                        .addSafetySource(
+                            issueOnlySafetySourceWithDuplicationInfo(
+                                SOURCE_ID_7, DEDUPLICATION_GROUP_3))
+                        .build())
+                .build()
 
     /** Source included in [DYNAMIC_SOURCE_GROUP_1]. */
     val DYNAMIC_SOURCE_1 = dynamicSafetySource(SOURCE_ID_1)
@@ -528,6 +611,10 @@ object SafetyCenterCtsConfigs {
                                 if (SdkLevel.isAtLeastU()) {
                                     setNotificationsAllowed(true)
                                     setDeduplicationGroup("group")
+                                    addPackageCertificateHash(PACKAGE_CERT_HASH_FAKE)
+                                    PACKAGE_CERT_HASHES_CTS.forEach {
+                                        addPackageCertificateHash(it)
+                                    }
                                 }
                             }
                             .build())
@@ -595,6 +682,10 @@ object SafetyCenterCtsConfigs {
                                 if (SdkLevel.isAtLeastU()) {
                                     setNotificationsAllowed(true)
                                     setDeduplicationGroup("group")
+                                    addPackageCertificateHash(PACKAGE_CERT_HASH_FAKE)
+                                    PACKAGE_CERT_HASHES_CTS.forEach {
+                                        addPackageCertificateHash(it)
+                                    }
                                 }
                             }
                             .build())
@@ -667,6 +758,10 @@ object SafetyCenterCtsConfigs {
                                 if (SdkLevel.isAtLeastU()) {
                                     setNotificationsAllowed(true)
                                     setDeduplicationGroup("group")
+                                    addPackageCertificateHash(PACKAGE_CERT_HASH_FAKE)
+                                    PACKAGE_CERT_HASHES_CTS.forEach {
+                                        addPackageCertificateHash(it)
+                                    }
                                 }
                             }
                             .build())
@@ -685,7 +780,7 @@ object SafetyCenterCtsConfigs {
 
     private fun dynamicSafetySource(id: String) = dynamicSafetySourceBuilder(id).build()
 
-    private fun dynamicSafetySourceBuilder(id: String) =
+    fun dynamicSafetySourceBuilder(id: String) =
         SafetySource.Builder(SAFETY_SOURCE_TYPE_DYNAMIC)
             .setId(id)
             .setPackageName(CTS_PACKAGE_NAME)
@@ -715,6 +810,10 @@ object SafetyCenterCtsConfigs {
             .setProfile(SafetySource.PROFILE_ALL)
             .setTitleForWorkResId(android.R.string.paste)
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private fun issueOnlySafetySourceWithDuplicationInfo(id: String, deduplicationGroup: String) =
+        issueOnlySafetySourceBuilder(id).setDeduplicationGroup(deduplicationGroup).build()
+
     private fun issueOnlySafetySource(id: String) = issueOnlySafetySourceBuilder(id).build()
 
     private fun issueOnlySafetySourceBuilder(id: String) =
@@ -733,7 +832,7 @@ object SafetyCenterCtsConfigs {
             .setTitleResId(android.R.string.ok)
             .setSummaryResId(android.R.string.ok)
 
-    private fun singleSourceConfig(safetySource: SafetySource) =
+    fun singleSourceConfig(safetySource: SafetySource) =
         SafetyCenterConfig.Builder()
             .addSafetySourcesGroup(
                 safetySourcesGroupBuilder(SINGLE_SOURCE_GROUP_ID)

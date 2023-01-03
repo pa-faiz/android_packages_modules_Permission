@@ -249,6 +249,17 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.android.permissioncontroller.permission.ui.v34.PermissionRationaleActivity"
+                  android:configChanges="keyboardHidden|screenSize"
+                  android:excludeFromRecents="true"
+                  android:exported="false"
+                  android:theme="@style/GrantPermissions.FilterTouches"
+                  android:visibleToInstantApps="true"
+                  android:inheritShowWhenLocked="true"
+                  android:hardwareAccelerated="false"
+                  android:canDisplayOnRemoteDevices="false">
+        </activity>
+
         <activity android:name="com.android.permissioncontroller.permission.ui.ManagePermissionsActivity"
                   android:configChanges="orientation|keyboardHidden|screenSize"
                   android:label="@string/app_permissions"
@@ -313,7 +324,7 @@
         <activity android:name="com.android.permissioncontroller.permission.ui.OverlayWarningDialog"
                 android:excludeFromRecents="true"
                 android:exported="false"
-                android:theme="@style/Theme.AppCompat.DayNight.Dialog.Alert" />
+                android:theme="@style/Theme.DeviceDefault.Dialog.NoActionBar.DayNight" />
 
         <activity android:name="com.android.permissioncontroller.permission.ui.LocationProviderInterceptDialog"
                   android:excludeFromRecents="true"
@@ -524,9 +535,10 @@
         </receiver>
 
         <activity android:name="com.android.permissioncontroller.incident.ConfirmationActivity"
-                android:theme="@style/Theme.DeviceDefault.Dialog.Alert.DayNight"
+                android:theme="@style/Theme.DeviceDefault.Dialog.NoActionBar.DayNight"
                 android:exported="false"
                 android:excludeFromRecents="true"
+                android:finishOnCloseSystemDialogs="true"
                 android:noHistory="true" />
 
         <receiver android:name="com.android.permissioncontroller.incident.ApprovalReceiver"

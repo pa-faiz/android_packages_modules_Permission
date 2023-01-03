@@ -99,12 +99,15 @@ import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.ISSUE_ONLY_SOURCE
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.MIXED_STATEFUL_GROUP_ID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.MULTIPLE_SOURCES_CONFIG
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.NO_PAGE_OPEN_CONFIG
+import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.PACKAGE_CERT_HASH_INVALID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SAMPLE_SOURCE_ID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SEVERITY_ZERO_CONFIG
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_CONFIG
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_ID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_INVALID_INTENT_CONFIG
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_OTHER_PACKAGE_CONFIG
+import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_WITH_FAKE_CERT
+import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_WITH_INVALID_CERT
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SOURCE_ID_1
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SOURCE_ID_2
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SOURCE_ID_3
@@ -117,6 +120,7 @@ import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.STATIC_IN_STATEFU
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SUMMARY_TEST_CONFIG
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SUMMARY_TEST_GROUP_ID
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.getLockScreenSourceConfig
+import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.multipleSourcesWithDeduplicationInfoConfig
 import android.safetycenter.cts.testing.SafetyCenterCtsData
 import android.safetycenter.cts.testing.SafetyCenterCtsData.Companion.withAttributionTitleInIssuesIfAtLeastU
 import android.safetycenter.cts.testing.SafetyCenterCtsData.Companion.withDismissedIssuesIfAtLeastU
@@ -138,7 +142,6 @@ import android.safetycenter.cts.testing.SafetySourceReceiver.Companion.dismissSa
 import android.safetycenter.cts.testing.SafetySourceReceiver.Companion.executeSafetyCenterIssueActionWithPermissionAndWait
 import android.safetycenter.cts.testing.SafetySourceReceiver.Companion.refreshSafetySourcesWithReceiverPermissionAndWait
 import android.safetycenter.cts.testing.SafetySourceReceiver.Companion.refreshSafetySourcesWithoutReceiverPermissionAndWait
-import android.safetycenter.cts.testing.SafetySourceReceiver.Companion.refreshSpecificSafetySourcesWithReceiverPermissionAndWait
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
@@ -694,6 +697,36 @@ class SafetyCenterManagerTest {
             .isEqualTo(
                 "Unexpected package name: ${context.packageName}, for safety source: " +
                     DYNAMIC_OTHER_PACKAGE_ID)
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun setSafetySourceData_wronglySignedPackage_throwsIllegalArgumentException() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_WITH_FAKE_CERT)
+
+        val thrown =
+            assertFailsWith(IllegalArgumentException::class) {
+                safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, safetySourceCtsData.unspecified)
+            }
+
+        assertThat(thrown)
+            .hasMessageThat()
+            .isEqualTo("Invalid signature for package " + context.packageName)
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun setSafetySourceData_invalidPackageCertificate_throwsIllegalArgumentException() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_WITH_INVALID_CERT)
+
+        val thrown =
+            assertFailsWith(IllegalStateException::class) {
+                safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, safetySourceCtsData.unspecified)
+            }
+
+        assertThat(thrown)
+            .hasMessageThat()
+            .isEqualTo("Failed to parse signing certificate: " + PACKAGE_CERT_HASH_INVALID)
     }
 
     @Test
@@ -1294,6 +1327,21 @@ class SafetyCenterManagerTest {
     }
 
     @Test
+    fun refreshSafetySources_withRefreshReasonPageOpen_calledIfSourceHasADeviceConfigOverride() {
+        SafetyCenterFlags.overrideRefreshOnPageOpenSources = setOf(SINGLE_SOURCE_ID)
+        safetyCenterCtsHelper.setConfig(NO_PAGE_OPEN_CONFIG)
+        SafetySourceReceiver.setResponse(
+            Request.Refresh(SINGLE_SOURCE_ID), Response.SetData(safetySourceCtsData.information))
+
+        safetyCenterManager.refreshSafetySourcesWithReceiverPermissionAndWait(
+            REFRESH_REASON_PAGE_OPEN)
+
+        val apiSafetySourceData =
+            safetyCenterManager.getSafetySourceDataWithPermission(SINGLE_SOURCE_ID)
+        assertThat(apiSafetySourceData).isEqualTo(safetySourceCtsData.information)
+    }
+
+    @Test
     fun refreshSafetySources_whenSourceClearsData_sourceSendsNullData() {
         safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
         safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, safetySourceCtsData.information)
@@ -1826,7 +1874,7 @@ class SafetyCenterManagerTest {
 
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
-    fun refreshSpecificSafetySources_withSafetySourceIds_onlySpecifiedSourcesSendData() {
+    fun refreshSafetySources_withSafetySourceIds_onlySpecifiedSourcesSendData() {
         safetyCenterCtsHelper.setConfig(MULTIPLE_SOURCES_CONFIG)
         SafetySourceReceiver.apply {
             setResponse(
@@ -1837,8 +1885,8 @@ class SafetyCenterManagerTest {
                 Request.Refresh(SOURCE_ID_3), Response.SetData(safetySourceCtsData.information))
         }
 
-        safetyCenterManager.refreshSpecificSafetySourcesWithReceiverPermissionAndWait(
-            REFRESH_REASON_PAGE_OPEN, listOf(SOURCE_ID_1, SOURCE_ID_2))
+        safetyCenterManager.refreshSafetySourcesWithReceiverPermissionAndWait(
+            REFRESH_REASON_PAGE_OPEN, safetySourceIds = listOf(SOURCE_ID_1, SOURCE_ID_2))
 
         val apiSafetySourceData1 =
             safetyCenterManager.getSafetySourceDataWithPermission(SOURCE_ID_1)
@@ -1853,15 +1901,15 @@ class SafetyCenterManagerTest {
 
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
-    fun refreshSpecificSafetySources_withEmptySafetySourceIds_NoSourcesSendData() {
+    fun refreshSafetySources_withEmptySafetySourceIds_NoSourcesSendData() {
         safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
         SafetySourceReceiver.setResponse(
             Request.Refresh(SINGLE_SOURCE_ID),
             Response.SetData(safetySourceCtsData.criticalWithResolvingGeneralIssue))
 
         assertFailsWith(TimeoutCancellationException::class) {
-            safetyCenterManager.refreshSpecificSafetySourcesWithReceiverPermissionAndWait(
-                REFRESH_REASON_PAGE_OPEN, emptyList(), TIMEOUT_SHORT)
+            safetyCenterManager.refreshSafetySourcesWithReceiverPermissionAndWait(
+                REFRESH_REASON_PAGE_OPEN, TIMEOUT_SHORT, emptyList())
         }
 
         val sourceData = safetyCenterManager.getSafetySourceDataWithPermission(SINGLE_SOURCE_ID)
@@ -1870,15 +1918,15 @@ class SafetyCenterManagerTest {
 
     @Test
     @SdkSuppress(maxSdkVersion = TIRAMISU)
-    fun refreshSpecificSafetySources_versionLessThanU_throwsUnsupportedOperationException() {
+    fun refreshSafetySources_versionLessThanU_throwsUnsupportedOperationException() {
         // TODO(b/258228790): Remove after U is no longer in pre-release
         assumeFalse(Build.VERSION.CODENAME == "UpsideDownCake")
         safetyCenterCtsHelper.setConfig(MULTIPLE_SOURCES_CONFIG)
 
         val exception =
             assertFailsWith(UnsupportedOperationException::class) {
-                safetyCenterManager.refreshSpecificSafetySourcesWithReceiverPermissionAndWait(
-                    REFRESH_REASON_PAGE_OPEN, listOf(SOURCE_ID_1, SOURCE_ID_3))
+                safetyCenterManager.refreshSafetySourcesWithReceiverPermissionAndWait(
+                    REFRESH_REASON_PAGE_OPEN, safetySourceIds = listOf(SOURCE_ID_1, SOURCE_ID_3))
             }
 
         assertThat(exception)
@@ -1888,9 +1936,9 @@ class SafetyCenterManagerTest {
 
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
-    fun refreshSpecificSafetySources_withoutPermission_throwsSecurityException() {
+    fun refreshSafetySources_withSafetySourceIds_withoutPermission_throwsSecurityException() {
         assertFailsWith(SecurityException::class) {
-            safetyCenterManager.refreshSpecificSafetySources(REFRESH_REASON_PAGE_OPEN, listOf())
+            safetyCenterManager.refreshSafetySources(REFRESH_REASON_PAGE_OPEN, listOf())
         }
     }
 
@@ -2285,6 +2333,447 @@ class SafetyCenterManagerTest {
         val apiSafetyCenterStatus = safetyCenterManager.getSafetyCenterDataWithPermission().status
 
         assertThat(apiSafetyCenterStatus).isEqualTo(safetyCenterStatusGeneralCriticalTwoAlerts)
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_duplicateIssuesOfSameSeverities_issueOfFirstSourceInConfigShown() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+
+        val apiSafetyCenterIssues = safetyCenterManager.getSafetyCenterDataWithPermission().issues
+
+        assertThat(apiSafetyCenterIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1))
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_differentDuplicationId_bothIssuesShown() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("different")))
+
+        val apiSafetyCenterIssues = safetyCenterManager.getSafetyCenterDataWithPermission().issues
+
+        assertThat(apiSafetyCenterIssues)
+            .containsExactly(
+                safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1),
+                safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_5))
+            .inOrder()
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_differentDuplicationGroup_bothIssuesShown() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_3
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_6,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+
+        val apiSafetyCenterIssues = safetyCenterManager.getSafetyCenterDataWithPermission().issues
+
+        assertThat(apiSafetyCenterIssues)
+            .containsExactly(
+                safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1),
+                safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_6))
+            .inOrder()
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_threeDuplicateIssues_onlyOneIssueShown() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_3
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_4,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_3
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_6,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_3
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_7,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+
+        val apiSafetyCenterIssues = safetyCenterManager.getSafetyCenterDataWithPermission().issues
+
+        assertThat(apiSafetyCenterIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_4))
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_duplicateIssuesOfDifferentSeverities_moreSevereIssueShown() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_2,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+
+        val apiSafetyCenterIssues = safetyCenterManager.getSafetyCenterDataWithPermission().issues
+
+        assertThat(apiSafetyCenterIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_5))
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_multipleDuplicationsOfIssues_correctlyDeduplicated() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("A")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_2,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("A")))
+        // Belongs to DEDUPLICATION_GROUP_2
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_3,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("B")))
+        // Belongs to DEDUPLICATION_GROUP_3
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_4,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("B")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("A")))
+        // Belongs to DEDUPLICATION_GROUP_3
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_6,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("B")))
+        // Belongs to DEDUPLICATION_GROUP_3
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_7,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("B")))
+
+        val apiSafetyCenterIssues = safetyCenterManager.getSafetyCenterDataWithPermission().issues
+
+        assertThat(apiSafetyCenterIssues)
+            .containsExactly(
+                safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_5),
+                safetyCenterCtsData.safetyCenterIssueRecommendation(SOURCE_ID_3),
+                safetyCenterCtsData.safetyCenterIssueRecommendation(SOURCE_ID_4))
+            .inOrder()
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_duplicateIssuesBothDismissed_topOneShownAsDismissed() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("same")))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_1, CRITICAL_ISSUE_ID))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_5, RECOMMENDATION_ISSUE_ID))
+
+        val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
+        val apiSafetyCenterIssues = apiSafetyCenterData.issues
+        val apiSafetyCenterDismissedIssues = apiSafetyCenterData.dismissedIssues
+
+        assertThat(apiSafetyCenterIssues).isEmpty()
+        assertThat(apiSafetyCenterDismissedIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1))
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_duplicateIssuesLowerSeverityOneDismissed_topOneShown() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("same")))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_5, RECOMMENDATION_ISSUE_ID))
+
+        val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
+        val apiSafetyCenterIssues = apiSafetyCenterData.issues
+        val apiSafetyCenterDismissedIssues = apiSafetyCenterData.dismissedIssues
+
+        assertThat(apiSafetyCenterIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1))
+        assertThat(apiSafetyCenterDismissedIssues).isEmpty()
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_duplicateIssuesHigherSeverityOneDismissed_topOneShownAsDismissed() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("same")))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_1, CRITICAL_ISSUE_ID))
+
+        val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
+        val apiSafetyCenterIssues = apiSafetyCenterData.issues
+        val apiSafetyCenterDismissedIssues = apiSafetyCenterData.dismissedIssues
+
+        assertThat(apiSafetyCenterIssues).isEmpty()
+        assertThat(apiSafetyCenterDismissedIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1))
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_dupIssuesLowerPrioritySameSeverityOneDismissed_topShownAsDismissed() {
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_5, CRITICAL_ISSUE_ID))
+
+        val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
+        val apiSafetyCenterIssues = apiSafetyCenterData.issues
+        val apiSafetyCenterDismissedIssues = apiSafetyCenterData.dismissedIssues
+
+        assertThat(apiSafetyCenterIssues).isEmpty()
+        assertThat(apiSafetyCenterDismissedIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1))
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_dupIssuesTopOneDismissedThenDisappears_bottomOneReemergesTimely() {
+        SafetyCenterFlags.resurfaceIssueMaxCounts = mapOf(SEVERITY_LEVEL_CRITICAL_WARNING to 99L)
+        SafetyCenterFlags.resurfaceIssueDelays =
+            mapOf(SEVERITY_LEVEL_CRITICAL_WARNING to RESURFACE_DELAY)
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_1, CRITICAL_ISSUE_ID))
+        safetyCenterManager.getSafetyCenterDataWithPermission() // data used, 2nd issue dismissed
+        safetyCenterCtsHelper.setData(SOURCE_ID_1, SafetySourceCtsData.issuesOnly())
+
+        val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
+        val apiSafetyCenterDismissedIssues = apiSafetyCenterData.dismissedIssues
+
+        assertThat(apiSafetyCenterDismissedIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_5))
+        waitForWithTimeout(timeout = RESURFACE_TIMEOUT, checkPeriod = RESURFACE_CHECK) {
+            val hasResurfaced =
+                safetyCenterManager
+                    .getSafetyCenterDataWithPermission()
+                    .issues
+                    .contains(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_5))
+            hasResurfaced
+        }
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_dupsOfDiffSeveritiesTopOneDismissedThenGone_bottomOneReemergesTimely() {
+        SafetyCenterFlags.resurfaceIssueMaxCounts =
+            mapOf(
+                SEVERITY_LEVEL_INFORMATION to 0L,
+                SEVERITY_LEVEL_RECOMMENDATION to 99L,
+                SEVERITY_LEVEL_CRITICAL_WARNING to 0L)
+        SafetyCenterFlags.resurfaceIssueDelays =
+            mapOf(
+                SEVERITY_LEVEL_INFORMATION to Duration.ZERO,
+                SEVERITY_LEVEL_RECOMMENDATION to RESURFACE_DELAY,
+                SEVERITY_LEVEL_CRITICAL_WARNING to Duration.ZERO)
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("same")))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_1, CRITICAL_ISSUE_ID))
+        safetyCenterManager.getSafetyCenterDataWithPermission() // data used, 2nd issue dismissed
+        safetyCenterCtsHelper.setData(SOURCE_ID_1, SafetySourceCtsData.issuesOnly())
+
+        val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
+        val apiSafetyCenterDismissedIssues = apiSafetyCenterData.dismissedIssues
+
+        assertThat(apiSafetyCenterDismissedIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueRecommendation(SOURCE_ID_5))
+        waitForWithTimeout(timeout = RESURFACE_TIMEOUT, checkPeriod = RESURFACE_CHECK) {
+            val hasResurfaced =
+                safetyCenterManager
+                    .getSafetyCenterDataWithPermission()
+                    .issues
+                    .contains(safetyCenterCtsData.safetyCenterIssueRecommendation(SOURCE_ID_5))
+            hasResurfaced
+        }
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_duplicateIssuesLowerOneResurfaces_lowerOneStillFilteredOut() {
+        SafetyCenterFlags.resurfaceIssueMaxCounts =
+            mapOf(
+                SEVERITY_LEVEL_INFORMATION to 0L,
+                SEVERITY_LEVEL_RECOMMENDATION to 99L,
+                SEVERITY_LEVEL_CRITICAL_WARNING to 99L)
+        SafetyCenterFlags.resurfaceIssueDelays =
+            mapOf(
+                SEVERITY_LEVEL_INFORMATION to Duration.ZERO,
+                SEVERITY_LEVEL_RECOMMENDATION to RESURFACE_DELAY,
+                SEVERITY_LEVEL_CRITICAL_WARNING to RESURFACE_DELAY.multipliedBy(100))
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("same")))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_1, CRITICAL_ISSUE_ID))
+
+        // data used, 2nd issue dismissed
+        val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
+        val apiSafetyCenterDismissedIssues = apiSafetyCenterData.dismissedIssues
+
+        assertThat(apiSafetyCenterDismissedIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1))
+        assertFailsWith(TimeoutCancellationException::class) {
+            waitForWithTimeout(timeout = RESURFACE_TIMEOUT, checkPeriod = RESURFACE_CHECK) {
+                val hasResurfaced =
+                    safetyCenterManager
+                        .getSafetyCenterDataWithPermission()
+                        .issues
+                        .contains(safetyCenterCtsData.safetyCenterIssueRecommendation(SOURCE_ID_5))
+                hasResurfaced
+            }
+        }
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_duplicateIssuesTopOneResurfaces_topOneShown() {
+        SafetyCenterFlags.resurfaceIssueMaxCounts =
+            mapOf(
+                SEVERITY_LEVEL_INFORMATION to 0L,
+                SEVERITY_LEVEL_RECOMMENDATION to 99L,
+                SEVERITY_LEVEL_CRITICAL_WARNING to 99L)
+        SafetyCenterFlags.resurfaceIssueDelays =
+            mapOf(
+                SEVERITY_LEVEL_INFORMATION to Duration.ZERO,
+                SEVERITY_LEVEL_RECOMMENDATION to RESURFACE_DELAY.multipliedBy(100),
+                SEVERITY_LEVEL_CRITICAL_WARNING to RESURFACE_DELAY)
+        safetyCenterCtsHelper.setConfig(multipleSourcesWithDeduplicationInfoConfig)
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.criticalIssueWithDeduplicationId("same")))
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterCtsHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceCtsData.issuesOnly(
+                safetySourceCtsData.recommendationIssueWithDeduplicationId("same")))
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(
+            SafetyCenterCtsData.issueId(SOURCE_ID_1, CRITICAL_ISSUE_ID))
+
+        // data used, 2nd issue dismissed
+        val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
+        val apiSafetyCenterDismissedIssues = apiSafetyCenterData.dismissedIssues
+
+        assertThat(apiSafetyCenterDismissedIssues)
+            .containsExactly(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1))
+        waitForWithTimeout(timeout = RESURFACE_TIMEOUT, checkPeriod = RESURFACE_CHECK) {
+            val hasResurfaced =
+                safetyCenterManager
+                    .getSafetyCenterDataWithPermission()
+                    .issues
+                    .contains(safetyCenterCtsData.safetyCenterIssueCritical(SOURCE_ID_1))
+            hasResurfaced
+        }
     }
 
     @Test
