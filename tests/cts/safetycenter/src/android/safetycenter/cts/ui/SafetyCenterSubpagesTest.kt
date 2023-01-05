@@ -39,18 +39,23 @@ import android.safetycenter.cts.testing.SafetyCenterCtsHelper
 import android.safetycenter.cts.testing.SafetyCenterFlags
 import android.safetycenter.cts.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
 import android.safetycenter.cts.testing.SafetySourceCtsData
+import android.safetycenter.cts.testing.SafetySourceIntentHandler.Request
+import android.safetycenter.cts.testing.SafetySourceIntentHandler.Response
+import android.safetycenter.cts.testing.SafetySourceReceiver
+import android.safetycenter.cts.testing.UiTestHelper.resetRotation
+import android.safetycenter.cts.testing.UiTestHelper.rotate
 import android.safetycenter.cts.testing.UiTestHelper.waitAllTextDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitAllTextNotDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitButtonDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitNotDisplayed
-import android.support.test.uiautomator.By
+import androidx.test.uiautomator.By
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import com.android.compatibility.common.util.DisableAnimationRule
 import com.android.compatibility.common.util.FreezeRotationRule
-import com.android.compatibility.common.util.UiAutomatorUtils
+import com.android.compatibility.common.util.UiAutomatorUtils2
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -95,6 +100,7 @@ class SafetyCenterSubpagesTest {
             return
         }
         safetyCenterCtsHelper.reset()
+        UiAutomatorUtils2.getUiDevice().resetRotation()
     }
 
     @Test
@@ -357,8 +363,77 @@ class SafetyCenterSubpagesTest {
         }
     }
 
+    @Test
+    fun entryListWithSingleSource_updateSafetySourceData_displayedDataIsUpdated() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        val sourcesGroup: SafetySourcesGroup = SINGLE_SOURCE_CONFIG.safetySourcesGroups.first()
+        val source: SafetySource = sourcesGroup.safetySources.first()
+
+        context.launchSafetyCenterActivity(withReceiverPermission = true) {
+            openSubpageAndExit(sourcesGroup) {
+                waitAllTextDisplayed(
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
+            }
+
+            SafetySourceReceiver.setResponse(
+                Request.Refresh(SINGLE_SOURCE_ID),
+                Response.SetData(
+                    safetySourceCtsData.buildSafetySourceDataWithSummary(
+                        severityLevel = SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION,
+                        entryTitle = "Updated title",
+                        entrySummary = "Updated summary"
+                    )
+                )
+            )
+
+            openSubpageAndExit(sourcesGroup) {
+                waitAllTextNotDisplayed(
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
+                waitAllTextDisplayed("Updated title", "Updated summary")
+            }
+        }
+    }
+
+    @Test
+    fun entryListWithSingleSource_updateSafetySourceDataAndRotate_displayedDataIsNotUpdated() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        val sourcesGroup: SafetySourcesGroup = SINGLE_SOURCE_CONFIG.safetySourcesGroups.first()
+        val source: SafetySource = sourcesGroup.safetySources.first()
+
+        context.launchSafetyCenterActivity(withReceiverPermission = true) {
+            openSubpageAndExit(sourcesGroup) {
+                waitAllTextDisplayed(
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
+
+                SafetySourceReceiver.setResponse(
+                    Request.Refresh(SINGLE_SOURCE_ID),
+                    Response.SetData(
+                        safetySourceCtsData.buildSafetySourceDataWithSummary(
+                            severityLevel = SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION,
+                            entryTitle = "Updated title",
+                            entrySummary = "Updated summary"
+                        )
+                    )
+                )
+                UiAutomatorUtils2.getUiDevice().rotate()
+
+                waitAllTextDisplayed(
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
+                waitAllTextNotDisplayed("Updated title", "Updated summary")
+            }
+        }
+    }
+
     private fun openSubpageAndExit(group: SafetySourcesGroup, block: () -> Unit) {
-        val uiDevice = UiAutomatorUtils.getUiDevice()
+        val uiDevice = UiAutomatorUtils2.getUiDevice()
         uiDevice.waitForIdle()
 
         // Opens subpage by clicking on the group title

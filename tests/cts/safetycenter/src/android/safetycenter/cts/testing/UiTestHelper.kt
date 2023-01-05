@@ -19,15 +19,16 @@ package android.safetycenter.cts.testing
 import android.os.SystemClock
 import android.safetycenter.SafetySourceData
 import android.safetycenter.SafetySourceIssue
-import android.support.test.uiautomator.By
-import android.support.test.uiautomator.BySelector
-import android.support.test.uiautomator.StaleObjectException
-import android.support.test.uiautomator.UiObject2
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.BySelector
+import androidx.test.uiautomator.StaleObjectException
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
 import android.util.Log
 import com.android.compatibility.common.util.SystemUtil.runShellCommand
-import com.android.compatibility.common.util.UiAutomatorUtils.getUiDevice
-import com.android.compatibility.common.util.UiAutomatorUtils.waitFindObject
-import com.android.compatibility.common.util.UiAutomatorUtils.waitFindObjectOrNull
+import com.android.compatibility.common.util.UiAutomatorUtils2.getUiDevice
+import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObject
+import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObjectOrNull
 import java.time.Duration
 import java.util.concurrent.TimeoutException
 import java.util.regex.Pattern
@@ -129,6 +130,26 @@ object UiTestHelper {
         runShellCommand("settings put global window_animation_scale $scale")
         runShellCommand("settings put global transition_animation_scale $scale")
         runShellCommand("settings put global animator_duration_scale $scale")
+    }
+
+    internal fun UiDevice.rotate() {
+        unfreezeRotation()
+        if (isNaturalOrientation) {
+            setOrientationLeft()
+        } else {
+            setOrientationNatural()
+        }
+        freezeRotation()
+        waitForIdle()
+    }
+
+    internal fun UiDevice.resetRotation() {
+        if (!isNaturalOrientation) {
+            unfreezeRotation()
+            setOrientationNatural()
+            freezeRotation()
+            waitForIdle()
+        }
     }
 
     private fun buttonSelector(label: CharSequence): BySelector {
