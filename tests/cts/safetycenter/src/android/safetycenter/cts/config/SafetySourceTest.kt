@@ -329,7 +329,14 @@ class SafetySourceTest {
 
     @Test
     fun equalsHashCodeToString_usingEqualsHashCodeToStringTester() {
-        EqualsHashCodeToStringTester()
+        EqualsHashCodeToStringTester.ofParcelable(
+                parcelableCreator = SafetySource.CREATOR,
+                createCopy =
+                    if (SdkLevel.isAtLeastU()) {
+                        { SafetySource.Builder(it).build() }
+                    } else {
+                        null
+                    })
             .addEqualityGroup(DYNAMIC_BAREBONE)
             .addEqualityGroup(
                 dynamicAllOptional(),

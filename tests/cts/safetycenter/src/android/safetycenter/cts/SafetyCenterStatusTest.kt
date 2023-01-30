@@ -147,7 +147,9 @@ class SafetyCenterStatusTest {
 
     @Test
     fun equalsHashCodeToString_usingEqualsHashCodeToStringTester() {
-        EqualsHashCodeToStringTester()
+        EqualsHashCodeToStringTester.ofParcelable(
+                parcelableCreator = SafetyCenterStatus.CREATOR,
+                createCopy = { SafetyCenterStatus.Builder(it).build() })
             .addEqualityGroup(
                 baseStatus,
                 SafetyCenterStatus.Builder("This is my title", "This is my summary")

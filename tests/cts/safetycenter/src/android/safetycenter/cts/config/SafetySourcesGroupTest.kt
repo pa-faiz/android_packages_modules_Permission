@@ -311,7 +311,14 @@ class SafetySourcesGroupTest {
 
     @Test
     fun equalsHashCodeToString_usingEqualsHashCodeToStringTester() {
-        EqualsHashCodeToStringTester()
+        EqualsHashCodeToStringTester.ofParcelable(
+                parcelableCreator = SafetySourcesGroup.CREATOR,
+                createCopy =
+                    if (SdkLevel.isAtLeastU()) {
+                        { SafetySourcesGroup.Builder(it).build() }
+                    } else {
+                        null
+                    })
             .addEqualityGroup(STATEFUL_INFERRED_WITH_SUMMARY)
             .addEqualityGroup(STATEFUL_INFERRED_WITH_ICON)
             .addEqualityGroup(

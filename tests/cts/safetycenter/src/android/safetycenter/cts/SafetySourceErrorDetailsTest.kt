@@ -44,7 +44,8 @@ class SafetySourceErrorDetailsTest {
 
     @Test
     fun equalsHashCodeToString_usingEqualsHashCodeToStringTester() {
-        EqualsHashCodeToStringTester()
+        EqualsHashCodeToStringTester.ofParcelable(
+                parcelableCreator = SafetySourceErrorDetails.CREATOR)
             .addEqualityGroup(
                 SafetySourceErrorDetails(SAFETY_EVENT),
                 SafetySourceErrorDetails(

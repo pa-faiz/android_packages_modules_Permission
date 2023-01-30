@@ -228,6 +228,9 @@ public final class SafetyCenterService extends SystemService {
                                 Resources.getSystem()
                                         .getIdentifier(
                                                 "config_enableSafetyCenter", "bool", "android"));
+        if (!mDeviceSupportsSafetyCenter) {
+            Log.v(TAG, "Device does not support safety center, safety center will be disabled.");
+        }
     }
 
     @Override
@@ -704,7 +707,8 @@ public final class SafetyCenterService extends SystemService {
                 @NonNull ParcelFileDescriptor out,
                 @NonNull ParcelFileDescriptor err,
                 @NonNull String[] args) {
-            return new SafetyCenterShellCommandHandler(this)
+            return new SafetyCenterShellCommandHandler(
+                            getContext(), this, mDeviceSupportsSafetyCenter)
                     .exec(
                             this,
                             in.getFileDescriptor(),
@@ -785,9 +789,12 @@ public final class SafetyCenterService extends SystemService {
 
         private void setInitialState() {
             mSafetyCenterEnabled = SafetyCenterFlags.getSafetyCenterEnabled();
+            Log.v(TAG, "SafetyCenter is " + (mSafetyCenterEnabled ? "enabled." : "disabled."));
         }
 
         private void onSafetyCenterEnabledChanged(boolean safetyCenterEnabled) {
+            Log.v(TAG, "SafetyCenter is now " + (safetyCenterEnabled ? "enabled." : "disabled."));
+
             if (safetyCenterEnabled) {
                 onApiEnabled();
             } else {
