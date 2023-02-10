@@ -36,9 +36,9 @@ import android.safetycenter.cts.testing.SafetyCenterApisWithShellPermissions.exe
 import android.safetycenter.cts.testing.SafetyCenterApisWithShellPermissions.refreshSafetySourcesWithPermission
 import android.safetycenter.cts.testing.SafetySourceIntentHandler.Request
 import android.safetycenter.cts.testing.SafetySourceIntentHandler.Response
-import android.safetycenter.cts.testing.ShellPermissions.callWithShellPermissionIdentity
-import android.safetycenter.cts.testing.WaitForBroadcastIdle.waitForBroadcastIdle
 import androidx.test.core.app.ApplicationProvider
+import com.android.compatibility.common.util.SystemUtil
+import com.android.safetycenter.testing.ShellPermissions.callWithShellPermissionIdentity
 import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,16 +84,22 @@ class SafetySourceReceiver : BroadcastReceiver() {
             val notificationManager = getSystemService(NotificationManager::class.java)!!
             notificationManager.createNotificationChannel(
                 NotificationChannel(
-                    NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_ID, IMPORTANCE_DEFAULT))
+                    NOTIFICATION_CHANNEL_ID,
+                    NOTIFICATION_CHANNEL_ID,
+                    IMPORTANCE_DEFAULT
+                )
+            )
             startForeground(
                 NOTIFICATION_ID,
                 Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
                     .setContentTitle("SafetySourceReceiver")
                     .setContentText(
                         "SafetySourceReceiver is processing an incoming intent in its " +
-                            "ForegroundService")
+                            "ForegroundService"
+                    )
                     .setSmallIcon(android.R.drawable.ic_info)
-                    .build())
+                    .build()
+            )
             serviceScope.launch {
                 try {
                     safetySourceIntentHandler.handle(this@ForegroundService, intent!!)
@@ -144,7 +150,10 @@ class SafetySourceReceiver : BroadcastReceiver() {
         ) =
             callWithShellPermissionIdentity(SEND_SAFETY_CENTER_UPDATE) {
                 refreshSafetySourcesWithoutReceiverPermissionAndWait(
-                    refreshReason, timeout, safetySourceIds)
+                    refreshReason,
+                    timeout,
+                    safetySourceIds
+                )
             }
 
         fun SafetyCenterManager.refreshSafetySourcesWithoutReceiverPermissionAndWait(
@@ -154,7 +163,7 @@ class SafetySourceReceiver : BroadcastReceiver() {
         ): String {
             refreshSafetySourcesWithPermission(refreshReason, safetySourceIds)
             if (timeout < TIMEOUT_LONG) {
-                getApplicationContext().waitForBroadcastIdle()
+                SystemUtil.waitForBroadcasts()
             }
             return receiveRefreshSafetySources(timeout)
         }
@@ -173,7 +182,7 @@ class SafetySourceReceiver : BroadcastReceiver() {
         ): Boolean {
             SafetyCenterFlags.isEnabled = value
             if (timeout < TIMEOUT_LONG) {
-                getApplicationContext().waitForBroadcastIdle()
+                SystemUtil.waitForBroadcasts()
             }
             return receiveSafetyCenterEnabledChanged(timeout)
         }
@@ -213,7 +222,8 @@ class SafetySourceReceiver : BroadcastReceiver() {
                 safetySourceIntentHandler.receiveSafetyCenterEnabledChanged()
             }
 
-        private fun receiveResolveAction(timeout: Duration = TIMEOUT_LONG) {
+        /** Waits for this receiver to resolve an action within the given [timeout]. */
+        fun receiveResolveAction(timeout: Duration = TIMEOUT_LONG) {
             runBlockingWithTimeout(timeout) { safetySourceIntentHandler.receiveResolveAction() }
         }
 

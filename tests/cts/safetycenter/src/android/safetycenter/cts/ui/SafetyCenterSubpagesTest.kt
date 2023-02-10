@@ -23,7 +23,6 @@ import android.safetycenter.SafetyCenterManager.EXTRA_SAFETY_SOURCES_GROUP_ID
 import android.safetycenter.SafetySourceData
 import android.safetycenter.config.SafetySource
 import android.safetycenter.config.SafetySourcesGroup
-import android.safetycenter.cts.testing.SafetyCenterActivityLauncher.launchSafetyCenterActivity
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.MULTIPLE_SOURCES_CONFIG
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.MULTIPLE_SOURCES_GROUP_ID_1
 import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.MULTIPLE_SOURCE_GROUPS_CONFIG
@@ -39,18 +38,27 @@ import android.safetycenter.cts.testing.SafetyCenterCtsHelper
 import android.safetycenter.cts.testing.SafetyCenterFlags
 import android.safetycenter.cts.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
 import android.safetycenter.cts.testing.SafetySourceCtsData
+import android.safetycenter.cts.testing.SafetySourceIntentHandler.Request
+import android.safetycenter.cts.testing.SafetySourceIntentHandler.Response
+import android.safetycenter.cts.testing.SafetySourceReceiver
+import android.safetycenter.cts.testing.UiTestHelper.expandMoreIssuesCard
+import android.safetycenter.cts.testing.UiTestHelper.resetRotation
+import android.safetycenter.cts.testing.UiTestHelper.rotate
 import android.safetycenter.cts.testing.UiTestHelper.waitAllTextDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitAllTextNotDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitButtonDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitNotDisplayed
-import android.support.test.uiautomator.By
+import android.safetycenter.cts.testing.UiTestHelper.waitSourceIssueDisplayed
+import android.safetycenter.cts.testing.UiTestHelper.waitSourceIssueNotDisplayed
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
+import androidx.test.uiautomator.By
 import com.android.compatibility.common.util.DisableAnimationRule
 import com.android.compatibility.common.util.FreezeRotationRule
-import com.android.compatibility.common.util.UiAutomatorUtils
+import com.android.compatibility.common.util.UiAutomatorUtils2
+import com.android.safetycenter.testing.SafetyCenterActivityLauncher.launchSafetyCenterActivity
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -95,6 +103,7 @@ class SafetyCenterSubpagesTest {
             return
         }
         safetyCenterCtsHelper.reset()
+        UiAutomatorUtils2.getUiDevice().resetRotation()
     }
 
     @Test
@@ -108,7 +117,10 @@ class SafetyCenterSubpagesTest {
             waitDisplayed(
                 By.desc(
                     context.getString(
-                        MULTIPLE_SOURCE_GROUPS_CONFIG.safetySourcesGroups.first()!!.titleResId)))
+                        MULTIPLE_SOURCE_GROUPS_CONFIG.safetySourcesGroups.first()!!.titleResId
+                    )
+                )
+            )
         }
     }
 
@@ -135,7 +147,10 @@ class SafetyCenterSubpagesTest {
             waitNotDisplayed(
                 By.desc(
                     context.getString(
-                        MULTIPLE_SOURCE_GROUPS_CONFIG.safetySourcesGroups.first()!!.titleResId)))
+                        MULTIPLE_SOURCE_GROUPS_CONFIG.safetySourcesGroups.first()!!.titleResId
+                    )
+                )
+            )
         }
     }
 
@@ -159,7 +174,8 @@ class SafetyCenterSubpagesTest {
                 context.getString(firstGroup.titleResId),
                 context.getString(firstGroup.summaryResId),
                 context.getString(lastGroup.titleResId),
-                context.getString(lastGroup.summaryResId))
+                context.getString(lastGroup.summaryResId)
+            )
 
             openSubpageAndExit(lastGroup) {
                 // Verifying that the subpage is opened with collapsing toolbar title
@@ -189,7 +205,8 @@ class SafetyCenterSubpagesTest {
             waitAllTextDisplayed(
                 context.getString(firstGroup.titleResId),
                 context.getString(firstGroup.summaryResId),
-                context.getString(lastGroup.titleResId))
+                context.getString(lastGroup.titleResId)
+            )
             waitDisplayed(By.text(context.getString(lastGroup.summaryResId))) { it.click() }
 
             // Verifying that the group is expanded and sources are displayed
@@ -212,7 +229,8 @@ class SafetyCenterSubpagesTest {
             // Verifying that both entry title and summary are displayed on homepage
             waitAllTextDisplayed(
                 context.getString(firstGroup.titleResId),
-                context.getString(firstGroup.summaryResId))
+                context.getString(firstGroup.summaryResId)
+            )
 
             openSubpageAndExit(firstGroup) {
                 // Verifying that only collapsing toolbar title is displayed for subpage
@@ -223,7 +241,8 @@ class SafetyCenterSubpagesTest {
             // Verifying that the homepage is opened again
             waitAllTextDisplayed(
                 context.getString(firstGroup.titleResId),
-                context.getString(firstGroup.summaryResId))
+                context.getString(firstGroup.summaryResId)
+            )
         }
     }
 
@@ -236,19 +255,25 @@ class SafetyCenterSubpagesTest {
                 safetySourceCtsData.buildSafetySourceDataWithSummary(
                     severityLevel = SafetySourceData.SEVERITY_LEVEL_INFORMATION,
                     entryTitle = SAFETY_SOURCE_1_TITLE,
-                    entrySummary = SAFETY_SOURCE_1_SUMMARY))
+                    entrySummary = SAFETY_SOURCE_1_SUMMARY
+                )
+            )
             setData(
                 SOURCE_ID_2,
                 safetySourceCtsData.buildSafetySourceDataWithSummary(
                     severityLevel = SafetySourceData.SEVERITY_LEVEL_INFORMATION,
                     entryTitle = SAFETY_SOURCE_2_TITLE,
-                    entrySummary = SAFETY_SOURCE_2_SUMMARY))
+                    entrySummary = SAFETY_SOURCE_2_SUMMARY
+                )
+            )
             setData(
                 SOURCE_ID_3,
                 safetySourceCtsData.buildSafetySourceDataWithSummary(
                     severityLevel = SafetySourceData.SEVERITY_LEVEL_INFORMATION,
                     entryTitle = SAFETY_SOURCE_3_TITLE,
-                    entrySummary = SAFETY_SOURCE_3_SUMMARY))
+                    entrySummary = SAFETY_SOURCE_3_SUMMARY
+                )
+            )
         }
         val firstGroup: SafetySourcesGroup = MULTIPLE_SOURCES_CONFIG.safetySourcesGroups[0]
         val secondGroup: SafetySourcesGroup = MULTIPLE_SOURCES_CONFIG.safetySourcesGroups[1]
@@ -261,7 +286,8 @@ class SafetyCenterSubpagesTest {
                     SAFETY_SOURCE_1_TITLE,
                     SAFETY_SOURCE_1_SUMMARY,
                     SAFETY_SOURCE_2_TITLE,
-                    SAFETY_SOURCE_2_SUMMARY)
+                    SAFETY_SOURCE_2_SUMMARY
+                )
             }
 
             // Verifying that subpage entries of the second group are displayed
@@ -283,7 +309,9 @@ class SafetyCenterSubpagesTest {
                 waitDisplayed(By.text(context.getString(source.titleResId))) { it.click() }
                 waitButtonDisplayed("Exit test activity") { it.click() }
                 waitAllTextDisplayed(
-                    context.getString(source.titleResId), context.getString(source.summaryResId))
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
             }
         }
     }
@@ -338,8 +366,216 @@ class SafetyCenterSubpagesTest {
         }
     }
 
+    @Test
+    fun entryListWithSingleSource_updateSafetySourceData_displayedDataIsUpdated() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        val sourcesGroup: SafetySourcesGroup = SINGLE_SOURCE_CONFIG.safetySourcesGroups.first()
+        val source: SafetySource = sourcesGroup.safetySources.first()
+
+        context.launchSafetyCenterActivity(withReceiverPermission = true) {
+            openSubpageAndExit(sourcesGroup) {
+                waitAllTextDisplayed(
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
+            }
+
+            SafetySourceReceiver.setResponse(
+                Request.Refresh(SINGLE_SOURCE_ID),
+                Response.SetData(
+                    safetySourceCtsData.buildSafetySourceDataWithSummary(
+                        severityLevel = SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION,
+                        entryTitle = "Updated title",
+                        entrySummary = "Updated summary"
+                    )
+                )
+            )
+
+            openSubpageAndExit(sourcesGroup) {
+                waitAllTextNotDisplayed(
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
+                waitAllTextDisplayed("Updated title", "Updated summary")
+            }
+        }
+    }
+
+    @Test
+    fun entryListWithSingleSource_updateSafetySourceDataAndRotate_displayedDataIsNotUpdated() {
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        val sourcesGroup: SafetySourcesGroup = SINGLE_SOURCE_CONFIG.safetySourcesGroups.first()
+        val source: SafetySource = sourcesGroup.safetySources.first()
+
+        context.launchSafetyCenterActivity(withReceiverPermission = true) {
+            openSubpageAndExit(sourcesGroup) {
+                waitAllTextDisplayed(
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
+
+                SafetySourceReceiver.setResponse(
+                    Request.Refresh(SINGLE_SOURCE_ID),
+                    Response.SetData(
+                        safetySourceCtsData.buildSafetySourceDataWithSummary(
+                            severityLevel = SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION,
+                            entryTitle = "Updated title",
+                            entrySummary = "Updated summary"
+                        )
+                    )
+                )
+                UiAutomatorUtils2.getUiDevice().rotate()
+
+                waitAllTextDisplayed(
+                    context.getString(source.titleResId),
+                    context.getString(source.summaryResId)
+                )
+                waitAllTextNotDisplayed("Updated title", "Updated summary")
+            }
+        }
+    }
+
+    @Test
+    fun issueCard_withMultipleGroups_onlyRelevantSubpageHasIssueCard() {
+        /* The default attribution title for an issue card is same as the entry group title on the
+         * homepage. This causes test flakiness as UiAutomator is unable to choose from duplicate
+         * strings. To address that, an issue with a different attribution title is used here. */
+        val sourceData = safetySourceCtsData.informationWithIssueWithAttributionTitle
+        val issue = sourceData.issues[0]
+
+        safetyCenterCtsHelper.setConfig(MULTIPLE_SOURCES_CONFIG)
+        val firstGroup: SafetySourcesGroup = MULTIPLE_SOURCES_CONFIG.safetySourcesGroups[0]
+        val secondGroup: SafetySourcesGroup = MULTIPLE_SOURCES_CONFIG.safetySourcesGroups[1]
+        safetyCenterCtsHelper.setData(SOURCE_ID_3, sourceData)
+
+        context.launchSafetyCenterActivity {
+            // Verify that homepage has the issue card
+            waitSourceIssueDisplayed(issue)
+
+            // Verify that irrelevant subpage doesn't have the issue card
+            openSubpageAndExit(firstGroup) { waitSourceIssueNotDisplayed(issue) }
+            // Verify that relevant subpage has the issue card
+            openSubpageAndExit(secondGroup) { waitSourceIssueDisplayed(issue) }
+        }
+    }
+
+    @Test
+    fun issueCard_updateSafetySourceData_subpageDisplaysUpdatedIssue() {
+        val initialDataToDisplay = safetySourceCtsData.informationWithIssueWithAttributionTitle
+        val updatedDataToDisplay = safetySourceCtsData.criticalWithIssueWithAttributionTitle
+
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        val sourcesGroup: SafetySourcesGroup = SINGLE_SOURCE_CONFIG.safetySourcesGroups.first()
+        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, initialDataToDisplay)
+
+        context.launchSafetyCenterActivity {
+            openSubpageAndExit(sourcesGroup) {
+                waitSourceIssueDisplayed(initialDataToDisplay.issues[0])
+
+                safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, updatedDataToDisplay)
+
+                waitSourceIssueDisplayed(updatedDataToDisplay.issues[0])
+            }
+        }
+    }
+
+    @Test
+    fun issueCard_resolveIssueOnSubpage_issueDismisses() {
+        val sourceData = safetySourceCtsData.criticalWithIssueWithAttributionTitle
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, sourceData)
+        val sourcesGroup: SafetySourcesGroup = SINGLE_SOURCE_CONFIG.safetySourcesGroups.first()
+        val issue = sourceData.issues[0]
+        val action = issue.actions[0]
+
+        // Clear the data when action is triggered to simulate resolution.
+        SafetySourceReceiver.setResponse(
+            Request.ResolveAction(SINGLE_SOURCE_ID),
+            Response.ClearData
+        )
+
+        context.launchSafetyCenterActivity(withReceiverPermission = true) {
+            openSubpageAndExit(sourcesGroup) {
+                waitSourceIssueDisplayed(issue)
+                waitButtonDisplayed(action.label) { it.click() }
+
+                // Wait for success message to go away, verify issue no longer displayed
+                waitAllTextNotDisplayed(action.successMessage)
+                waitSourceIssueNotDisplayed(issue)
+            }
+        }
+    }
+
+    @Test
+    fun issueCard_confirmDismissalOnSubpage_dismissesIssue() {
+        val sourceData = safetySourceCtsData.criticalWithIssueWithAttributionTitle
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, sourceData)
+        val sourcesGroup: SafetySourcesGroup = SINGLE_SOURCE_CONFIG.safetySourcesGroups.first()
+        val issue = sourceData.issues[0]
+
+        context.launchSafetyCenterActivity {
+            openSubpageAndExit(sourcesGroup) {
+                waitSourceIssueDisplayed(issue)
+                waitDisplayed(By.desc("Dismiss")) { it.click() }
+
+                waitAllTextDisplayed("Dismiss this alert?")
+                waitButtonDisplayed("Dismiss") { it.click() }
+
+                waitSourceIssueNotDisplayed(issue)
+            }
+        }
+    }
+
+    @Test
+    fun issueCard_dismissOnSubpageWithRotation_cancellationPersistsIssue() {
+        val sourceData = safetySourceCtsData.criticalWithIssueWithAttributionTitle
+        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, sourceData)
+        val sourcesGroup: SafetySourcesGroup = SINGLE_SOURCE_CONFIG.safetySourcesGroups.first()
+        val issue = sourceData.issues[0]
+
+        context.launchSafetyCenterActivity {
+            openSubpageAndExit(sourcesGroup) {
+                waitSourceIssueDisplayed(issue)
+                waitDisplayed(By.desc("Dismiss")) { it.click() }
+                waitAllTextDisplayed("Dismiss this alert?")
+
+                UiAutomatorUtils2.getUiDevice().rotate()
+
+                waitAllTextDisplayed("Dismiss this alert?")
+                waitButtonDisplayed("Cancel") { it.click() }
+                waitSourceIssueDisplayed(issue)
+            }
+        }
+    }
+
+    @Test
+    fun moreIssuesCard_expandOnSubpage_showsAdditionalCard() {
+        safetyCenterCtsHelper.setConfig(MULTIPLE_SOURCES_CONFIG)
+        val sourcesGroup: SafetySourcesGroup = MULTIPLE_SOURCES_CONFIG.safetySourcesGroups.first()
+        val firstSourceData = safetySourceCtsData.criticalWithIssueWithAttributionTitle
+        val secondSourceData = safetySourceCtsData.informationWithIssueWithAttributionTitle
+        safetyCenterCtsHelper.setData(SOURCE_ID_1, firstSourceData)
+        safetyCenterCtsHelper.setData(SOURCE_ID_2, secondSourceData)
+
+        context.launchSafetyCenterActivity {
+            openSubpageAndExit(sourcesGroup) {
+                waitSourceIssueDisplayed(firstSourceData.issues[0])
+                waitAllTextDisplayed("See all alerts")
+                waitSourceIssueNotDisplayed(secondSourceData.issues[0])
+
+                expandMoreIssuesCard()
+
+                waitSourceIssueDisplayed(firstSourceData.issues[0])
+                waitAllTextNotDisplayed("See all alerts")
+                waitSourceIssueDisplayed(secondSourceData.issues[0])
+            }
+        }
+    }
+
     private fun openSubpageAndExit(group: SafetySourcesGroup, block: () -> Unit) {
-        val uiDevice = UiAutomatorUtils.getUiDevice()
+        val uiDevice = UiAutomatorUtils2.getUiDevice()
         uiDevice.waitForIdle()
 
         // Opens subpage by clicking on the group title

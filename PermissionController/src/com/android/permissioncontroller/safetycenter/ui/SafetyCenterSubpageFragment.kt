@@ -20,89 +20,36 @@ import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.os.Bundle
 import android.safetycenter.SafetyCenterEntryGroup
 import android.safetycenter.SafetyCenterEntryOrGroup
-import android.safetycenter.SafetyCenterErrorDetails
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.ViewModelProvider
-import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
-import androidx.preference.PreferenceScreen
-import androidx.recyclerview.widget.RecyclerView
 import com.android.permissioncontroller.R
-import com.android.permissioncontroller.safetycenter.ui.model.LiveSafetyCenterViewModelFactory
 import com.android.permissioncontroller.safetycenter.ui.model.SafetyCenterUiData
-import com.android.permissioncontroller.safetycenter.ui.model.SafetyCenterViewModel
-import com.android.safetycenter.internaldata.SafetyCenterIds
-import com.android.safetycenter.resources.SafetyCenterResourcesContext
 
 /** A fragment that represents a generic subpage in Safety Center. */
 @RequiresApi(UPSIDE_DOWN_CAKE)
-class SafetyCenterSubpageFragment(private val sourceGroupId: String) : PreferenceFragmentCompat() {
+class SafetyCenterSubpageFragment : SafetyCenterFragment() {
 
-    private lateinit var viewModel: SafetyCenterViewModel
-    private lateinit var sameTaskSourceIds: List<String>
+    private lateinit var sourceGroupId: String
+    private var subpageIssueGroup: PreferenceGroup? = null
     private var subpageEntryGroup: PreferenceGroup? = null
 
-    override fun onCreateAdapter(
-        preferenceScreen: PreferenceScreen?
-    ): RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        /* By default, the PreferenceGroupAdapter does setHasStableIds(true). Since each Preference
-         * is internally allocated with an auto-incremented ID, it does not allow us to gracefully
-         * update only changed preferences based on SafetyPreferenceComparisonCallback. In order to
-         * allow the list to track the changes, we need to ignore the Preference IDs. */
-        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder> =
-            super.onCreateAdapter(preferenceScreen)
-        adapter.setHasStableIds(false)
-        return adapter
-    }
-
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        super.onCreatePreferences(savedInstanceState, rootKey)
         setPreferencesFromResource(R.xml.safety_center_subpage, rootKey)
-        sameTaskSourceIds =
-            SafetyCenterResourcesContext(requireContext())
-                .getStringByName("config_same_task_safety_source_ids")
-                .split(",")
+        sourceGroupId = requireArguments().getString(SOURCE_GROUP_ID_KEY)!!
+        subpageIssueGroup = getPreferenceScreen().findPreference(ISSUE_GROUP_KEY)
         subpageEntryGroup = getPreferenceScreen().findPreference(ENTRY_GROUP_KEY)
-
-        viewModel =
-            ViewModelProvider(
-                    requireActivity(),
-                    LiveSafetyCenterViewModelFactory(requireActivity().getApplication()))
-                .get(SafetyCenterViewModel::class.java)
-
-        viewModel.safetyCenterUiLiveData.observe(this) { uiData: SafetyCenterUiData? ->
-            renderSafetyCenterEntryGroup(uiData)
-        }
-        viewModel.errorLiveData.observe(this) { errorDetails: SafetyCenterErrorDetails? ->
-            displayErrorDetails(errorDetails)
-        }
-
-        getPreferenceManager().setPreferenceComparisonCallback(SafetyPreferenceComparisonCallback())
     }
 
     override fun onResume() {
         super.onResume()
-        // TODO(b/253168600): Replace with subpage specific refresh
-        viewModel.pageOpen()
+        safetyCenterViewModel.pageOpen(sourceGroupId)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (activity?.isChangingConfigurations == true) {
-            viewModel.changingConfigurations()
-        }
-    }
-
-    private fun displayErrorDetails(errorDetails: SafetyCenterErrorDetails?) {
-        if (errorDetails == null) return
-        Toast.makeText(requireContext(), errorDetails.errorMessage, Toast.LENGTH_LONG).show()
-        viewModel.clearError()
-    }
-
-    private fun renderSafetyCenterEntryGroup(uiData: SafetyCenterUiData?) {
+    override fun renderSafetyCenterData(uiData: SafetyCenterUiData?) {
         Log.d(TAG, "renderSafetyCenterEntryGroup called with $uiData")
-        val entryGroup = getMatchingGroup(uiData, sourceGroupId)
+        val entryGroup = getMatchingGroup(uiData)
         if (entryGroup == null) {
             Log.w(TAG, "$sourceGroupId doesn't match any of the existing SafetySourcesGroup IDs")
             requireActivity().getSupportFragmentManager().popBackStack()
@@ -110,17 +57,35 @@ class SafetyCenterSubpageFragment(private val sourceGroupId: String) : Preferenc
         }
 
         requireActivity().setTitle(entryGroup.title)
+        updateSafetyCenterIssues(uiData)
         updateSafetyCenterEntries(entryGroup)
     }
 
-    private fun getMatchingGroup(
-        uiData: SafetyCenterUiData?,
-        sourceGroupId: String
-    ): SafetyCenterEntryGroup? {
+    private fun getMatchingGroup(uiData: SafetyCenterUiData?): SafetyCenterEntryGroup? {
         val entryOrGroups: List<SafetyCenterEntryOrGroup>? =
             uiData?.safetyCenterData?.entriesOrGroups
         val entryGroups = entryOrGroups?.mapNotNull { it.entryGroup }
         return entryGroups?.find { it.id == sourceGroupId }
+    }
+
+    private fun updateSafetyCenterIssues(uiData: SafetyCenterUiData?) {
+        subpageIssueGroup?.removeAll()
+        val subpageIssues = uiData?.safetyCenterData?.issues?.filter { it.groupId == sourceGroupId }
+        if (subpageIssues.isNullOrEmpty() || subpageIssueGroup == null) {
+            Log.w(TAG, "$sourceGroupId doesn't have any matching SafetyCenterIssues")
+            // TODO(b/253171481): Display a placeholder image when there are no issues
+            return
+        }
+
+        collapsableIssuesCardHelper.addIssues(
+            requireContext(),
+            safetyCenterViewModel,
+            getChildFragmentManager(),
+            subpageIssueGroup!!,
+            subpageIssues,
+            uiData.resolvedIssues,
+            requireActivity().getTaskId()
+        )
     }
 
     private fun updateSafetyCenterEntries(entryGroup: SafetyCenterEntryGroup) {
@@ -128,17 +93,34 @@ class SafetyCenterSubpageFragment(private val sourceGroupId: String) : Preferenc
         subpageEntryGroup?.removeAll()
         for (entry in entryGroup.entries) {
             subpageEntryGroup?.addPreference(
-                SafetySubpageEntryPreference(requireContext(), getTaskIdForEntry(entry.id), entry))
+                SafetySubpageEntryPreference(
+                    requireContext(),
+                    PendingIntentSender.getTaskIdForEntry(
+                        entry.id,
+                        sameTaskSourceIds,
+                        requireActivity()
+                    ),
+                    entry
+                )
+            )
         }
-    }
-
-    private fun getTaskIdForEntry(entryId: String): Int? {
-        val sourceId: String = SafetyCenterIds.entryIdFromString(entryId).getSafetySourceId()
-        return if (sameTaskSourceIds.contains(sourceId)) requireActivity().getTaskId() else null
     }
 
     companion object {
         private val TAG: String = SafetyCenterSubpageFragment::class.java.simpleName
+        private const val ISSUE_GROUP_KEY: String = "subpage_issue_group"
         private const val ENTRY_GROUP_KEY: String = "subpage_entry_group"
+        private const val SOURCE_GROUP_ID_KEY: String = "source_group_id"
+
+        /** Creates an instance of SafetyCenterSubpageFragment with the arguments set */
+        @JvmStatic
+        fun newInstance(groupId: String): SafetyCenterSubpageFragment {
+            val args = Bundle()
+            args.putString(SOURCE_GROUP_ID_KEY, groupId)
+
+            val subpageFragment = SafetyCenterSubpageFragment()
+            subpageFragment.setArguments(args)
+            return subpageFragment
+        }
     }
 }

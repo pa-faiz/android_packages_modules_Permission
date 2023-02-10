@@ -18,29 +18,40 @@ package android.safetycenter.cts.testing
 
 import android.app.Notification
 import android.service.notification.StatusBarNotification
-import com.google.common.truth.Truth.assertThat
 
 /** The characteristic properties of a notification. */
-data class NotificationCharacteristics(val title: String, val text: String) {
+data class NotificationCharacteristics(
+    val title: String?,
+    val text: String?,
+    val actions: List<CharSequence> = emptyList()
+) {
     companion object {
-        fun assertNotificationMatches(
-            statusBarNotification: StatusBarNotification,
-            expected: NotificationCharacteristics
-        ) {
-            statusBarNotification.notification?.apply {
-                assertThat(extras.getString(Notification.EXTRA_TITLE)).isEqualTo(expected.title)
-                assertThat(extras.getString(Notification.EXTRA_TEXT)).isEqualTo(expected.text)
+        /** Gets the [NotificationCharacteristics] from an actual [StatusBarNotification]. */
+        private fun StatusBarNotification.toCharacteristics(): NotificationCharacteristics? {
+            return this.notification?.run {
+                NotificationCharacteristics(
+                    title = extras.getString(Notification.EXTRA_TITLE),
+                    text = extras.getString(Notification.EXTRA_TEXT),
+                    actions = actions.orEmpty().map { it.title }
+                )
             }
         }
 
-        fun assertNotificationsMatch(
+        private fun isMatch(
+            statusBarNotification: StatusBarNotification,
+            characteristics: NotificationCharacteristics
+        ): Boolean {
+            return statusBarNotification.toCharacteristics() == characteristics
+        }
+
+        fun areMatching(
             statusBarNotifications: List<StatusBarNotification>,
-            vararg expected: NotificationCharacteristics
-        ) {
-            assertThat(statusBarNotifications).hasSize(expected.size)
-            statusBarNotifications.zip(expected).forEach { (sbn, characteristics) ->
-                assertNotificationMatches(sbn, characteristics)
+            characteristics: List<NotificationCharacteristics>
+        ): Boolean {
+            if (statusBarNotifications.size != characteristics.size) {
+                return false
             }
+            return statusBarNotifications.zip(characteristics).all { isMatch(it.first, it.second) }
         }
     }
 }
