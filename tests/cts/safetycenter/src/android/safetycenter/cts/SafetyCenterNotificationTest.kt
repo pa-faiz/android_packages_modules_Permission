@@ -18,6 +18,7 @@ package android.safetycenter.cts
 
 import android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE
 import android.app.Notification
+import android.app.NotificationManager
 import android.content.Context
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.safetycenter.SafetyCenterData
@@ -25,26 +26,28 @@ import android.safetycenter.SafetyCenterIssue
 import android.safetycenter.SafetyCenterManager
 import android.safetycenter.SafetyCenterStatus
 import android.safetycenter.SafetySourceIssue
-import android.safetycenter.cts.testing.Coroutines.TIMEOUT_SHORT
-import android.safetycenter.cts.testing.CtsNotificationListener
 import android.safetycenter.cts.testing.NotificationCharacteristics
-import android.safetycenter.cts.testing.SafetyCenterApisWithShellPermissions.clearAllSafetySourceDataForTestsWithPermission
-import android.safetycenter.cts.testing.SafetyCenterApisWithShellPermissions.dismissSafetyCenterIssueWithPermission
-import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_CONFIG
-import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.SINGLE_SOURCE_ID
-import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.dynamicSafetySourceBuilder
-import android.safetycenter.cts.testing.SafetyCenterCtsConfigs.singleSourceConfig
-import android.safetycenter.cts.testing.SafetyCenterCtsData
-import android.safetycenter.cts.testing.SafetyCenterCtsHelper
-import android.safetycenter.cts.testing.SafetyCenterFlags
-import android.safetycenter.cts.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
-import android.safetycenter.cts.testing.SafetySourceCtsData
-import android.safetycenter.cts.testing.SafetySourceIntentHandler.Request
-import android.safetycenter.cts.testing.SafetySourceIntentHandler.Response
-import android.safetycenter.cts.testing.SafetySourceReceiver
+import android.safetycenter.cts.testing.TestNotificationListener
+import android.safetycenter.cts.testing.UiTestHelper.waitSourceIssueDisplayed
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
+import com.android.safetycenter.testing.Coroutines.TIMEOUT_SHORT
+import com.android.safetycenter.testing.SafetyCenterActivityLauncher.executeBlockAndExit
+import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.clearAllSafetySourceDataForTestsWithPermission
+import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.dismissSafetyCenterIssueWithPermission
+import com.android.safetycenter.testing.SafetyCenterFlags
+import com.android.safetycenter.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
+import com.android.safetycenter.testing.SafetyCenterTestConfigs
+import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SINGLE_SOURCE_ID
+import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE_ID_1
+import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE_ID_2
+import com.android.safetycenter.testing.SafetyCenterTestData
+import com.android.safetycenter.testing.SafetyCenterTestHelper
+import com.android.safetycenter.testing.SafetySourceIntentHandler.Request
+import com.android.safetycenter.testing.SafetySourceIntentHandler.Response
+import com.android.safetycenter.testing.SafetySourceReceiver
+import com.android.safetycenter.testing.SafetySourceTestData
 import com.android.safetycenter.testing.ShellPermissions.callWithShellPermissionIdentity
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
@@ -59,8 +62,9 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SafetyCenterNotificationTest {
     private val context: Context = getApplicationContext()
-    private val safetyCenterCtsHelper = SafetyCenterCtsHelper(context)
-    private val safetySourceCtsData = SafetySourceCtsData(context)
+    private val safetyCenterTestHelper = SafetyCenterTestHelper(context)
+    private val safetySourceTestData = SafetySourceTestData(context)
+    private val safetyCenterTestConfigs = SafetyCenterTestConfigs(context)
     private val safetyCenterManager =
         requireNotNull(context.getSystemService(SafetyCenterManager::class.java)) {
             "Could not get system service"
@@ -80,11 +84,11 @@ class SafetyCenterNotificationTest {
         if (!shouldRunTests) {
             return
         }
-        safetyCenterCtsHelper.setup()
-        CtsNotificationListener.setup()
+        safetyCenterTestHelper.setup()
+        TestNotificationListener.setup()
         SafetyCenterFlags.notificationsEnabled = true
         SafetyCenterFlags.notificationsAllowedSources = setOf(SINGLE_SOURCE_ID)
-        safetyCenterCtsHelper.setConfig(SINGLE_SOURCE_CONFIG)
+        safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
     }
 
     @After
@@ -94,68 +98,68 @@ class SafetyCenterNotificationTest {
         }
         // It is important to reset the notification listener last because it waits/ensures that
         // all notifications have been removed before returning.
-        safetyCenterCtsHelper.reset()
-        CtsNotificationListener.reset()
+        safetyCenterTestHelper.reset()
+        TestNotificationListener.reset()
     }
 
     @Test
     fun setSafetySourceData_withNoIssue_noNotification() {
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, safetySourceCtsData.information)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, safetySourceTestData.information)
 
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
     }
 
     @Test
     fun setSafetySourceData_withoutNotificationsAllowedSource_noNotification() {
         SafetyCenterFlags.notificationsAllowedSources = emptySet()
 
-        safetyCenterCtsHelper.setData(
+        safetyCenterTestHelper.setData(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.recommendationWithAccountIssue
+            safetySourceTestData.recommendationWithAccountIssue
         )
 
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
     }
 
     @Test
     fun setSafetySourceData_withFlagDisabled_noNotification() {
         SafetyCenterFlags.notificationsEnabled = false
 
-        safetyCenterCtsHelper.setData(
+        safetyCenterTestHelper.setData(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.recommendationWithAccountIssue
+            safetySourceTestData.recommendationWithAccountIssue
         )
 
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
     }
 
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
     fun setSafetySourceData_withNotificationBehaviorNever_noNotification() {
         val data =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData
+                    safetySourceTestData
                         .defaultRecommendationIssueBuilder()
                         .setNotificationBehavior(SafetySourceIssue.NOTIFICATION_BEHAVIOR_NEVER)
                         .build()
                 )
                 .build()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
     }
 
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
     fun setSafetySourceData_withNotificationBehaviorImmediately_sendsNotification() {
         val data =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData
+                    safetySourceTestData
                         .defaultRecommendationIssueBuilder("Notify immediately", "This is urgent!")
                         .setNotificationBehavior(
                             SafetySourceIssue.NOTIFICATION_BEHAVIOR_IMMEDIATELY
@@ -164,9 +168,9 @@ class SafetyCenterNotificationTest {
                 )
                 .build()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForSingleNotificationMatching(
+        TestNotificationListener.waitForSingleNotificationMatching(
             NotificationCharacteristics(
                 title = "Notify immediately",
                 text = "This is urgent!",
@@ -178,11 +182,11 @@ class SafetyCenterNotificationTest {
     @Test
     fun setSafetySourceData_withNotificationsAllowedForSourceByFlag_sendsNotification() {
         SafetyCenterFlags.notificationsAllowedSources = setOf(SINGLE_SOURCE_ID)
-        val data = safetySourceCtsData.recommendationWithAccountIssue
+        val data = safetySourceTestData.recommendationWithAccountIssue
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForSingleNotificationMatching(
+        TestNotificationListener.waitForSingleNotificationMatching(
             NotificationCharacteristics(
                 title = "Recommendation issue title",
                 text = "Recommendation issue summary",
@@ -193,14 +197,14 @@ class SafetyCenterNotificationTest {
 
     @Test
     fun setSafetySourceData_issueWithTwoActions_notificationWithTwoActions() {
-        val intent1 = safetySourceCtsData.testActivityRedirectPendingIntent(identifier = "1")
-        val intent2 = safetySourceCtsData.testActivityRedirectPendingIntent(identifier = "2")
+        val intent1 = safetySourceTestData.testActivityRedirectPendingIntent(identifier = "1")
+        val intent2 = safetySourceTestData.testActivityRedirectPendingIntent(identifier = "2")
 
         val data =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData
+                    safetySourceTestData
                         .defaultRecommendationIssueBuilder()
                         .clearActions()
                         .addAction(
@@ -213,9 +217,9 @@ class SafetyCenterNotificationTest {
                 )
                 .build()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForSingleNotificationMatching(
+        TestNotificationListener.waitForSingleNotificationMatching(
             NotificationCharacteristics(
                 title = "Recommendation issue title",
                 text = "Recommendation issue summary",
@@ -227,25 +231,26 @@ class SafetyCenterNotificationTest {
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
     fun setSafetySourceData_withNotificationsAllowedForSourceByConfig_sendsNotification() {
-        safetyCenterCtsHelper.setConfig(
-            singleSourceConfig(
-                dynamicSafetySourceBuilder("MyNotifiableSource")
+        safetyCenterTestHelper.setConfig(
+            safetyCenterTestConfigs.singleSourceConfig(
+                safetyCenterTestConfigs
+                    .dynamicSafetySourceBuilder("MyNotifiableSource")
                     .setNotificationsAllowed(true)
                     .build()
             )
         )
-        val data = safetySourceCtsData.recommendationWithAccountIssue
+        val data = safetySourceTestData.recommendationWithAccountIssue
 
-        safetyCenterCtsHelper.setData("MyNotifiableSource", data)
+        safetyCenterTestHelper.setData("MyNotifiableSource", data)
 
-        CtsNotificationListener.waitForSingleNotification()
+        TestNotificationListener.waitForSingleNotification()
     }
 
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
     fun setSafetySourceData_withCustomNotification_usesCustomValues() {
-        val intent1 = safetySourceCtsData.testActivityRedirectPendingIntent(identifier = "1")
-        val intent2 = safetySourceCtsData.testActivityRedirectPendingIntent(identifier = "2")
+        val intent1 = safetySourceTestData.testActivityRedirectPendingIntent(identifier = "1")
+        val intent2 = safetySourceTestData.testActivityRedirectPendingIntent(identifier = "2")
 
         val notification =
             SafetySourceIssue.Notification.Builder("Custom title", "Custom text")
@@ -253,21 +258,21 @@ class SafetyCenterNotificationTest {
                     SafetySourceIssue.Action.Builder("action1", "Custom action 1", intent1).build()
                 )
                 .addAction(
-                    SafetySourceIssue.Action.Builder("action2", "Custom action 2", intent1).build()
+                    SafetySourceIssue.Action.Builder("action2", "Custom action 2", intent2).build()
                 )
                 .build()
 
         val data =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData
+                    safetySourceTestData
                         .defaultRecommendationIssueBuilder("Default title", "Default text")
                         .addAction(
                             SafetySourceIssue.Action.Builder(
                                     "default_action",
                                     "Default action",
-                                    safetySourceCtsData.testActivityRedirectPendingIntent
+                                    safetySourceTestData.testActivityRedirectPendingIntent
                                 )
                                 .build()
                         )
@@ -276,9 +281,9 @@ class SafetyCenterNotificationTest {
                 )
                 .build()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForSingleNotificationMatching(
+        TestNotificationListener.waitForSingleNotificationMatching(
             NotificationCharacteristics(
                 title = "Custom title",
                 text = "Custom text",
@@ -296,16 +301,16 @@ class SafetyCenterNotificationTest {
                 .build()
 
         val data =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData
+                    safetySourceTestData
                         .defaultRecommendationIssueBuilder("Default title", "Default text")
                         .addAction(
                             SafetySourceIssue.Action.Builder(
                                     "default_action",
                                     "Default action",
-                                    safetySourceCtsData.testActivityRedirectPendingIntent
+                                    safetySourceTestData.testActivityRedirectPendingIntent
                                 )
                                 .build()
                         )
@@ -314,9 +319,9 @@ class SafetyCenterNotificationTest {
                 )
                 .build()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForSingleNotificationMatching(
+        TestNotificationListener.waitForSingleNotificationMatching(
             NotificationCharacteristics(
                 title = "Custom title",
                 text = "Custom text",
@@ -328,17 +333,19 @@ class SafetyCenterNotificationTest {
     @Test
     fun setSafetySourceData_twiceWithSameIssueId_updatesNotification() {
         val data1 =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData.defaultRecommendationIssueBuilder("Initial", "Blah").build()
+                    safetySourceTestData
+                        .defaultRecommendationIssueBuilder("Initial", "Blah")
+                        .build()
                 )
                 .build()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data1)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data1)
 
         val initialNotification =
-            CtsNotificationListener.waitForSingleNotificationMatching(
+            TestNotificationListener.waitForSingleNotificationMatching(
                 NotificationCharacteristics(
                     title = "Initial",
                     text = "Blah",
@@ -347,16 +354,16 @@ class SafetyCenterNotificationTest {
             )
 
         val data2 =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData
+                    safetySourceTestData
                         .defaultRecommendationIssueBuilder("Revised", "Different")
                         .addAction(
                             SafetySourceIssue.Action.Builder(
                                     "new_action",
                                     "New action",
-                                    safetySourceCtsData.testActivityRedirectPendingIntent(
+                                    safetySourceTestData.testActivityRedirectPendingIntent(
                                         identifier = "new_action"
                                     )
                                 )
@@ -366,44 +373,45 @@ class SafetyCenterNotificationTest {
                 )
                 .build()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data2)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data2)
 
         val revisedNotification =
-            CtsNotificationListener.waitForSingleNotificationMatching(
+            TestNotificationListener.waitForSingleNotificationMatching(
                 NotificationCharacteristics(
                     title = "Revised",
                     text = "Different",
                     actions = listOf("See issue", "New action")
                 )
             )
-        assertThat(initialNotification.key).isEqualTo(revisedNotification.key)
+        assertThat(initialNotification.statusBarNotification.key)
+            .isEqualTo(revisedNotification.statusBarNotification.key)
     }
 
     @Test
     fun setSafetySourceData_twiceWithExactSameIssue_doNotNotifyTwice() {
-        val data = safetySourceCtsData.recommendationWithAccountIssue
+        val data = safetySourceTestData.recommendationWithAccountIssue
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForSingleNotification()
+        TestNotificationListener.waitForSingleNotification()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForZeroNotificationEvents()
+        TestNotificationListener.waitForZeroNotificationEvents()
     }
 
     @Test
     fun setSafetySourceData_twiceRemovingAnIssue_cancelsNotification() {
-        val data1 = safetySourceCtsData.recommendationWithAccountIssue
-        val data2 = safetySourceCtsData.information
+        val data1 = safetySourceTestData.recommendationWithAccountIssue
+        val data2 = safetySourceTestData.information
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data1)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data1)
 
-        CtsNotificationListener.waitForSingleNotification()
+        TestNotificationListener.waitForSingleNotification()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data2)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data2)
 
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
     }
 
     @Test
@@ -413,26 +421,28 @@ class SafetyCenterNotificationTest {
         // re-posted/updated for unchanged issues but that functionality is different and tested
         // separately.
         val data1 =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData.defaultRecommendationIssueBuilder("Initial", "Blah").build()
+                    safetySourceTestData
+                        .defaultRecommendationIssueBuilder("Initial", "Blah")
+                        .build()
                 )
                 .build()
         val data2 =
-            safetySourceCtsData
+            safetySourceTestData
                 .defaultRecommendationDataBuilder()
                 .addIssue(
-                    safetySourceCtsData
+                    safetySourceTestData
                         .defaultRecommendationIssueBuilder("Revised", "Different")
                         .build()
                 )
                 .build()
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data1)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data1)
 
-        val notification =
-            CtsNotificationListener.waitForSingleNotificationMatching(
+        val notificationWithChannel =
+            TestNotificationListener.waitForSingleNotificationMatching(
                 NotificationCharacteristics(
                     title = "Initial",
                     text = "Blah",
@@ -440,45 +450,96 @@ class SafetyCenterNotificationTest {
                 )
             )
 
-        CtsNotificationListener.cancelAndWait(notification.key)
+        TestNotificationListener.cancelAndWait(notificationWithChannel.statusBarNotification.key)
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data2)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data2)
 
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
+    }
+
+    @Test
+    fun setSafetySourceData_withInformationIssue_lowImportanceBlockableNotification() {
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, safetySourceTestData.informationWithIssue)
+
+        TestNotificationListener.waitForNotificationsMatching(
+            NotificationCharacteristics(
+                "Information issue title",
+                "Information issue summary",
+                actions = listOf("Review"),
+                importance = NotificationManager.IMPORTANCE_LOW,
+                blockable = true
+            )
+        )
+    }
+
+    @Test
+    fun setSafetySourceData_withRecommendationIssue_defaultImportanceUnblockableNotification() {
+        safetyCenterTestHelper.setData(
+            SINGLE_SOURCE_ID,
+            safetySourceTestData.recommendationWithAccountIssue
+        )
+
+        TestNotificationListener.waitForNotificationsMatching(
+            NotificationCharacteristics(
+                "Recommendation issue title",
+                "Recommendation issue summary",
+                importance = NotificationManager.IMPORTANCE_DEFAULT,
+                actions = listOf("See issue"),
+                blockable = false
+            )
+        )
+    }
+
+    @Test
+    fun setSafetySourceData_withCriticalIssue_highImportanceUnblockableNotification() {
+        safetyCenterTestHelper.setData(
+            SINGLE_SOURCE_ID,
+            safetySourceTestData.criticalWithResolvingDeviceIssue
+        )
+
+        TestNotificationListener.waitForNotificationsMatching(
+            NotificationCharacteristics(
+                "Critical issue title",
+                "Critical issue summary",
+                actions = listOf("Solve issue"),
+                importance = NotificationManager.IMPORTANCE_HIGH,
+                blockable = false
+            )
+        )
     }
 
     @Test
     fun dismissSafetyCenterIssue_dismissesNotification() {
-        safetyCenterCtsHelper.setData(
+        safetyCenterTestHelper.setData(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.recommendationWithAccountIssue
+            safetySourceTestData.recommendationWithAccountIssue
         )
 
-        CtsNotificationListener.waitForSingleNotification()
+        TestNotificationListener.waitForSingleNotification()
 
         safetyCenterManager.dismissSafetyCenterIssueWithPermission(
-            SafetyCenterCtsData.issueId(
+            SafetyCenterTestData.issueId(
                 SINGLE_SOURCE_ID,
-                SafetySourceCtsData.RECOMMENDATION_ISSUE_ID
+                SafetySourceTestData.RECOMMENDATION_ISSUE_ID
             )
         )
 
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
     }
 
     @Test
     fun dismissingNotification_doesNotUpdateSafetyCenterData() {
-        safetyCenterCtsHelper.setData(
+        safetyCenterTestHelper.setData(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.criticalWithResolvingGeneralIssue
+            safetySourceTestData.criticalWithResolvingGeneralIssue
         )
         // Add the listener after setting the initial data so that we don't need to consume/receive
         // an update for that
-        val listener = safetyCenterCtsHelper.addListener()
+        val listener = safetyCenterTestHelper.addListener()
 
-        val notification = CtsNotificationListener.waitForSingleNotification()
+        val notificationWithChannel = TestNotificationListener.waitForSingleNotification()
 
-        CtsNotificationListener.cancelAndWait(notification.key)
+        TestNotificationListener.cancelAndWait(notificationWithChannel.statusBarNotification.key)
 
         assertFailsWith(TimeoutCancellationException::class) {
             listener.receiveSafetyCenterData(TIMEOUT_SHORT)
@@ -487,33 +548,34 @@ class SafetyCenterNotificationTest {
 
     @Test
     fun clearSafetySourceData_cancelsAllNotifications() {
-        val data = safetySourceCtsData.recommendationWithAccountIssue
+        val data = safetySourceTestData.recommendationWithAccountIssue
 
-        safetyCenterCtsHelper.setData(SINGLE_SOURCE_ID, data)
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
 
-        CtsNotificationListener.waitForSingleNotification()
+        TestNotificationListener.waitForSingleNotification()
 
         safetyCenterManager.clearAllSafetySourceDataForTestsWithPermission()
 
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
     }
 
     @Test
     fun sendActionPendingIntent_successful_updatesListenerRemovesNotification() {
         // Here we cause a notification with an action to be posted and prepare the fake receiver
         // to resolve that action successfully.
-        safetyCenterCtsHelper.setData(
+        safetyCenterTestHelper.setData(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.criticalWithResolvingGeneralIssue
+            safetySourceTestData.criticalWithResolvingGeneralIssue
         )
-        val notification = CtsNotificationListener.waitForSingleNotification()
-        val action = notification.notification.actions.firstOrNull()
+        val notificationWithChannel = TestNotificationListener.waitForSingleNotification()
+        val action =
+            notificationWithChannel.statusBarNotification.notification.actions.firstOrNull()
         checkNotNull(action) { "Notification action unexpectedly null" }
         SafetySourceReceiver.setResponse(
             Request.ResolveAction(SINGLE_SOURCE_ID),
-            Response.SetData(safetySourceCtsData.information)
+            Response.SetData(safetySourceTestData.information)
         )
-        val listener = safetyCenterCtsHelper.addListener()
+        val listener = safetyCenterTestHelper.addListener()
 
         sendActionPendingIntentAndWaitWithPermission(action)
 
@@ -523,22 +585,23 @@ class SafetyCenterNotificationTest {
         assertThat(listenerData2.issues).isEmpty()
         assertThat(listenerData2.status.severityLevel)
             .isEqualTo(SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_OK)
-        CtsNotificationListener.waitForZeroNotifications()
+        TestNotificationListener.waitForZeroNotifications()
     }
 
     @Test
     fun sendActionPendingIntent_error_updatesListenerDoesNotRemoveNotification() {
         // Here we cause a notification with an action to be posted and prepare the fake receiver
         // to resolve that action successfully.
-        safetyCenterCtsHelper.setData(
+        safetyCenterTestHelper.setData(
             SINGLE_SOURCE_ID,
-            safetySourceCtsData.criticalWithResolvingGeneralIssue
+            safetySourceTestData.criticalWithResolvingGeneralIssue
         )
-        val notification = CtsNotificationListener.waitForSingleNotification()
-        val action = notification.notification.actions.firstOrNull()
+        val notificationWithChannel = TestNotificationListener.waitForSingleNotification()
+        val action =
+            notificationWithChannel.statusBarNotification.notification.actions.firstOrNull()
         checkNotNull(action) { "Notification action unexpectedly null" }
         SafetySourceReceiver.setResponse(Request.ResolveAction(SINGLE_SOURCE_ID), Response.Error)
-        val listener = safetyCenterCtsHelper.addListener()
+        val listener = safetyCenterTestHelper.addListener()
 
         sendActionPendingIntentAndWaitWithPermission(action)
 
@@ -549,7 +612,46 @@ class SafetyCenterNotificationTest {
         assertThat(listenerData2.inFlightActions).isEmpty()
         assertThat(listenerData2.status.severityLevel)
             .isEqualTo(SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_CRITICAL_WARNING)
-        CtsNotificationListener.waitForSingleNotification()
+        TestNotificationListener.waitForSingleNotification()
+    }
+
+    @Test
+    fun sendContentPendingIntent_singleIssue_opensSafetyCenterWithIssueVisible() {
+        safetyCenterTestHelper.setData(
+            SINGLE_SOURCE_ID,
+            safetySourceTestData.recommendationWithDeviceIssue
+        )
+        val notificationWithChannel = TestNotificationListener.waitForSingleNotification()
+        val contentIntent = notificationWithChannel.statusBarNotification.notification.contentIntent
+
+        executeBlockAndExit(
+            launchActivity = { contentIntent.send() },
+            block = { waitSourceIssueDisplayed(safetySourceTestData.recommendationDeviceIssue) }
+        )
+    }
+
+    @Test
+    fun sendContentPendingIntent_anotherHigherSeverityIssue_opensSafetyCenterWithIssueVisible() {
+        safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.multipleSourcesConfig)
+        SafetyCenterFlags.notificationsAllowedSources = setOf(SOURCE_ID_1)
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_1,
+            safetySourceTestData.recommendationWithDeviceIssue
+        )
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_2,
+            safetySourceTestData.criticalWithResolvingGeneralIssue
+        )
+        val notificationWithChannel = TestNotificationListener.waitForSingleNotification()
+        val contentIntent = notificationWithChannel.statusBarNotification.notification.contentIntent
+
+        executeBlockAndExit(
+            launchActivity = { contentIntent.send() },
+            block = {
+                waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
+                waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
+            }
+        )
     }
 
     companion object {

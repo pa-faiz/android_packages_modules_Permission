@@ -16,25 +16,26 @@
 
 package android.safetycenter.cts.testing
 
+import android.app.NotificationChannel
 import android.content.ComponentName
 import android.os.ConditionVariable
-import android.safetycenter.cts.testing.Coroutines.TIMEOUT_LONG
-import android.safetycenter.cts.testing.Coroutines.TIMEOUT_SHORT
-import android.safetycenter.cts.testing.Coroutines.runBlockingWithTimeout
-import android.safetycenter.cts.testing.Coroutines.runBlockingWithTimeoutOrNull
-import android.safetycenter.cts.testing.Coroutines.waitForWithTimeout
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.android.compatibility.common.util.SystemUtil
+import com.android.safetycenter.testing.Coroutines.TIMEOUT_LONG
+import com.android.safetycenter.testing.Coroutines.TIMEOUT_SHORT
+import com.android.safetycenter.testing.Coroutines.runBlockingWithTimeout
+import com.android.safetycenter.testing.Coroutines.runBlockingWithTimeoutOrNull
+import com.android.safetycenter.testing.Coroutines.waitForWithTimeout
 import com.google.common.truth.Truth.assertThat
 import java.time.Duration
 import java.util.concurrent.TimeoutException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 
-/** Used in CTS tests to check whether expected notifications are present in the status bar. */
-class CtsNotificationListener : NotificationListenerService() {
+/** Used in tests to check whether expected notifications are present in the status bar. */
+class TestNotificationListener : NotificationListenerService() {
 
     private sealed class NotificationEvent(val statusBarNotification: StatusBarNotification)
 
@@ -81,15 +82,15 @@ class CtsNotificationListener : NotificationListenerService() {
     }
 
     companion object {
-        private const val TAG = "CtsNotificationListener"
+        private const val TAG = "TestNotificationListene"
 
         private val id: String =
-            "android.safetycenter.cts/" + CtsNotificationListener::class.java.name
+            "android.safetycenter.cts/" + TestNotificationListener::class.java.name
         private val componentName =
-            ComponentName("android.safetycenter.cts", CtsNotificationListener::class.java.name)
+            ComponentName("android.safetycenter.cts", TestNotificationListener::class.java.name)
 
         private val connected = ConditionVariable(false)
-        private var instance: CtsNotificationListener? = null
+        private var instance: TestNotificationListener? = null
 
         @Volatile
         private var safetyCenterNotificationEvents =
@@ -107,7 +108,9 @@ class CtsNotificationListener : NotificationListenerService() {
          * Blocks until there is exactly one Safety Center notification and then return it, or throw
          * an [AssertionError] if that doesn't happen within [timeout].
          */
-        fun waitForSingleNotification(timeout: Duration = TIMEOUT_LONG): StatusBarNotification {
+        fun waitForSingleNotification(
+            timeout: Duration = TIMEOUT_LONG
+        ): StatusBarNotificationWithChannel {
             return waitForNotificationCount(1, timeout).first()
         }
 
@@ -118,7 +121,7 @@ class CtsNotificationListener : NotificationListenerService() {
         private fun waitForNotificationCount(
             count: Int,
             timeout: Duration = TIMEOUT_LONG
-        ): List<StatusBarNotification> {
+        ): List<StatusBarNotificationWithChannel> {
             return waitForNotificationsToSatisfy(timeout, description = "$count notifications") {
                 it.size == count
             }
@@ -132,7 +135,7 @@ class CtsNotificationListener : NotificationListenerService() {
         fun waitForSingleNotificationMatching(
             characteristics: NotificationCharacteristics,
             timeout: Duration = TIMEOUT_LONG
-        ): StatusBarNotification {
+        ): StatusBarNotificationWithChannel {
             return waitForNotificationsMatching(characteristics, timeout = timeout).first()
         }
 
@@ -141,10 +144,10 @@ class CtsNotificationListener : NotificationListenerService() {
          * and then return them, or throw an [AssertionError] if that doesn't happen within
          * [timeout].
          */
-        private fun waitForNotificationsMatching(
+        fun waitForNotificationsMatching(
             vararg characteristics: NotificationCharacteristics,
             timeout: Duration = TIMEOUT_LONG
-        ): List<StatusBarNotification> {
+        ): List<StatusBarNotificationWithChannel> {
             val charsList = characteristics.toList()
             return waitForNotificationsToSatisfy(
                 timeout,
@@ -168,9 +171,9 @@ class CtsNotificationListener : NotificationListenerService() {
             timeout: Duration = TIMEOUT_LONG,
             forAtLeast: Duration = TIMEOUT_SHORT,
             description: String,
-            predicate: (List<StatusBarNotification>) -> Boolean
-        ): List<StatusBarNotification> {
-            fun formatError(notifs: List<StatusBarNotification>): String {
+            predicate: (List<StatusBarNotificationWithChannel>) -> Boolean
+        ): List<StatusBarNotificationWithChannel> {
+            fun formatError(notifs: List<StatusBarNotificationWithChannel>): String {
                 return "Expected: $description, but the actual notifications were: $notifs"
             }
 
@@ -200,8 +203,8 @@ class CtsNotificationListener : NotificationListenerService() {
         }
 
         private suspend fun waitForNotificationsToSatisfyAsync(
-            predicate: (List<StatusBarNotification>) -> Boolean
-        ): List<StatusBarNotification> {
+            predicate: (List<StatusBarNotificationWithChannel>) -> Boolean
+        ): List<StatusBarNotificationWithChannel> {
             var currentNotifications = getSafetyCenterNotifications()
             while (!predicate(currentNotifications)) {
                 val event = safetyCenterNotificationEvents.receive()
@@ -211,8 +214,20 @@ class CtsNotificationListener : NotificationListenerService() {
             return currentNotifications
         }
 
-        private fun getSafetyCenterNotifications(): List<StatusBarNotification> =
-            instance!!.activeNotifications.filter { it.isSafetyCenterNotification() }
+        private fun getSafetyCenterNotifications(): List<StatusBarNotificationWithChannel> {
+            return with(instance!!) {
+                fun getChannel(key: String): NotificationChannel {
+                    return Ranking().let { result ->
+                        // This API uses a result parameter:
+                        currentRanking.getRanking(key, result)
+                        result.channel
+                    }
+                }
+                activeNotifications
+                    .filter { it.isSafetyCenterNotification() }
+                    .map { StatusBarNotificationWithChannel(it, getChannel(it.key)) }
+            }
+        }
 
         /**
          * Cancels a specific notification and then waits for it to be removed by the notification
@@ -224,7 +239,7 @@ class CtsNotificationListener : NotificationListenerService() {
             waitForNotificationsToSatisfy(
                 timeout,
                 description = "no notification with the key $key"
-            ) { notifications -> notifications.none { it.key == key } }
+            ) { notifications -> notifications.none { it.statusBarNotification.key == key } }
 
             waitForIssueCacheToContainAnyDismissedNotification()
         }
@@ -265,12 +280,12 @@ class CtsNotificationListener : NotificationListenerService() {
             }
         }
 
-        /** Prepare the [CtsNotificationListener] for a notification test */
+        /** Prepare the [TestNotificationListener] for a notification test */
         fun setup() {
             toggleListenerAccess(true)
         }
 
-        /** Clean up the [CtsNotificationListener] after executing a notification test. */
+        /** Clean up the [TestNotificationListener] after executing a notification test. */
         fun reset() {
             waitForNotificationsToSatisfy(
                 forAtLeast = Duration.ZERO,
@@ -281,8 +296,7 @@ class CtsNotificationListener : NotificationListenerService() {
             safetyCenterNotificationEvents = Channel(capacity = Channel.UNLIMITED)
         }
 
-        // TODO(b/264369469): Tests should account for multiple SC notification channels
         private fun StatusBarNotification.isSafetyCenterNotification(): Boolean =
-            packageName == "android" && notification.channelId == "safety_center"
+            packageName == "android" && notification.channelId.startsWith("safety_center")
     }
 }

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package android.safetycenter.cts.testing
+package com.android.safetycenter.testing
 
 import android.safetycenter.SafetyCenterData
 import android.safetycenter.SafetyCenterErrorDetails
 import android.safetycenter.SafetyCenterManager.OnSafetyCenterDataChangedListener
-import android.safetycenter.cts.testing.Coroutines.TIMEOUT_LONG
-import android.safetycenter.cts.testing.Coroutines.runBlockingWithTimeout
+import com.android.safetycenter.testing.Coroutines.TIMEOUT_LONG
+import com.android.safetycenter.testing.Coroutines.runBlockingWithTimeout
 import java.time.Duration
 import kotlinx.coroutines.channels.Channel
 
@@ -28,7 +28,7 @@ import kotlinx.coroutines.channels.Channel
  * An [OnSafetyCenterDataChangedListener] that facilitates receiving updates from SafetyCenter in
  * tests.
  */
-class SafetyCenterCtsListener : OnSafetyCenterDataChangedListener {
+class SafetyCenterTestListener : OnSafetyCenterDataChangedListener {
     private val dataChannel = Channel<SafetyCenterData>(Channel.UNLIMITED)
     private val errorChannel = Channel<SafetyCenterErrorDetails>(Channel.UNLIMITED)
 
@@ -50,7 +50,7 @@ class SafetyCenterCtsListener : OnSafetyCenterDataChangedListener {
     fun receiveSafetyCenterErrorDetails(timeout: Duration = TIMEOUT_LONG) =
         runBlockingWithTimeout(timeout) { errorChannel.receive() }
 
-    /** Cancels any pending update on this [SafetyCenterCtsListener]. */
+    /** Cancels any pending update on this [SafetyCenterTestListener]. */
     fun cancel() {
         dataChannel.cancel()
         errorChannel.cancel()

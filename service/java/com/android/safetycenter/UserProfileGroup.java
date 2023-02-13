@@ -42,9 +42,11 @@ import java.util.Objects;
 /**
  * A class that represent all the enabled profiles (profile parent and managed profile(s))
  * associated with a user id.
+ *
+ * @hide
  */
 @RequiresApi(TIRAMISU)
-final class UserProfileGroup {
+public final class UserProfileGroup {
 
     @UserIdInt private final int mProfileParentUserId;
     @NonNull private final int[] mManagedProfilesUserIds;
@@ -60,7 +62,7 @@ final class UserProfileGroup {
     }
 
     /** Returns all the alive {@link UserProfileGroup}s. */
-    static List<UserProfileGroup> getAllUserProfileGroups(@NonNull Context context) {
+    public static List<UserProfileGroup> getAllUserProfileGroups(@NonNull Context context) {
         List<UserProfileGroup> userProfileGroups = new ArrayList<>();
         List<UserHandle> userHandles = UserUtils.getUserHandles(context);
         for (int i = 0; i < userHandles.size(); i++) {
@@ -173,7 +175,7 @@ final class UserProfileGroup {
     }
 
     /** Returns the profile parent user id of the {@link UserProfileGroup}. */
-    int getProfileParentUserId() {
+    public int getProfileParentUserId() {
         return mProfileParentUserId;
     }
 
@@ -183,12 +185,12 @@ final class UserProfileGroup {
     }
 
     /** Returns the running managed profile user ids of the {@link UserProfileGroup}. */
-    int[] getManagedRunningProfilesUserIds() {
+    public int[] getManagedRunningProfilesUserIds() {
         return mManagedRunningProfilesUserIds;
     }
 
     /** Returns whether the {@link UserProfileGroup} contains the given {@code userId}. */
-    boolean contains(@UserIdInt int userId) {
+    public boolean contains(@UserIdInt int userId) {
         if (userId == mProfileParentUserId) {
             return true;
         }

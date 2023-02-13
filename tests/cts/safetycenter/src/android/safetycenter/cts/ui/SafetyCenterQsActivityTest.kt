@@ -23,8 +23,6 @@ import android.hardware.SensorPrivacyManager
 import android.hardware.SensorPrivacyManager.Sensors.CAMERA
 import android.hardware.SensorPrivacyManager.Sensors.MICROPHONE
 import android.hardware.SensorPrivacyManager.TOGGLE_TYPE_SOFTWARE
-import android.safetycenter.cts.testing.SafetyCenterCtsHelper
-import android.safetycenter.cts.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
 import android.safetycenter.cts.testing.UiTestHelper.waitAllTextDisplayed
 import android.safetycenter.cts.testing.UiTestHelper.waitDisplayed
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
@@ -33,6 +31,8 @@ import androidx.test.uiautomator.By
 import com.android.compatibility.common.util.DisableAnimationRule
 import com.android.compatibility.common.util.FreezeRotationRule
 import com.android.safetycenter.testing.SafetyCenterActivityLauncher.launchSafetyCenterQsActivity
+import com.android.safetycenter.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
+import com.android.safetycenter.testing.SafetyCenterTestHelper
 import com.android.safetycenter.testing.ShellPermissions.callWithShellPermissionIdentity
 import org.junit.After
 import org.junit.Assume.assumeTrue
@@ -50,7 +50,7 @@ class SafetyCenterQsActivityTest {
     @get:Rule val freezeRotationRule = FreezeRotationRule()
 
     private val context: Context = getApplicationContext()
-    private val safetyCenterCtsHelper = SafetyCenterCtsHelper(context)
+    private val safetyCenterTestHelper = SafetyCenterTestHelper(context)
     private val sensorPrivacyManager = context.getSystemService(SensorPrivacyManager::class.java)!!
     private var shouldRunTests =
         context.deviceSupportsSafetyCenter() &&
@@ -69,7 +69,7 @@ class SafetyCenterQsActivityTest {
         if (!shouldRunTests) {
             return
         }
-        safetyCenterCtsHelper.setup()
+        safetyCenterTestHelper.setup()
     }
 
     @After
@@ -77,7 +77,7 @@ class SafetyCenterQsActivityTest {
         if (!shouldRunTests) {
             return
         }
-        safetyCenterCtsHelper.reset()
+        safetyCenterTestHelper.reset()
     }
 
     @Before

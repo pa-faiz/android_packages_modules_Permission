@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.safetycenter.cts.testing
+package com.android.safetycenter.testing
 
 import android.Manifest.permission.READ_DEVICE_CONFIG
 import android.Manifest.permission.WRITE_DEVICE_CONFIG
@@ -35,7 +35,7 @@ import android.safetycenter.SafetyCenterManager.REFRESH_REASON_PERIODIC
 import android.safetycenter.SafetyCenterManager.REFRESH_REASON_RESCAN_BUTTON_CLICK
 import android.safetycenter.SafetyCenterManager.REFRESH_REASON_SAFETY_CENTER_ENABLED
 import android.safetycenter.SafetySourceData
-import android.safetycenter.cts.testing.Coroutines.TIMEOUT_LONG
+import com.android.safetycenter.testing.Coroutines.TIMEOUT_LONG
 import com.android.safetycenter.testing.ShellPermissions.callWithShellPermissionIdentity
 import java.time.Duration
 import kotlin.reflect.KProperty
@@ -182,7 +182,7 @@ object SafetyCenterFlags {
      * The Package Manager flag used while toggling the QS tile component.
      *
      * This is to make sure that the SafetyCenter is not killed while toggling the QS tile component
-     * during the CTS tests, which causes flakiness in them.
+     * during the tests, which causes flakiness in them.
      */
     private val qsTileComponentSettingFlag =
         Flag(
@@ -344,7 +344,7 @@ object SafetyCenterFlags {
     /**
      * Takes a snapshot of all Safety Center flags and sets them up to their default values.
      *
-     * This doesn't apply to [isEnabled] as it is handled separately by [SafetyCenterCtsHelper]:
+     * This doesn't apply to [isEnabled] as it is handled separately by [SafetyCenterTestHelper]:
      * there is a listener that listens to changes to this flag in system server, and we need to
      * ensure we wait for it to complete when modifying this flag.
      */
@@ -357,7 +357,7 @@ object SafetyCenterFlags {
     /**
      * Resets the Safety Center flags based on the existing [snapshot] captured during [setup].
      *
-     * This doesn't apply to [isEnabled] as it is handled separately by [SafetyCenterCtsHelper]:
+     * This doesn't apply to [isEnabled] as it is handled separately by [SafetyCenterTestHelper]:
      * there is a listener that listens to changes to this flag in system server, and we need to
      * ensure we wait for it to complete when modifying this flag.
      */
