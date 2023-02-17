@@ -223,8 +223,8 @@
     <string name="auto_revoked_app_summary_many" msgid="5930976230827378798">"มีการนำสิทธิ์เข้าถึง<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>และสิทธิ์อีก <xliff:g id="NUMBER">%2$s</xliff:g> รายการออก"</string>
     <string name="unused_apps_page_title" msgid="6986983535677572559">"แอปที่ไม่ได้ใช้"</string>
     <string name="unused_apps_page_summary" msgid="1867593913217272155">"จะมีการดำเนินการต่อไปนี้หากไม่ได้ใช้แอปเป็นเวลา 2-3 เดือน\n\n• สิทธิ์จะถูกนำออกเพื่อปกป้องข้อมูลของคุณ\n• การแจ้งเตือนจะหยุดลงเพื่อประหยัดแบตเตอรี่\n• ไฟล์ชั่วคราวจะถูกนำออกเพื่อเพิ่มพื้นที่ว่าง\n\nเปิดแอปเพื่ออนุญาตสิทธิ์และการแจ้งเตือนอีกครั้ง"</string>
-    <string name="unused_apps_page_tv_summary" msgid="3685907153054355671">"จะมีการดำเนินการต่อไปนี้หากไม่ได้ใช้แอปเป็นเวลา 2-3 เดือน\n\n• สิทธิ์จะถูกนำออกเพื่อปกป้องข้อมูลของคุณ\n• ไฟล์ชั่วคราวจะถูกนำออกเพื่อเพิ่มพื้นที่ว่าง\n\nเปิดแอปเพื่ออนุญาตสิทธิ์อีกครั้ง"</string>
-    <string name="last_opened_category_title" msgid="7871347400611202595">"เปิดล่าสุดนานกว่า <xliff:g id="NUMBER">%s</xliff:g> เดือนที่ผ่านมา"</string>
+    <string name="unused_apps_page_tv_summary" msgid="2624911608663778308">"ระบบจะดำเนินการต่อไปนี้หากไม่มีการใช้แอปเป็นเวลา 1 เดือน\n\n• สิทธิ์จะถูกนำออกเพื่อปกป้องข้อมูลของคุณ\n• ไฟล์ชั่วคราวจะถูกนำออกเพื่อเพิ่มพื้นที่ว่าง\n\nเปิดแอปเพื่ออนุญาตสิทธิ์อีกครั้ง"</string>
+    <string name="last_opened_category_title" msgid="8796557894614236128">"{count,plural, =1{เปิดล่าสุดนานกว่า # เดือนที่ผ่านมา}other{เปิดล่าสุดนานกว่า # เดือนที่ผ่านมา}}"</string>
     <string name="last_opened_summary" msgid="5248984030024968808">"เปิดแอปล่าสุดเมื่อวันที่ <xliff:g id="DATE">%s</xliff:g>"</string>
     <string name="last_opened_summary_short" msgid="1646067226191176825">"เปิดล่าสุดเมื่อวันที่ <xliff:g id="DATE">%s</xliff:g>"</string>
     <string name="app_permission_footer_special_file_access" msgid="1884202176147657788">"หากคุณอนุญาตให้จัดการไฟล์ทั้งหมด แอปนี้จะเข้าถึง แก้ไข และลบไฟล์ใดก็ได้ในพื้นที่เก็บข้อมูลทั่วไปในอุปกรณ์นี้หรือในอุปกรณ์จัดเก็บข้อมูลที่เชื่อมต่อ รวมถึงอาจเข้าถึงไฟล์โดยไม่ขอคุณก่อน"</string>
@@ -398,11 +398,14 @@
     <string name="role_automotive_navigation_request_title" msgid="7525693151489384300">"ตั้งค่า <xliff:g id="APP_NAME">%1$s</xliff:g> เป็นแอปเริ่มต้นสำหรับการนำทางไหม"</string>
     <string name="role_automotive_navigation_request_description" msgid="7073023813249245540">"ไม่ต้องใช้สิทธิ์"</string>
     <string name="role_watch_description" msgid="267003778693177779">"<xliff:g id="APP_NAME">%1$s</xliff:g> จะได้รับอนุญาตให้โต้ตอบกับการแจ้งเตือนและได้รับสิทธิ์เข้าถึงโทรศัพท์, SMS, รายชื่อติดต่อ และปฏิทิน"</string>
-    <!-- no translation found for role_companion_device_glasses_description (1775655849566169630) -->
-    <skip />
+    <string name="role_companion_device_glasses_description" msgid="1775655849566169630">"<xliff:g id="APP_NAME">%1$s</xliff:g> จะได้รับอนุญาตให้โต้ตอบกับการแจ้งเตือนและได้รับสิทธิ์เข้าถึงโทรศัพท์, SMS, รายชื่อติดต่อ, ไมโครโฟน และอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="role_app_streaming_description" msgid="7341638576226183992">"<xliff:g id="APP_NAME">%1$s</xliff:g> จะได้รับอนุญาตให้โต้ตอบกับการแจ้งเตือนและสตรีมแอปไปยังอุปกรณ์ที่เชื่อมต่อ"</string>
     <string name="role_companion_device_nearby_device_streaming_description" msgid="1177524993193492570">"<xliff:g id="APP_NAME">%1$s</xliff:g> จะได้รับอนุญาตให้สตรีมเนื้อหาไปยังอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="role_companion_device_computer_description" msgid="416099879217066377">"บริการนี้แชร์รูปภาพ สื่อ และการแจ้งเตือนจากโทรศัพท์ของคุณไปยังอุปกรณ์อื่น"</string>
+    <string name="role_notes_label" msgid="7451627001058089536">"แอปการจดบันทึกเริ่มต้น"</string>
+    <string name="role_notes_short_label" msgid="8796604147546125285">"แอปการจดบันทึก"</string>
+    <string name="role_notes_description" msgid="8496852798616883551">"แอปที่ให้คุณจดบันทึกในอุปกรณ์ได้"</string>
+    <string name="role_notes_search_keywords" msgid="7710756695666744631">"บันทึก"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"แอปเริ่มต้นปัจจุบัน"</string>
     <string name="request_role_dont_ask_again" msgid="3556017886029520306">"ไม่ต้องถามอีก"</string>
     <string name="request_role_set_as_default" msgid="4253949643984172880">"ตั้งเป็นแอปเริ่มต้น"</string>
@@ -588,5 +591,5 @@
     <string name="show_clip_access_notification_summary" msgid="3532020182782112687">"แสดงข้อความเมื่อแอปเข้าถึงข้อความ รูปภาพ หรือเนื้อหาอื่นๆ ที่คุณคัดลอก"</string>
     <string name="show_password_title" msgid="2877269286984684659">"แสดงรหัสผ่าน"</string>
     <string name="show_password_summary" msgid="1110166488865981610">"แสดงอักขระชั่วครู่ขณะพิมพ์"</string>
-    <string name="permission_rationale_message_template" msgid="4497650516269082051">"แอปนี้ระบุว่าแอปอาจแชร์ข้อมูล <xliff:g id="PERMISSION_NAME">%s</xliff:g> กับองค์กรบุคคลที่สามของแอป"</string>
+    <string name="permission_rationale_message_location" msgid="2153841534298068414">"แอปนี้ระบุว่าแอปอาจแชร์ข้อมูลตำแหน่งกับองค์กรบุคคลที่สามของแอป"</string>
 </resources>

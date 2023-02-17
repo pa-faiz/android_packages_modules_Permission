@@ -1,1 +1,2 @@
-+tests/cts/safetycenter
++SafetyCenter
++tests

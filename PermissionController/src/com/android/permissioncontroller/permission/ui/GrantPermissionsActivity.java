@@ -18,8 +18,9 @@ package com.android.permissioncontroller.permission.ui;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission_group.LOCATION;
 import static android.Manifest.permission_group.READ_MEDIA_VISUAL;
-import static android.healthconnect.HealthPermissions.HEALTH_PERMISSION_GROUP;
+import static android.health.connect.HealthPermissions.HEALTH_PERMISSION_GROUP;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.CANCELED;
@@ -35,13 +36,13 @@ import static com.android.permissioncontroller.permission.ui.model.GrantPermissi
 import static com.android.permissioncontroller.permission.utils.Utils.getRequestMessage;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Intent;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Icon;
-import android.icu.lang.UCharacter;
 import android.os.Bundle;
 import android.os.Process;
 import android.text.Annotation;
@@ -59,7 +60,9 @@ import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import androidx.core.util.Consumer;
+import androidx.core.util.Preconditions;
 
 import com.android.modules.utils.build.SdkLevel;
 import com.android.permissioncontroller.DeviceUtils;
@@ -106,8 +109,6 @@ public class GrantPermissionsActivity extends SettingsActivity
     public static final int LINK_TO_SETTINGS = 10;
     public static final int ALLOW_ALL_PHOTOS_BUTTON = 11;
     public static final int ALLOW_SELECTED_PHOTOS_BUTTON = 12;
-    public static final int ALLOW_MORE_SELECTED_PHOTOS_BUTTON = 13;
-    public static final int DONT_ALLOW_MORE_SELECTED_PHOTOS_BUTTON = 14;
 
     public static final int NEXT_LOCATION_DIALOG = 6;
     public static final int LOCATION_ACCURACY_LAYOUT = 0;
@@ -255,8 +256,10 @@ public class GrantPermissionsActivity extends SettingsActivity
 
         GrantPermissionsViewModelFactory factory = new GrantPermissionsViewModelFactory(
                 getApplication(), mTargetPackage, mRequestedPermissions, mSessionId, icicle);
-        mViewModel = factory.create(GrantPermissionsViewModel.class);
-        mViewModel.getRequestInfosLiveData().observe(this, this::onRequestInfoLoad);
+        if (!mDelegated) {
+            mViewModel = factory.create(GrantPermissionsViewModel.class);
+            mViewModel.getRequestInfosLiveData().observe(this, this::onRequestInfoLoad);
+        }
 
         mRootView = mViewHandler.createView();
         mRootView.setVisibility(View.GONE);
@@ -312,6 +315,7 @@ public class GrantPermissionsActivity extends SettingsActivity
         if (follower != null) {
             // Ensure the list of follower activities is a stack
             mFollowerActivities.add(0, follower);
+            follower.mViewModel = mViewModel;
         }
 
         boolean isShowingGroup = mRootView != null && mRootView.getVisibility() == View.VISIBLE;
@@ -343,6 +347,9 @@ public class GrantPermissionsActivity extends SettingsActivity
                 mSessionId, oldState);
         mViewModel = factory.create(GrantPermissionsViewModel.class);
         mViewModel.getRequestInfosLiveData().observe(this, this::onRequestInfoLoad);
+        if (follower != null) {
+            follower.mViewModel = mViewModel;
+        }
     }
 
     /**
@@ -386,17 +393,19 @@ public class GrantPermissionsActivity extends SettingsActivity
 
         RequestInfo info = mRequestInfos.get(0);
 
+        // Only the top activity can receive activity results
+        Activity top = mFollowerActivities.isEmpty() ? this : mFollowerActivities.get(0);
         if (info.getSendToSettingsImmediately()) {
-            mViewModel.sendDirectlyToSettings(this, info.getGroupName());
+            mViewModel.sendDirectlyToSettings(top, info.getGroupName());
             return;
         } else if (info.getOpenPhotoPicker()) {
-            mViewModel.openPhotoPicker(this, GRANTED_USER_SELECTED);
+            mViewModel.openPhotoPicker(top, GRANTED_USER_SELECTED);
             return;
         }
 
         if (Utils.isHealthPermissionUiEnabled() && HEALTH_PERMISSION_GROUP.equals(
                 info.getGroupName())) {
-            mViewModel.handleHealthConnectPermissions(this);
+            mViewModel.handleHealthConnectPermissions(top);
             return;
         }
 
@@ -428,9 +437,6 @@ public class GrantPermissionsActivity extends SettingsActivity
             case STORAGE_SUPERGROUP_MESSAGE_PRE_Q:
                 icon = Icon.createWithResource(getPackageName(), mStoragePermGroupIcon);
                 messageId = R.string.permgrouprequest_storage_pre_q;
-                break;
-            case MORE_PHOTOS_MESSAGE:
-                messageId = R.string.permgrouprequest_more_photos;
                 break;
         }
 
@@ -490,12 +496,10 @@ public class GrantPermissionsActivity extends SettingsActivity
 
         CharSequence permissionRationaleMessage = null;
         if (info.getShowPermissionRationale()) {
-            String permissionGroupLabel =
-                    KotlinUtils.INSTANCE.getPermGroupLabel(this, info.getGroupName())
-                            .toString();
-
-            permissionRationaleMessage = getString(R.string.permission_rationale_message_template,
-                    UCharacter.toLowerCase(permissionGroupLabel));
+            permissionRationaleMessage =
+                    getString(
+                            getPermissionRationaleMessageResIdForPermissionGroup(
+                                    info.getGroupName()));
         }
 
         ArrayList<Integer> idxs = new ArrayList<>();
@@ -607,7 +611,9 @@ public class GrantPermissionsActivity extends SettingsActivity
 
         if (Objects.equals(READ_MEDIA_VISUAL, name)
                 && result == GrantPermissionsViewHandler.GRANTED_USER_SELECTED) {
-            mViewModel.openPhotoPicker(this, result);
+            // Only the top activity can receive activity results
+            Activity top = mFollowerActivities.isEmpty() ? this : mFollowerActivities.get(0);
+            mViewModel.openPhotoPicker(top, result);
             return;
         }
 
@@ -656,11 +662,11 @@ public class GrantPermissionsActivity extends SettingsActivity
      */
     private void removeActivityFromMap() {
         synchronized (sCurrentGrantRequests) {
-            GrantPermissionsActivity top = sCurrentGrantRequests.get(mKey);
-            if (this.equals(top)) {
+            GrantPermissionsActivity leader = sCurrentGrantRequests.get(mKey);
+            if (this.equals(leader)) {
                 sCurrentGrantRequests.remove(mKey);
-            } else if (top != null) {
-                top.mFollowerActivities.remove(this);
+            } else if (leader != null) {
+                leader.mFollowerActivities.remove(this);
             }
         }
         for (GrantPermissionsActivity activity: mFollowerActivities) {
@@ -836,5 +842,21 @@ public class GrantPermissionsActivity extends SettingsActivity
                 }
             }
         }
+    }
+
+    /**
+     * Returns permission rationale message string resource id for the given permission group.
+     *
+     * <p> Supported permission groups: LOCATION
+     *
+     * @param permissionGroupName permission group for which to get a message string id
+     * @throws IllegalArgumentException if passing unsupported permission group
+     */
+    @StringRes
+    private int getPermissionRationaleMessageResIdForPermissionGroup(String permissionGroupName) {
+        Preconditions.checkArgument(LOCATION.equals(permissionGroupName),
+                "Permission Rationale does not support %s", permissionGroupName);
+
+        return R.string.permission_rationale_message_location;
     }
 }

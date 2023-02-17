@@ -18,10 +18,11 @@ package com.android.safetycenter;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
-import android.annotation.NonNull;
 import android.safetycenter.config.SafetySourcesGroup;
 
 import androidx.annotation.RequiresApi;
+
+import com.android.modules.utils.build.SdkLevel;
 
 /** Static utilities for working with {@link SafetySourcesGroup} objects. */
 @RequiresApi(TIRAMISU)
@@ -31,14 +32,17 @@ final class SafetySourcesGroups {
      * Returns a builder with all fields of the original group copied other than {@link
      * SafetySourcesGroup#getSafetySources()}.
      */
-    @NonNull
-    static SafetySourcesGroup.Builder copyToBuilderWithoutSources(
-            @NonNull SafetySourcesGroup group) {
-        return new SafetySourcesGroup.Builder()
-                .setId(group.getId())
-                .setTitleResId(group.getTitleResId())
-                .setSummaryResId(group.getSummaryResId())
-                .setStatelessIconType(group.getStatelessIconType());
+    static SafetySourcesGroup.Builder copyToBuilderWithoutSources(SafetySourcesGroup group) {
+        SafetySourcesGroup.Builder safetySourcesGroupBuilder =
+                new SafetySourcesGroup.Builder()
+                        .setId(group.getId())
+                        .setTitleResId(group.getTitleResId())
+                        .setSummaryResId(group.getSummaryResId())
+                        .setStatelessIconType(group.getStatelessIconType());
+        if (SdkLevel.isAtLeastU()) {
+            safetySourcesGroupBuilder.setType(group.getType());
+        }
+        return safetySourcesGroupBuilder;
     }
 
     private SafetySourcesGroups() {}

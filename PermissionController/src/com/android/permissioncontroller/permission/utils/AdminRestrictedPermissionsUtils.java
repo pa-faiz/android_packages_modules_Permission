@@ -52,10 +52,17 @@ public final class AdminRestrictedPermissionsUtils {
         if (SdkLevel.isAtLeastT()) {
             ADMIN_RESTRICTED_SENSORS_PERMISSIONS.add(Manifest.permission.BODY_SENSORS_BACKGROUND);
         }
+        // New U permissions - do not add unless running on U and above.
+        if (SdkLevel.isAtLeastU()) {
+            ADMIN_RESTRICTED_SENSORS_PERMISSIONS.add(
+                    Manifest.permission.BODY_SENSORS_WRIST_TEMPERATURE);
+            ADMIN_RESTRICTED_SENSORS_PERMISSIONS.add(
+                    Manifest.permission.BODY_SENSORS_WRIST_TEMPERATURE_BACKGROUND);
+        }
     }
 
     /**
-     * A set of permissions that the managed Profile Owner cannot grant.
+     * A set of permissions that the non-organization owned managed Profile Owner cannot grant.
      */
     private static final ArraySet<String> MANAGED_PROFILE_OWNER_RESTRICTED_PERMISSIONS =
             new ArraySet<>();
@@ -75,7 +82,8 @@ public final class AdminRestrictedPermissionsUtils {
         DevicePolicyManager dpm = userContext.getSystemService(DevicePolicyManager.class);
         UserManager um = userContext.getSystemService(UserManager.class);
         if (um.isManagedProfile(userId)
-                && MANAGED_PROFILE_OWNER_RESTRICTED_PERMISSIONS.contains(permission)) {
+                && MANAGED_PROFILE_OWNER_RESTRICTED_PERMISSIONS.contains(permission)
+                && !(SdkLevel.isAtLeastU() && dpm.isOrganizationOwnedDeviceWithManagedProfile())) {
             return false;
         }
         if (!ADMIN_RESTRICTED_SENSORS_PERMISSIONS.contains(permission)) {
@@ -89,11 +97,13 @@ public final class AdminRestrictedPermissionsUtils {
      * Returns true if the admin may grant this permission, false otherwise.
      */
     public static boolean mayAdminGrantPermission(String permission,
-            boolean canAdminGrantSensorsPermissions, boolean isManagedProfile) {
+            boolean canAdminGrantSensorsPermissions, boolean isManagedProfile,
+            boolean isOrganizationOwnedDevice) {
         if (!SdkLevel.isAtLeastS()) {
             return true;
         }
-        if (isManagedProfile && MANAGED_PROFILE_OWNER_RESTRICTED_PERMISSIONS.contains(permission)) {
+        if (isManagedProfile && MANAGED_PROFILE_OWNER_RESTRICTED_PERMISSIONS.contains(permission)
+                && !(SdkLevel.isAtLeastU() && isOrganizationOwnedDevice)) {
             return false;
         }
         if (!ADMIN_RESTRICTED_SENSORS_PERMISSIONS.contains(permission)) {

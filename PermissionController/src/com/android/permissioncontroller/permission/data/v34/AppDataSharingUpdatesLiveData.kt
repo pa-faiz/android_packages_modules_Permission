@@ -19,48 +19,59 @@ package com.android.permissioncontroller.permission.data.v34
 import android.app.Application
 import android.os.Build
 import android.provider.DeviceConfig
-import android.provider.DeviceConfig.NAMESPACE_PRIVACY
 import androidx.annotation.RequiresApi
 import com.android.permissioncontroller.permission.data.SmartAsyncMediatorLiveData
 import com.android.permissioncontroller.permission.model.v34.AppDataSharingUpdate
-import com.android.permissioncontroller.permission.model.v34.AppDataSharingUpdate.Companion.LOCATION_CATEGORY
-import com.android.permissioncontroller.permission.model.v34.DataSharingUpdateType
+import com.android.permissioncontroller.permission.model.v34.AppDataSharingUpdate.Companion.buildUpdateIfSignificantChange
+import com.android.permissioncontroller.safetylabel.AppsSafetyLabelHistoryPersistence
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
 import kotlinx.coroutines.Job
 
 /** LiveData for [AppDataSharingUpdate]s. */
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 class AppDataSharingUpdatesLiveData(val app: Application) :
-    SmartAsyncMediatorLiveData<List<AppDataSharingUpdate>>() {
+    SmartAsyncMediatorLiveData<List<AppDataSharingUpdate>>(),
+    AppsSafetyLabelHistoryPersistence.ChangeListener {
 
     override suspend fun loadDataAndPostValue(job: Job) {
-        // TODO(b/261665490): Read updates from AppSafetyLabelHistoryPersistence instead.
-        if (!DeviceConfig.getBoolean(
-            NAMESPACE_PRIVACY, PLACEHOLDER_SAFETY_LABEL_UPDATES_FLAG, false)) {
-            postValue(listOf())
-            return
-        }
+        val updatePeriod =
+            DeviceConfig.getLong(
+                DeviceConfig.NAMESPACE_PRIVACY,
+                PROPERTY_DATA_SHARING_UPDATE_PERIOD_MILLIS,
+                Duration.ofDays(DEFAULT_DATA_SHARING_UPDATE_PERIOD_DAYS).toMillis())
+        val file =
+            AppsSafetyLabelHistoryPersistence.getSafetyLabelHistoryFile(app.applicationContext)
 
-        val placeholderUpdates =
-            listOf(
-                AppDataSharingUpdate(
-                    PLACEHOLDER_PACKAGE_NAME_1,
-                    mapOf(
-                        LOCATION_CATEGORY to
-                            DataSharingUpdateType.ADDS_SHARING_WITHOUT_ADVERTISING_PURPOSE)),
-                AppDataSharingUpdate(
-                    PLACEHOLDER_PACKAGE_NAME_2,
-                    mapOf(
-                        LOCATION_CATEGORY to
-                            DataSharingUpdateType.ADDS_SHARING_WITH_ADVERTISING_PURPOSE)))
+        val appSafetyLabelDiffsFromPersistence =
+            AppsSafetyLabelHistoryPersistence.getAppSafetyLabelDiffs(
+                Instant.now().atZone(ZoneId.systemDefault()).toInstant().minusMillis(updatePeriod),
+                file)
+        val updatesFromPersistence =
+            appSafetyLabelDiffsFromPersistence.mapNotNull { it.buildUpdateIfSignificantChange() }
 
-        postValue(placeholderUpdates)
+        postValue(updatesFromPersistence)
+    }
+
+    override fun onActive() {
+        super.onActive()
+        AppsSafetyLabelHistoryPersistence.addListener(this)
+    }
+
+    override fun onInactive() {
+        super.onInactive()
+        AppsSafetyLabelHistoryPersistence.removeListener(this)
+    }
+
+    override fun onSafetyLabelHistoryChanged() {
+        update()
     }
 
     /** Companion object for [AppDataSharingUpdatesLiveData]. */
     companion object {
-        private const val PLACEHOLDER_PACKAGE_NAME_1 = "com.android.systemui"
-        private const val PLACEHOLDER_PACKAGE_NAME_2 = "com.android.bluetooth"
-        private const val PLACEHOLDER_SAFETY_LABEL_UPDATES_FLAG =
-            "placeholder_safety_label_updates_flag"
+        private const val PROPERTY_DATA_SHARING_UPDATE_PERIOD_MILLIS =
+            "data_sharing_update_period_millis"
+        private const val DEFAULT_DATA_SHARING_UPDATE_PERIOD_DAYS: Long = 30
     }
 }

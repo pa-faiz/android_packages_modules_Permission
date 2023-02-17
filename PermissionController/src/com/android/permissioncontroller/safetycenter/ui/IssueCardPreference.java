@@ -17,6 +17,7 @@
 package com.android.permissioncontroller.safetycenter.ui;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -37,7 +38,6 @@ import android.widget.Space;
 import android.widget.TextView;
 
 import androidx.annotation.ColorRes;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.view.ContextThemeWrapper;
@@ -72,6 +72,7 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
     private final SafetyCenterIssueId mDecodedIssueId;
     @Nullable private String mResolvedIssueActionId;
     @Nullable private final Integer mTaskId;
+    private final boolean mIsDismissed;
 
     public IssueCardPreference(
             Context context,
@@ -79,7 +80,8 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
             SafetyCenterIssue issue,
             @Nullable String resolvedIssueActionId,
             FragmentManager dialogFragmentManager,
-            @Nullable Integer launchTaskId) {
+            @Nullable Integer launchTaskId,
+            boolean isDismissed) {
         super(context);
         setLayoutResource(R.layout.preference_issue_card);
 
@@ -89,6 +91,7 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         mDecodedIssueId = SafetyCenterIds.issueIdFromString(mIssue.getId());
         mResolvedIssueActionId = resolvedIssueActionId;
         mTaskId = launchTaskId;
+        mIsDismissed = isDismissed;
     }
 
     @Override
@@ -151,6 +154,9 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
             builder.isLargeScreen(buttonList instanceof EqualWidthContainer);
             if (isFirstButton) {
                 builder.setAsPrimaryButton();
+                if (!mIsDismissed) {
+                    builder.setAsFilledButton();
+                }
                 isFirstButton = false;
             }
             builder.buildAndAddToView(buttonList);
@@ -198,7 +204,7 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
     }
 
     private void configureDismissButton(View dismissButton) {
-        if (mIssue.isDismissible()) {
+        if (mIssue.isDismissible() && !mIsDismissed) {
             dismissButton.setOnClickListener(
                     mIssue.shouldConfirmDismissal()
                             ? new ConfirmDismissalOnClickListener()
@@ -213,14 +219,14 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
     }
 
     @Override
-    public boolean isSameItem(@NonNull Preference preference) {
+    public boolean isSameItem(Preference preference) {
         return (preference instanceof IssueCardPreference)
                 && TextUtils.equals(
                         mIssue.getId(), ((IssueCardPreference) preference).mIssue.getId());
     }
 
     @Override
-    public boolean hasSameContents(@NonNull Preference preference) {
+    public boolean hasSameContents(Preference preference) {
         return (preference instanceof IssueCardPreference)
                 && mIssue.equals(((IssueCardPreference) preference).mIssue)
                 && Objects.equals(
@@ -263,8 +269,7 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         @Override
         public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
             SafetyCenterViewModel safetyCenterViewModel =
-                    ((SafetyCenterDashboardFragment) requireParentFragment())
-                            .getSafetyCenterViewModel();
+                    ((SafetyCenterFragment) requireParentFragment()).getSafetyCenterViewModel();
             SafetyCenterIssue issue =
                     requireNonNull(
                             requireArguments().getParcelable(ISSUE_KEY, SafetyCenterIssue.class));
@@ -285,6 +290,73 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         }
     }
 
+    /** A dialog to prompt for a confirmation to performn an Action. */
+    @RequiresApi(UPSIDE_DOWN_CAKE)
+    public static class ConfirmActionDialogFragment extends DialogFragment {
+        private static final String ISSUE_KEY = "issue";
+        private static final String ACTION_KEY = "action";
+        private static final String TASK_ID_KEY = "taskId";
+        private static final String IS_PRIMARY_BUTTON_KEY = "isPrimaryButton";
+
+        /** Create new fragment with the data it will need. */
+        public static ConfirmActionDialogFragment newInstance(
+                SafetyCenterIssue issue,
+                SafetyCenterIssue.Action action,
+                @Nullable Integer taskId,
+                boolean isFirstButton) {
+            ConfirmActionDialogFragment fragment = new ConfirmActionDialogFragment();
+
+            Bundle args = new Bundle();
+            args.putParcelable(ISSUE_KEY, issue);
+            args.putParcelable(ACTION_KEY, action);
+            args.putBoolean(IS_PRIMARY_BUTTON_KEY, isFirstButton);
+            if (taskId != null) {
+                args.putInt(TASK_ID_KEY, taskId);
+            }
+            fragment.setArguments(args);
+
+            return fragment;
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            SafetyCenterViewModel safetyCenterViewModel =
+                    ((SafetyCenterFragment) requireParentFragment()).getSafetyCenterViewModel();
+            SafetyCenterIssue issue =
+                    requireNonNull(
+                            requireArguments().getParcelable(ISSUE_KEY, SafetyCenterIssue.class));
+            SafetyCenterIssue.Action action =
+                    requireNonNull(
+                            requireArguments()
+                                    .getParcelable(ACTION_KEY, SafetyCenterIssue.Action.class));
+            boolean isPrimaryButton = requireArguments().getBoolean(IS_PRIMARY_BUTTON_KEY);
+            Integer taskId =
+                    requireArguments().containsKey(TASK_ID_KEY)
+                            ? requireArguments().getInt(TASK_ID_KEY)
+                            : null;
+
+            return new AlertDialog.Builder(getContext())
+                    .setTitle(action.getConfirmationDialogDetails().getTitle())
+                    .setMessage(action.getConfirmationDialogDetails().getText())
+                    .setPositiveButton(
+                            action.getConfirmationDialogDetails().getAcceptButtonText(),
+                            (dialog, which) -> {
+                                safetyCenterViewModel.executeIssueAction(issue, action, taskId);
+                                // TODO(b/269097766): Is this the best logging model?
+                                safetyCenterViewModel
+                                        .getInteractionLogger()
+                                        .recordForIssue(
+                                                isPrimaryButton
+                                                        ? Action.ISSUE_PRIMARY_ACTION_CLICKED
+                                                        : Action.ISSUE_SECONDARY_ACTION_CLICKED,
+                                                issue);
+                            })
+                    .setNegativeButton(
+                            action.getConfirmationDialogDetails().getDenyButtonText(), null)
+                    .create();
+        }
+    }
+
     private void markIssueResolvedUiCompleted() {
         if (mResolvedIssueActionId != null) {
             mResolvedIssueActionId = null;
@@ -296,7 +368,8 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         private final SafetyCenterIssue.Action mAction;
         private final Context mContext;
         private final ContextThemeWrapper mContextThemeWrapper;
-        private boolean mIsFirstButton = false;
+        private boolean mIsPrimaryButton = false;
+        private boolean mIsFilled = false;
         private boolean mIsLargeScreen = false;
 
         ActionButtonBuilder(SafetyCenterIssue.Action action, Context context) {
@@ -307,7 +380,12 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         }
 
         public ActionButtonBuilder setAsPrimaryButton() {
-            mIsFirstButton = true;
+            mIsPrimaryButton = true;
+            return this;
+        }
+
+        public ActionButtonBuilder setAsFilledButton() {
+            mIsFilled = true;
             return this;
         }
 
@@ -323,25 +401,32 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
             button.setText(mAction.getLabel());
             button.setEnabled(!mAction.isInFlight());
             button.setOnClickListener(
-                    (view) -> {
-                        if (mAction.willResolve()) {
-                            // Disable the button to prevent double-taps.
-                            // We ideally want to do this on any button press, however out of an
-                            // abundance of caution we only do it with actions that indicate they
-                            // will resolve (and therefore we can rely on a model update to
-                            // redraw state).
-                            // We expect the model to update with either isInFlight() or simply
-                            // removing/updating the issue.
-                            button.setEnabled(false);
+                    view -> {
+                        if (SdkLevel.isAtLeastU()
+                                && mAction.getConfirmationDialogDetails() != null) {
+                            ConfirmActionDialogFragment.newInstance(
+                                            mIssue, mAction, mTaskId, mIsPrimaryButton)
+                                    .showNow(mDialogFragmentManager, /* tag= */ null);
+                        } else {
+                            if (mAction.willResolve()) {
+                                // Without a confirmation, the button remains tappable. Disable the
+                                // button to prevent double-taps.
+                                // We ideally want to do this on any button press, however out of an
+                                // abundance of caution we only do it with actions that indicate
+                                // they will resolve (and therefore we can rely on a model update to
+                                // redraw state - either to isInFlight() or simply resolving the
+                                // issue.
+                                button.setEnabled(false);
+                            }
+                            mSafetyCenterViewModel.executeIssueAction(mIssue, mAction, mTaskId);
+                            mSafetyCenterViewModel
+                                    .getInteractionLogger()
+                                    .recordForIssue(
+                                            mIsPrimaryButton
+                                                    ? Action.ISSUE_PRIMARY_ACTION_CLICKED
+                                                    : Action.ISSUE_SECONDARY_ACTION_CLICKED,
+                                            mIssue);
                         }
-                        mSafetyCenterViewModel.executeIssueAction(mIssue, mAction, mTaskId);
-                        mSafetyCenterViewModel
-                                .getInteractionLogger()
-                                .recordForIssue(
-                                        mIsFirstButton
-                                                ? Action.ISSUE_PRIMARY_ACTION_CLICKED
-                                                : Action.ISSUE_SECONDARY_ACTION_CLICKED,
-                                        mIssue);
                     });
 
             maybeAddSpaceToView(buttonList);
@@ -349,7 +434,7 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         }
 
         private void maybeAddSpaceToView(LinearLayout buttonList) {
-            if (mIsFirstButton) {
+            if (mIsPrimaryButton) {
                 return;
             }
 
@@ -362,13 +447,11 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         }
 
         private int getStyle() {
-            return mIsFirstButton
-                    ? R.attr.scActionButtonStyle
-                    : R.attr.scSecondaryActionButtonStyle;
+            return mIsFilled ? R.attr.scActionButtonStyle : R.attr.scSecondaryActionButtonStyle;
         }
 
         private void setButtonColors(MaterialButton button) {
-            if (mIsFirstButton) {
+            if (mIsFilled) {
                 button.setBackgroundTintList(
                         ContextCompat.getColorStateList(
                                 mContext,

@@ -19,7 +19,7 @@ package com.android.permissioncontroller.permission.utils
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
-import android.healthconnect.HealthPermissions.HEALTH_PERMISSION_GROUP
+import android.health.connect.HealthPermissions.HEALTH_PERMISSION_GROUP
 import android.util.Log
 import com.android.modules.utils.build.SdkLevel
 
@@ -170,6 +170,14 @@ object PermissionMapping {
                 Manifest.permission_group.NOTIFICATIONS
             PLATFORM_PERMISSIONS[Manifest.permission.BODY_SENSORS_BACKGROUND] =
                 Manifest.permission_group.SENSORS
+        }
+
+        if (SdkLevel.isAtLeastU()) {
+            PLATFORM_PERMISSIONS[Manifest.permission.BODY_SENSORS_WRIST_TEMPERATURE] =
+                    Manifest.permission_group.SENSORS
+            PLATFORM_PERMISSIONS[Manifest
+                    .permission.BODY_SENSORS_WRIST_TEMPERATURE_BACKGROUND] =
+                    Manifest.permission_group.SENSORS
         }
 
         for ((permission, permissionGroup) in PLATFORM_PERMISSIONS) {

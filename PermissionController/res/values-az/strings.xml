@@ -223,8 +223,8 @@
     <string name="auto_revoked_app_summary_many" msgid="5930976230827378798">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> və digər <xliff:g id="NUMBER">%2$s</xliff:g> icazə silindi"</string>
     <string name="unused_apps_page_title" msgid="6986983535677572559">"İstifadə olunmayan tətbiqlər"</string>
     <string name="unused_apps_page_summary" msgid="1867593913217272155">"Tətbiq bir neçə ay istifadə edilmirsə:\n\n• Datanızı qorumaq üçün icazələr silinir\n• Enerjiyə qənaət üçün bildirişlər dayandırılır\n• Yer boşaltmaq üçün müvəqqəti fayllar silinir\n\nİcazələrə və bildirişlərə yenidən icazə vermək üçün tətbiqi açın."</string>
-    <string name="unused_apps_page_tv_summary" msgid="3685907153054355671">"Tətbiq bir neçə ay istifadə edilmirsə:\n\n• Datanızı qorumaq üçün icazələr silinir\n• Yer boşaltmaq üçün müvəqqəti fayllar silinir\n\nYenidən icazə vermək üçün tətbiqi açın."</string>
-    <string name="last_opened_category_title" msgid="7871347400611202595">"Sonuncu dəfə ən azı <xliff:g id="NUMBER">%s</xliff:g> ay əvvəl açılıb"</string>
+    <string name="unused_apps_page_tv_summary" msgid="2624911608663778308">"Tətbiq bir ay istifadə edilmirsə:\n\n• Datanızı qorumaq üçün icazələr silinir\n• Yer boşaltmaq üçün müvəqqəti fayllar silinir\n\nYenidən icazə vermək üçün tətbiqi açın."</string>
+    <string name="last_opened_category_title" msgid="8796557894614236128">"{count,plural, =1{Sonuncu dəfə ən azı # ay əvvəl açılıb}other{Sonuncu dəfə ən azı # ay əvvəl açılıb}}"</string>
     <string name="last_opened_summary" msgid="5248984030024968808">"Tətbiq sonuncu dəfə <xliff:g id="DATE">%s</xliff:g> tarixində açılıb"</string>
     <string name="last_opened_summary_short" msgid="1646067226191176825">"Sonuncu dəfə <xliff:g id="DATE">%s</xliff:g> tarixində açılıb"</string>
     <string name="app_permission_footer_special_file_access" msgid="1884202176147657788">"Bununla, tətbiq bu və ya qoşulmuş cihazlarda ümumi yaddaşdakı bütün fayllara daxil ola, dəyişiklik edə və ya onları silə bilər. Fayllara sizdən xəbərsiz girə bilər."</string>
@@ -350,7 +350,7 @@
     <string name="accessibility_service_dialog_title_multiple" msgid="5527879210683548175">"<xliff:g id="NUM_SERVICES">%s</xliff:g> əlçatımlıq tətbiqinin cihaza tam girişi var"</string>
     <string name="accessibility_service_dialog_bottom_text_single" msgid="1128666197822205958">"<xliff:g id="SERVICE_NAME">%s</xliff:g> ekran, əməliyyat və daxiletməyə baxa, əməliyyatlar icra edə və displeyə nəzarət edə bilər."</string>
     <string name="accessibility_service_dialog_bottom_text_multiple" msgid="7009848932395519852">"Bu tətbiqlər ekran, əməliyyat və daxiletməyə baxa, əməliyyatlar icra edə və displeyə nəzarət edə bilər."</string>
-    <string name="role_assistant_label" msgid="4727586018198208128">"Standart rəqəmsal assistent"</string>
+    <string name="role_assistant_label" msgid="4727586018198208128">"Defolt rəq. assistent"</string>
     <string name="role_assistant_short_label" msgid="3369003713187703399">"Rəq. assistent tətbiqi"</string>
     <string name="role_assistant_description" msgid="6622458130459922952">"Köməkçi tətbiqlər ekrandakı məlumatı istifadə edə bilər. Rahat olmaları üçün onlardan bəziləri digər tətbiqlərin işə salınmasını və səsli əmr funksiyasını dəstəkləyir."</string>
     <string name="role_browser_label" msgid="2877796144554070207">"Defolt brauzer tətbiqi"</string>
@@ -360,13 +360,13 @@
     <string name="role_browser_request_description" msgid="5888803407905985941">"İcazəyə ehtiyac yoxdur"</string>
     <string name="role_dialer_label" msgid="1100224146343237968">"Defolt telefon tətbiqi"</string>
     <string name="role_dialer_short_label" msgid="7186888549465352489">"Telefon tətbiqi"</string>
-    <string name="role_dialer_description" msgid="8768708633696539612">"Cihazda telefon zəngləri qəbul etməyinizə icazə verən tətbiqlər"</string>
+    <string name="role_dialer_description" msgid="8768708633696539612">"Zəngləri qəbul etməyə və onlara cavab verməyə icazə verən tətbiqlər"</string>
     <string name="role_dialer_request_title" msgid="5959618560705912058">"<xliff:g id="APP_NAME">%1$s</xliff:g> defolt telefon tətbiqi olaraq ayarlansın?"</string>
     <string name="role_dialer_request_description" msgid="6288839625724909320">"Bu tətbiqə Kamera, Kontaktlar, Mikrofon, Telefon və SMS-ə giriş icazəsi veriləcək"</string>
     <string name="role_dialer_search_keywords" msgid="3324448983559188087">"nömrə yığan"</string>
     <string name="role_sms_label" msgid="8456999857547686640">"Defolt SMS tətbiqi"</string>
     <string name="role_sms_short_label" msgid="4371444488034692243">"SMS tətbiqi"</string>
-    <string name="role_sms_description" msgid="3424020199148153513">"Telefon nömrəsini istifadə etməklə mesaj, foto, video və digər məlumatları göndərən tətbiqlər."</string>
+    <string name="role_sms_description" msgid="3424020199148153513">"Telefon nömrəsi vasitəsilə mesaj, foto, video və digər məlumatları göndərən tətbiqlər"</string>
     <string name="role_sms_request_title" msgid="7953552109601185602">"<xliff:g id="APP_NAME">%1$s</xliff:g> defolt SMS tətbiqi olaraq ayarlansın?"</string>
     <string name="role_sms_request_description" msgid="2691004766132144886">"Bu tətbiqə Kamera, Kontaktlar, Fayllar və sənədlər, Mikrofon, Telefon və SMS-ə giriş icazəsi veriləcək"</string>
     <string name="role_sms_search_keywords" msgid="8022048144395047352">"mətn mesajı, mətn yazmaq, mesajlar, mesaj yazmaq"</string>
@@ -398,11 +398,14 @@
     <string name="role_automotive_navigation_request_title" msgid="7525693151489384300">"<xliff:g id="APP_NAME">%1$s</xliff:g> defolt naviqasiya tətbiqi olaraq ayarlansın?"</string>
     <string name="role_automotive_navigation_request_description" msgid="7073023813249245540">"İcazəyə ehtiyac yoxdur"</string>
     <string name="role_watch_description" msgid="267003778693177779">"<xliff:g id="APP_NAME">%1$s</xliff:g> bildirişlərinizə, Telefon, SMS, Kontaktlar və Təqvimə giriş əldə edəcək."</string>
-    <!-- no translation found for role_companion_device_glasses_description (1775655849566169630) -->
-    <skip />
+    <string name="role_companion_device_glasses_description" msgid="1775655849566169630">"<xliff:g id="APP_NAME">%1$s</xliff:g> bildirişlərinizə, Telefon, SMS, Kontaktlar, Mikrofon və Yaxınlıqdakı cihazlar icazələrinə giriş əldə edəcək."</string>
     <string name="role_app_streaming_description" msgid="7341638576226183992">"<xliff:g id="APP_NAME">%1$s</xliff:g> bildirişlərinizə giriş əldə edəcək və tətbiqlərinizi qoşulmuş cihazda yayımlaya biləcək"</string>
     <string name="role_companion_device_nearby_device_streaming_description" msgid="1177524993193492570">"<xliff:g id="APP_NAME">%1$s</xliff:g> tətbiqinin yaxınlıqdakı cihazlara kontent yayımlamasına icazə veriləcək."</string>
     <string name="role_companion_device_computer_description" msgid="416099879217066377">"Bu xidmət telefonunuzdakı foto, media və bildirişləri digər cihazlarla paylaşır."</string>
+    <string name="role_notes_label" msgid="7451627001058089536">"Defolt qeyd tətbiqi"</string>
+    <string name="role_notes_short_label" msgid="8796604147546125285">"Qeyd tətbiqi"</string>
+    <string name="role_notes_description" msgid="8496852798616883551">"Cihazınızda qeydlər aparmağa imkan verən tətbiqlər"</string>
+    <string name="role_notes_search_keywords" msgid="7710756695666744631">"qeydlər"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"Cari defolt"</string>
     <string name="request_role_dont_ask_again" msgid="3556017886029520306">"Bir daha soruşmayın"</string>
     <string name="request_role_set_as_default" msgid="4253949643984172880">"Defolt olaraq seçin"</string>
@@ -511,7 +514,7 @@
     <string name="privdash_label_microphone" msgid="8415035835803511693">"Mikrofon"</string>
     <string name="privdash_label_location" msgid="6882400763866489291">"Məkan"</string>
     <string name="privdash_label_other" msgid="3710394147423236033">"Digər"</string>
-    <string name="privdash_label_none" msgid="5991866260360484858">"Heç bir"</string>
+    <string name="privdash_label_none" msgid="5991866260360484858">"Heç biri"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Ötən\n24 saat"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Son\n7 gün"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"<xliff:g id="APP_NAME">%1$s</xliff:g> Android tərəfindən qorunur. Məlumatlarınız bu cihazda işləndiyinə görə bu tətbiqin icazə istifadəsi status panelində və ya məxfilik panelinizdə göstərilmir."</string>
@@ -588,5 +591,5 @@
     <string name="show_clip_access_notification_summary" msgid="3532020182782112687">"Tətbiq kopyalanmış mətn, şəkil və ya digər kontent işlədəndə bildiriş göstərilsin"</string>
     <string name="show_password_title" msgid="2877269286984684659">"Parolları göstərin"</string>
     <string name="show_password_summary" msgid="1110166488865981610">"Yazarkən simvollar qısa müddət göstərilsin"</string>
-    <string name="permission_rationale_message_template" msgid="4497650516269082051">"Bu tətbiq <xliff:g id="PERMISSION_NAME">%s</xliff:g> datasını üçüncü tərəflərlə paylaşa biləcəyini bildirdi"</string>
+    <string name="permission_rationale_message_location" msgid="2153841534298068414">"Bu tətbiq məkan datasını üçüncü tərəflərlə paylaşa biləcəyini bildirib"</string>
 </resources>

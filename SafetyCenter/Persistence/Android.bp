@@ -21,12 +21,12 @@ java_library {
     name: "safety-center-persistence",
     sdk_version: "system_current",
     min_sdk_version: "30",
-    target_sdk_version: "32",
     srcs: [
         "java/**/*.java",
     ],
     libs: [
         "androidx.annotation_annotation",
+        "safety-center-annotations",
     ],
     apex_available: [
         "com.android.permission",

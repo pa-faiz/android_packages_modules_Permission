@@ -22,6 +22,7 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
 import android.Manifest.permission_group.READ_MEDIA_VISUAL
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AppOpsManager
 import android.app.AppOpsManager.MODE_ALLOWED
 import android.app.AppOpsManager.MODE_ERRORED
@@ -46,6 +47,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.android.modules.utils.build.SdkLevel
+import com.android.permissioncontroller.Constants
 import com.android.permissioncontroller.PermissionControllerStatsLog
 import com.android.permissioncontroller.PermissionControllerStatsLog.APP_PERMISSION_FRAGMENT_ACTION_REPORTED
 import com.android.permissioncontroller.PermissionControllerStatsLog.APP_PERMISSION_FRAGMENT_VIEWED
@@ -53,10 +55,12 @@ import com.android.permissioncontroller.R
 import com.android.permissioncontroller.permission.data.FullStoragePermissionAppsLiveData
 import com.android.permissioncontroller.permission.data.FullStoragePermissionAppsLiveData.FullStoragePackageState
 import com.android.permissioncontroller.permission.data.LightAppPermGroupLiveData
+import com.android.permissioncontroller.permission.data.SafetyLabelInfoLiveData
 import com.android.permissioncontroller.permission.data.SmartUpdateMediatorLiveData
 import com.android.permissioncontroller.permission.data.get
 import com.android.permissioncontroller.permission.model.livedatatypes.LightAppPermGroup
 import com.android.permissioncontroller.permission.model.livedatatypes.LightPermission
+import com.android.permissioncontroller.permission.model.livedatatypes.SafetyLabelInfo
 import com.android.permissioncontroller.permission.service.PermissionChangeStorageImpl
 import com.android.permissioncontroller.permission.service.v33.PermissionDecisionStorageImpl
 import com.android.permissioncontroller.permission.ui.AdvancedConfirmDialogArgs
@@ -69,11 +73,15 @@ import com.android.permissioncontroller.permission.ui.model.AppPermissionViewMod
 import com.android.permissioncontroller.permission.ui.model.AppPermissionViewModel.ButtonType.DENY_FOREGROUND
 import com.android.permissioncontroller.permission.ui.model.AppPermissionViewModel.ButtonType.LOCATION_ACCURACY
 import com.android.permissioncontroller.permission.ui.model.AppPermissionViewModel.ButtonType.SELECT_PHOTOS
+import com.android.permissioncontroller.permission.ui.v34.PermissionRationaleActivity
+import com.android.permissioncontroller.permission.ui.v34.PermissionRationaleActivity.EXTRA_SHOULD_SHOW_SETTINGS_SECTION
 import com.android.permissioncontroller.permission.utils.KotlinUtils
 import com.android.permissioncontroller.permission.utils.KotlinUtils.getDefaultPrecision
 import com.android.permissioncontroller.permission.utils.KotlinUtils.isLocationAccuracyEnabled
+import com.android.permissioncontroller.permission.utils.KotlinUtils.isPermissionRationaleEnabled
 import com.android.permissioncontroller.permission.utils.LocationUtils
 import com.android.permissioncontroller.permission.utils.PermissionMapping
+import com.android.permissioncontroller.permission.utils.PermissionRationales
 import com.android.permissioncontroller.permission.utils.SafetyNetLogger
 import com.android.permissioncontroller.permission.utils.Utils
 import com.android.permissioncontroller.permission.utils.navigateSafe
@@ -102,10 +110,11 @@ class AppPermissionViewModel(
 
     companion object {
         private val LOG_TAG = AppPermissionViewModel::class.java.simpleName
-
         private const val DEVICE_PROFILE_ROLE_PREFIX = "android.app.role"
         const val PHOTO_PICKER_REQUEST_CODE = 1
     }
+
+    val safetyLabelInfoLiveData = SafetyLabelInfoLiveData[packageName, user]
 
     interface ConfirmDialogShowingFragment {
         fun showConfirmDialog(
@@ -442,11 +451,6 @@ class AppPermissionViewModel(
         }
     }
 
-    fun openPhotoPicker(onResult: Consumer<Int>) {
-        photoPickerResultConsumer = onResult
-        photoPickerLauncher?.launch(Unit)
-    }
-
     private fun isFineLocationChecked(group: LightAppPermGroup): Boolean {
         if (shouldShowLocationAccuracy == true) {
             val coarseLocation = group.permissions[ACCESS_COARSE_LOCATION]!!
@@ -543,6 +547,34 @@ class AppPermissionViewModel(
             return false
         }
         return true
+    }
+
+    fun shouldShowPermissionRationale(
+        safetyLabelInfo: SafetyLabelInfo,
+        groupName: String
+    ): Boolean {
+        return PermissionRationales.shouldShowPermissionRationale(
+            safetyLabelInfo.safetyLabel, groupName)
+    }
+
+    /**
+     * Shows the Permission Rationale Dialog. For use with U+ only, otherwise no-op.
+     *
+     * @param activity The current activity
+     * @param groupName The name of the permission group whose fragment should be opened
+     */
+    fun showPermissionRationaleActivity(activity: Activity, groupName: String) {
+        if (!isPermissionRationaleEnabled()) {
+            return
+        }
+
+        val intent = Intent(activity, PermissionRationaleActivity::class.java).apply {
+            putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+            putExtra(Intent.EXTRA_PERMISSION_GROUP_NAME, groupName)
+            putExtra(Constants.EXTRA_SESSION_ID, sessionId)
+            putExtra(EXTRA_SHOULD_SHOW_SETTINGS_SECTION, false)
+        }
+        activity.startActivity(intent)
     }
 
     /**

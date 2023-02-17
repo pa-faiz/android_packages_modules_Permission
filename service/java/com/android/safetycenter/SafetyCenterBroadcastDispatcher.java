@@ -32,8 +32,8 @@ import static android.safetycenter.SafetyCenterManager.REFRESH_REASON_SAFETY_CEN
 
 import static java.util.Collections.unmodifiableList;
 
-import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.BroadcastOptions;
 import android.content.Context;
@@ -52,6 +52,7 @@ import androidx.annotation.RequiresApi;
 
 import com.android.permission.util.PackageUtils;
 import com.android.safetycenter.SafetyCenterConfigReader.Broadcast;
+import com.android.safetycenter.data.SafetyCenterDataManager;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -71,20 +72,20 @@ import javax.annotation.concurrent.NotThreadSafe;
 final class SafetyCenterBroadcastDispatcher {
     private static final String TAG = "SafetyCenterBroadcastDi";
 
-    @NonNull private final Context mContext;
-    @NonNull private final SafetyCenterConfigReader mSafetyCenterConfigReader;
-    @NonNull private final SafetyCenterRefreshTracker mSafetyCenterRefreshTracker;
-    @NonNull private final SafetyCenterRepository mSafetyCenterRepository;
+    private final Context mContext;
+    private final SafetyCenterConfigReader mSafetyCenterConfigReader;
+    private final SafetyCenterRefreshTracker mSafetyCenterRefreshTracker;
+    private final SafetyCenterDataManager mSafetyCenterDataManager;
 
     SafetyCenterBroadcastDispatcher(
-            @NonNull Context context,
-            @NonNull SafetyCenterConfigReader safetyCenterConfigReader,
-            @NonNull SafetyCenterRefreshTracker safetyCenterRefreshTracker,
-            @NonNull SafetyCenterRepository safetyCenterRepository) {
+            Context context,
+            SafetyCenterConfigReader safetyCenterConfigReader,
+            SafetyCenterRefreshTracker safetyCenterRefreshTracker,
+            SafetyCenterDataManager safetyCenterDataManager) {
         mContext = context;
         mSafetyCenterConfigReader = safetyCenterConfigReader;
         mSafetyCenterRefreshTracker = safetyCenterRefreshTracker;
-        mSafetyCenterRepository = safetyCenterRepository;
+        mSafetyCenterDataManager = safetyCenterDataManager;
     }
 
     /**
@@ -99,7 +100,7 @@ final class SafetyCenterBroadcastDispatcher {
     @Nullable
     String sendRefreshSafetySources(
             @RefreshReason int refreshReason,
-            @NonNull UserProfileGroup userProfileGroup,
+            UserProfileGroup userProfileGroup,
             @Nullable List<String> safetySourceIds) {
         List<Broadcast> broadcasts = mSafetyCenterConfigReader.getBroadcasts();
         BroadcastOptions broadcastOptions = createBroadcastOptions();
@@ -131,11 +132,11 @@ final class SafetyCenterBroadcastDispatcher {
     }
 
     private boolean sendRefreshSafetySourcesBroadcast(
-            @NonNull Broadcast broadcast,
-            @NonNull BroadcastOptions broadcastOptions,
+            Broadcast broadcast,
+            BroadcastOptions broadcastOptions,
             @RefreshReason int refreshReason,
-            @NonNull UserProfileGroup userProfileGroup,
-            @NonNull String broadcastId,
+            UserProfileGroup userProfileGroup,
+            String broadcastId,
             @Nullable List<String> requiredSourceIds) {
         boolean hasSentAtLeastOneBroadcast = false;
         int requestType = RefreshReasons.toRefreshRequestType(refreshReason);
@@ -201,9 +202,9 @@ final class SafetyCenterBroadcastDispatcher {
     }
 
     private void sendEnabledChangedBroadcast(
-            @NonNull Broadcast broadcast,
-            @NonNull BroadcastOptions broadcastOptions,
-            @NonNull List<UserProfileGroup> userProfileGroups) {
+            Broadcast broadcast,
+            BroadcastOptions broadcastOptions,
+            List<UserProfileGroup> userProfileGroups) {
         Intent intent = createExplicitEnabledChangedIntent(broadcast.getPackageName());
         // The same ENABLED reason is used here for both enable and disable events. It is not sent
         // externally and is only used internally to filter safety sources in the methods of the
@@ -224,9 +225,7 @@ final class SafetyCenterBroadcastDispatcher {
     }
 
     private boolean sendBroadcastIfResolves(
-            @NonNull Intent intent,
-            @NonNull UserHandle userHandle,
-            @Nullable BroadcastOptions broadcastOptions) {
+            Intent intent, UserHandle userHandle, @Nullable BroadcastOptions broadcastOptions) {
         if (!doesBroadcastResolve(intent, userHandle)) {
             Log.w(
                     TAG,
@@ -246,10 +245,12 @@ final class SafetyCenterBroadcastDispatcher {
         return true;
     }
 
+    // TODO(b/193460475): Remove when tooling supports SystemApi to public API.
+    @SuppressLint("NewApi")
     private void sendBroadcast(
-            @NonNull Intent intent,
-            @NonNull UserHandle userHandle,
-            @NonNull String permission,
+            Intent intent,
+            UserHandle userHandle,
+            String permission,
             @Nullable BroadcastOptions broadcastOptions) {
         // This call requires the INTERACT_ACROSS_USERS permission.
         final long callingId = Binder.clearCallingIdentity();
@@ -264,29 +265,25 @@ final class SafetyCenterBroadcastDispatcher {
         }
     }
 
-    private boolean doesBroadcastResolve(
-            @NonNull Intent broadcastIntent, @NonNull UserHandle userHandle) {
+    private boolean doesBroadcastResolve(Intent broadcastIntent, UserHandle userHandle) {
         return !PackageUtils.queryUnfilteredBroadcastReceiversAsUser(
                         broadcastIntent, 0, userHandle.getIdentifier(), mContext)
                 .isEmpty();
     }
 
-    @NonNull
-    private static Intent createExplicitEnabledChangedIntent(@NonNull String packageName) {
+    private static Intent createExplicitEnabledChangedIntent(String packageName) {
         return createImplicitEnabledChangedIntent().setPackage(packageName);
     }
 
-    @NonNull
     private static Intent createImplicitEnabledChangedIntent() {
         return createBroadcastIntent(ACTION_SAFETY_CENTER_ENABLED_CHANGED);
     }
 
-    @NonNull
     private static Intent createRefreshIntent(
             @RefreshRequestType int requestType,
-            @NonNull String packageName,
-            @NonNull List<String> sourceIdsToRefresh,
-            @NonNull String broadcastId) {
+            String packageName,
+            List<String> sourceIdsToRefresh,
+            String broadcastId) {
         String[] sourceIdsArray = sourceIdsToRefresh.toArray(new String[0]);
         return createBroadcastIntent(ACTION_REFRESH_SAFETY_SOURCES)
                 .putExtra(EXTRA_REFRESH_SAFETY_SOURCES_REQUEST_TYPE, requestType)
@@ -295,12 +292,12 @@ final class SafetyCenterBroadcastDispatcher {
                 .setPackage(packageName);
     }
 
-    @NonNull
-    private static Intent createBroadcastIntent(@NonNull String intentAction) {
+    private static Intent createBroadcastIntent(String intentAction) {
         return new Intent(intentAction).setFlags(FLAG_RECEIVER_FOREGROUND);
     }
 
-    @NonNull
+    // TODO(b/193460475): Remove when tooling supports SystemApi to public API.
+    @SuppressLint("NewApi")
     private static BroadcastOptions createBroadcastOptions() {
         BroadcastOptions broadcastOptions = BroadcastOptions.makeBasic();
         Duration allowListDuration = SafetyCenterFlags.getFgsAllowlistDuration();
@@ -319,7 +316,6 @@ final class SafetyCenterBroadcastDispatcher {
     }
 
     /** Returns the list of source IDs for which refreshing is denied for the given reason. */
-    @NonNull
     private static Set<String> getRefreshDeniedSourceIds(@RefreshReason int refreshReason) {
         if (RefreshReasons.isBackgroundRefresh(refreshReason)) {
             return SafetyCenterFlags.getBackgroundRefreshDeniedSourceIds();
@@ -338,10 +334,9 @@ final class SafetyCenterBroadcastDispatcher {
      *
      * <p>Every value present is a non-empty list, but the overall result may be empty.
      */
-    @NonNull
     private SparseArray<List<String>> getUserIdsToSourceIds(
-            @NonNull Broadcast broadcast,
-            @NonNull UserProfileGroup userProfileGroup,
+            Broadcast broadcast,
+            UserProfileGroup userProfileGroup,
             @RefreshReason int refreshReason) {
         int[] managedProfileIds = userProfileGroup.getManagedRunningProfilesUserIds();
         SparseArray<List<String>> result = new SparseArray<>(managedProfileIds.length + 1);
@@ -380,11 +375,10 @@ final class SafetyCenterBroadcastDispatcher {
      * config, or are in the safety_center_override_refresh_on_page_open_sources flag, or don't have
      * any {@link SafetySourceData} provided.
      */
-    @NonNull
     private List<String> getSourceIdsForRefreshReason(
             @RefreshReason int refreshReason,
-            @NonNull List<String> allSourceIds,
-            @NonNull List<String> pageOpenSourceIds,
+            List<String> allSourceIds,
+            List<String> pageOpenSourceIds,
             @UserIdInt int userId) {
         if (refreshReason != REFRESH_REASON_PAGE_OPEN) {
             return allSourceIds;
@@ -399,7 +393,7 @@ final class SafetyCenterBroadcastDispatcher {
             String sourceId = allSourceIds.get(i);
             if (pageOpenSourceIds.contains(sourceId)
                     || flagAllowListedSourceIds.contains(sourceId)
-                    || mSafetyCenterRepository.getSafetySourceData(
+                    || mSafetyCenterDataManager.getSafetySourceDataInternal(
                                     SafetySourceKey.of(sourceId, userId))
                             == null) {
                 sourceIds.add(sourceId);

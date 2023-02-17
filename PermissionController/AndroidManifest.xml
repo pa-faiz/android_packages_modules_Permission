@@ -65,6 +65,7 @@
     <uses-permission android:name="android.permission.SET_UNRESTRICTED_KEEP_CLEAR_AREAS"/>
     <uses-permission android:name="android.permission.START_TASKS_FROM_RECENTS" />
     <uses-permission android:name="android.permission.READ_APP_SPECIFIC_LOCALES" />
+    <uses-permission android:name="android.permission.GET_APP_METADATA" />
 
     <application android:name="com.android.permissioncontroller.PermissionControllerApplication"
             android:label="@string/app_name"
@@ -191,6 +192,21 @@
             </intent-filter>
         </receiver>
 
+        <service
+            android:name="com.android.permissioncontroller.permission.service.v34.SafetyLabelChangesJobService"
+            android:enabled="@bool/is_at_least_u"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.android.permissioncontroller.permission.service.v34.SafetyLabelChangesJobService$Receiver"
+            android:enabled="@bool/is_at_least_u"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.android.permissioncontroller.action.SET_UP_SAFETY_LABEL_CHANGES_JOB" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name="com.android.permissioncontroller.privacysources.AccessibilityOnBootReceiver"
@@ -225,6 +241,17 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name="com.android.permissioncontroller.safetylabel.SafetyLabelChangedBroadcastReceiver"
+            android:enabled="@bool/is_at_least_u"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="com.android.permissioncontroller.action.PACKAGE_ADDED_PERMISSIONCONTROLLER_FORWARDED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name="com.android.permissioncontroller.privacysources.AccessibilityJobService"
             android:enabled="@bool/is_at_least_t"
@@ -235,6 +262,7 @@
                   android:excludeFromRecents="true"
                   android:exported="true"
                   android:theme="@style/GrantPermissions.FilterTouches"
+                  android:windowSoftInputMode="stateAlwaysHidden|adjustNothing"
                   android:visibleToInstantApps="true"
                   android:inheritShowWhenLocked="true"
                   android:hardwareAccelerated="false"
@@ -251,6 +279,7 @@
 
         <activity android:name="com.android.permissioncontroller.permission.ui.v34.PermissionRationaleActivity"
                   android:configChanges="keyboardHidden|screenSize"
+                  android:windowSoftInputMode="stateAlwaysHidden|adjustNothing"
                   android:excludeFromRecents="true"
                   android:exported="false"
                   android:theme="@style/GrantPermissions.FilterTouches"
@@ -310,7 +339,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.android.permissioncontroller.permission.ui.SafetyCenterQsActivity"
+        <activity android:name="com.android.permissioncontroller.safetycenter.ui.SafetyCenterQsActivity"
                   android:excludeFromRecents="true"
                   android:launchMode="singleInstance"
                   android:exported="true"

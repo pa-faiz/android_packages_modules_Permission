@@ -16,10 +16,14 @@
 
 package com.android.permissioncontroller.safetycenter.ui
 
-import android.app.ActivityOptions
 import android.app.PendingIntent
+import android.os.Build.VERSION_CODES.TIRAMISU
+import androidx.annotation.RequiresApi
+import androidx.fragment.app.FragmentActivity
+import com.android.safetycenter.internaldata.SafetyCenterIds
 
 /** An object which sends pendingIntents, in a proper task, if needed. */
+@RequiresApi(TIRAMISU)
 object PendingIntentSender {
 
     @JvmStatic
@@ -28,12 +32,23 @@ object PendingIntentSender {
         if (pi == null) {
             return
         }
-        if (launchTaskId != null) {
-            val options = ActivityOptions.makeBasic()
-            options.launchTaskId = launchTaskId
-            pi.send(null, 0, null, null, null, null, options.toBundle())
-        } else {
-            pi.send()
-        }
+        com.android.safetycenter.pendingintents.PendingIntentSender.send(pi, launchTaskId)
+    }
+
+    /**
+     * Gets the current task ID for sending pending intents in a fragment
+     *
+     * @param entryId identifies an entry on the Safety Center page
+     * @param sameTaskSourceIds list of safety source IDs to show in the same task as Safety Center
+     * @param activity represents the parent activity of the fragment
+     */
+    @JvmStatic
+    fun getTaskIdForEntry(
+        entryId: String,
+        sameTaskSourceIds: List<String>,
+        activity: FragmentActivity
+    ): Int? {
+        val sourceId: String = SafetyCenterIds.entryIdFromString(entryId).getSafetySourceId()
+        return if (sameTaskSourceIds.contains(sourceId)) activity.getTaskId() else null
     }
 }

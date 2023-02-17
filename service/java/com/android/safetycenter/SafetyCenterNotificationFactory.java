@@ -17,8 +17,10 @@
 package com.android.safetycenter;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.safetycenter.SafetyCenterManager.EXTRA_SAFETY_SOURCE_ID;
+import static android.safetycenter.SafetyCenterManager.EXTRA_SAFETY_SOURCE_ISSUE_ID;
+import static android.safetycenter.SafetyCenterManager.EXTRA_SAFETY_SOURCE_USER_HANDLE;
 
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -26,15 +28,18 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.safetycenter.SafetySourceIssue;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
 import com.android.modules.utils.build.SdkLevel;
+import com.android.safetycenter.internaldata.SafetyCenterIds;
+import com.android.safetycenter.internaldata.SafetyCenterIssueActionId;
 import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
+
+import java.util.List;
 
 /**
  * Factory that builds {@link Notification} objects from {@link SafetySourceIssue} instances with
@@ -47,10 +52,17 @@ final class SafetyCenterNotificationFactory {
 
     private static final int OPEN_SAFETY_CENTER_REQUEST_CODE = 1221;
 
-    @NonNull private final Context mContext;
+    private final Context mContext;
+    private final SafetyCenterNotificationChannels mNotificationChannels;
+    private final PendingIntentFactory mPendingIntentFactory;
 
-    SafetyCenterNotificationFactory(@NonNull Context context) {
+    SafetyCenterNotificationFactory(
+            Context context,
+            SafetyCenterNotificationChannels notificationChannels,
+            PendingIntentFactory pendingIntentFactory) {
         mContext = context;
+        mNotificationChannels = notificationChannels;
+        mPendingIntentFactory = pendingIntentFactory;
     }
 
     /**
@@ -62,10 +74,10 @@ final class SafetyCenterNotificationFactory {
      */
     @Nullable
     Notification newNotificationForIssue(
-            @NonNull NotificationManager notificationManager,
-            @NonNull SafetySourceIssue issue,
-            @NonNull SafetyCenterIssueKey issueKey) {
-        String channelId = createAndGetChannelId(notificationManager, issue);
+            NotificationManager notificationManager,
+            SafetySourceIssue issue,
+            SafetyCenterIssueKey issueKey) {
+        String channelId = mNotificationChannels.createAndGetChannelId(notificationManager, issue);
 
         if (channelId == null) {
             return null;
@@ -73,13 +85,14 @@ final class SafetyCenterNotificationFactory {
 
         CharSequence title = issue.getTitle();
         CharSequence text = issue.getSummary();
+        List<SafetySourceIssue.Action> issueActions = issue.getActions();
 
         if (SdkLevel.isAtLeastU()) {
             SafetySourceIssue.Notification customNotification = issue.getCustomNotification();
             if (customNotification != null) {
                 title = customNotification.getTitle();
                 text = customNotification.getText();
-                // TODO(b/263477747): Handle custom actions too
+                issueActions = customNotification.getActions();
             }
         }
 
@@ -90,37 +103,34 @@ final class SafetyCenterNotificationFactory {
                         .setExtras(getNotificationExtras())
                         .setContentTitle(title)
                         .setContentText(text)
-                        .setContentIntent(newSafetyCenterPendingIntent(issue))
+                        .setContentIntent(newSafetyCenterPendingIntent(issueKey))
                         .setDeleteIntent(
                                 SafetyCenterNotificationReceiver.newNotificationDismissedIntent(
                                         mContext, issueKey));
-        // TODO(b/260084296): Include issue actions on notifications;
+
+        for (int i = 0; i < issueActions.size(); i++) {
+            Notification.Action notificationAction =
+                    toNotificationAction(issueKey, issueActions.get(i));
+            builder.addAction(notificationAction);
+        }
 
         return builder.build();
     }
 
-    @Nullable
-    private String createAndGetChannelId(
-            @NonNull NotificationManager notificationManager, @NonNull SafetySourceIssue issue) {
-        // TODO(b/259398016): Different channels for different issues/severities
-        NotificationChannel channel =
-                new NotificationChannel(
-                        "safety_center",
-                        // TODO(b/259399024): Use suitable string here
-                        "Safety Center notifications",
-                        NotificationManager.IMPORTANCE_DEFAULT);
-        return createNotificationChannelWithoutCallingIdentity(notificationManager, channel);
-    }
-
-    @NonNull
-    private PendingIntent newSafetyCenterPendingIntent(@NonNull SafetySourceIssue targetIssue) {
-        // TODO(b/259398419): Add target issue to intent so it's highlighted when SC opens
+    private PendingIntent newSafetyCenterPendingIntent(SafetyCenterIssueKey issueKey) {
         Intent intent = new Intent(Intent.ACTION_SAFETY_CENTER);
+        // Set the encoded issue key as the intent's identifier to ensure the PendingIntents of
+        // different notifications do not collide:
+        intent.setIdentifier(SafetyCenterIds.encodeToString(issueKey));
+        intent.putExtra(EXTRA_SAFETY_SOURCE_ID, issueKey.getSafetySourceId());
+        intent.putExtra(EXTRA_SAFETY_SOURCE_ISSUE_ID, issueKey.getSafetySourceIssueId());
+        intent.putExtra(EXTRA_SAFETY_SOURCE_USER_HANDLE, UserHandle.of(issueKey.getUserId()));
+        // This extra is defined in the PermissionController APK, cannot be referenced directly:
+        intent.putExtra("navigation_source_intent_extra", "NOTIFICATION");
         return PendingIntentFactory.getActivityPendingIntent(
                 mContext, OPEN_SAFETY_CENTER_REQUEST_CODE, intent, PendingIntent.FLAG_IMMUTABLE);
     }
 
-    @NonNull
     private Bundle getNotificationExtras() {
         Bundle extras = new Bundle();
         // TODO(b/259399024): Use suitable string resource here
@@ -128,25 +138,40 @@ final class SafetyCenterNotificationFactory {
         return extras;
     }
 
-    /**
-     * Creates a {@link NotificationChannel} using the given {@link NotificationManager}, dropping
-     * any calling identity so that it can be unblockable. Returns the new channel's ID if it was
-     * created successfully or {@code null} otherwise.
-     */
-    @Nullable
-    private static String createNotificationChannelWithoutCallingIdentity(
-            @NonNull NotificationManager notificationManager,
-            @NonNull NotificationChannel channel) {
-        // Clearing calling identity to be able to make an unblockable system notification channel
-        final long callingId = Binder.clearCallingIdentity();
-        try {
-            notificationManager.createNotificationChannel(channel);
-            return channel.getId();
-        } catch (RuntimeException e) {
-            Log.w(TAG, "Unable to create notification channel", e);
-            return null;
-        } finally {
-            Binder.restoreCallingIdentity(callingId);
+    private Notification.Action toNotificationAction(
+            SafetyCenterIssueKey issueKey, SafetySourceIssue.Action issueAction) {
+        PendingIntent pendingIntent = getPendingIntentForAction(issueKey, issueAction);
+        return new Notification.Action.Builder(null, issueAction.getLabel(), pendingIntent).build();
+    }
+
+    private PendingIntent getPendingIntentForAction(
+            SafetyCenterIssueKey issueKey, SafetySourceIssue.Action issueAction) {
+        if (issueAction.willResolve()) {
+            return getReceiverPendingIntentForResolvingAction(issueKey, issueAction);
+        } else {
+            return getDirectPendingIntentForNonResolvingAction(issueKey, issueAction);
         }
+    }
+
+    private PendingIntent getReceiverPendingIntentForResolvingAction(
+            SafetyCenterIssueKey issueKey, SafetySourceIssue.Action issueAction) {
+        // We do not use the action's PendingIntent directly here instead we build a new PI which
+        // will be handled by our SafetyCenterNotificationReceiver which will in turn dispatch
+        // the source-provided action PI. This ensures that action execution is consistent across
+        // between Safety Center UI and notifications, for example executing an action from a
+        // notification will send an "action in-flight" update to any current listeners.
+        SafetyCenterIssueActionId issueActionId =
+                SafetyCenterIssueActionId.newBuilder()
+                        .setSafetyCenterIssueKey(issueKey)
+                        .setSafetySourceIssueActionId(issueAction.getId())
+                        .build();
+        return SafetyCenterNotificationReceiver.newNotificationActionClickedIntent(
+                mContext, issueActionId);
+    }
+
+    private PendingIntent getDirectPendingIntentForNonResolvingAction(
+            SafetyCenterIssueKey issueKey, SafetySourceIssue.Action issueAction) {
+        return mPendingIntentFactory.maybeOverridePendingIntent(
+                issueKey.getSafetySourceId(), issueAction.getPendingIntent(), false);
     }
 }

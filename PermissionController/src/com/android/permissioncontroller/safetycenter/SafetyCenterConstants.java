@@ -31,4 +31,13 @@ public class SafetyCenterConstants {
             "expand_issue_group_qs_fragment_key";
 
     public static final String EXTRA_NAVIGATION_SOURCE = "navigation_source_intent_extra";
+
+    /** Intent extra indicating whether a subpage in Safety Center was opened from the homepage */
+    public static final String EXTRA_OPENED_FROM_HOMEPAGE = "opened_from_homepage_intent_extra";
+
+    /** Suffix used to identify a source in the Safety Center personal profile */
+    public static final String PERSONAL_PROFILE_SUFFIX = "personal";
+
+    /** Suffix used to identify a source in the Safety Center work profile */
+    public static final String WORK_PROFILE_SUFFIX = "work";
 }

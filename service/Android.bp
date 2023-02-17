@@ -91,6 +91,7 @@ java_sdk_library {
         // Soong fails to automatically add this dependency because all the
         // *.kt sources are inside a filegroup.
         "kotlin-annotations",
+        "safety-center-annotations",
     ],
     static_libs: [
         "kotlin-stdlib",
@@ -99,6 +100,7 @@ java_sdk_library {
         "modules-utils-os",
         "safety-center-config",
         "safety-center-internal-data",
+        "safety-center-pending-intents",
         "safety-center-persistence",
         "safety-center-resources-lib",
         "service-permission-shared",
@@ -126,6 +128,12 @@ java_sdk_library {
         "test_com.android.permission",
     ],
     installable: true,
+    permitted_packages: [
+        "com.android.access",
+        "com.android.permission",
+        "com.android.role",
+        "com.android.safetycenter",
+    ],
 }
 
 genrule {

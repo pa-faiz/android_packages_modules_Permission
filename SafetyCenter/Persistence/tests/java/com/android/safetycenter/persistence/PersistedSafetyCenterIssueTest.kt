@@ -17,7 +17,7 @@
 package com.android.safetycenter.persistence
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.permission.testing.EqualsHashCodeToStringTester
+import com.android.safetycenter.testing.EqualsHashCodeToStringTester
 import com.google.common.truth.Truth.assertThat
 import java.time.Instant
 import org.junit.Test
@@ -52,6 +52,12 @@ class PersistedSafetyCenterIssueTest {
     }
 
     @Test
+    fun getNotificationDismissedAt_returnsNotificationDismissedAt() {
+        assertThat(ACTIVE_ISSUE.notificationDismissedAt).isEqualTo(null)
+        assertThat(DISMISSED_ISSUE.notificationDismissedAt).isEqualTo(INSTANT)
+    }
+
+    @Test
     fun equalsHashCodeToString_usingEqualsHashCodeToStringTester() {
         EqualsHashCodeToStringTester.of<PersistedSafetyCenterIssue>()
             .addEqualityGroup(
@@ -59,7 +65,8 @@ class PersistedSafetyCenterIssueTest {
                 PersistedSafetyCenterIssue.Builder()
                     .setKey(ACTIVE_ISSUE_KEY)
                     .setFirstSeenAt(INSTANT)
-                    .build())
+                    .build()
+            )
             .addEqualityGroup(DISMISSED_ISSUE)
             .addEqualityGroup(
                 PersistedSafetyCenterIssue.Builder()
@@ -67,28 +74,32 @@ class PersistedSafetyCenterIssueTest {
                     .setFirstSeenAt(INSTANT)
                     .setDismissedAt(INSTANT)
                     .setDismissCount(1)
-                    .build())
+                    .build()
+            )
             .addEqualityGroup(
                 PersistedSafetyCenterIssue.Builder()
                     .setKey(DISMISSED_ISSUE_KEY)
                     .setFirstSeenAt(Instant.ofEpochMilli(0))
                     .setDismissedAt(INSTANT)
                     .setDismissCount(1)
-                    .build())
+                    .build()
+            )
             .addEqualityGroup(
                 PersistedSafetyCenterIssue.Builder()
                     .setKey(DISMISSED_ISSUE_KEY)
                     .setFirstSeenAt(INSTANT)
                     .setDismissedAt(Instant.ofEpochMilli(0))
                     .setDismissCount(1)
-                    .build())
+                    .build()
+            )
             .addEqualityGroup(
                 PersistedSafetyCenterIssue.Builder()
                     .setKey(DISMISSED_ISSUE_KEY)
                     .setFirstSeenAt(INSTANT)
                     .setDismissedAt(INSTANT)
                     .setDismissCount(99)
-                    .build())
+                    .build()
+            )
             .test()
     }
 
@@ -109,6 +120,7 @@ class PersistedSafetyCenterIssueTest {
                 .setFirstSeenAt(INSTANT)
                 .setDismissedAt(INSTANT)
                 .setDismissCount(1)
+                .setNotificationDismissedAt(INSTANT)
                 .build()
     }
 }

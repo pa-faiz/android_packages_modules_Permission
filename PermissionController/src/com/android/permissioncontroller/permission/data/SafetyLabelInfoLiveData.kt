@@ -25,6 +25,7 @@ import com.android.permission.safetylabel.DataCategoryConstants
 import com.android.permission.safetylabel.DataLabelConstants
 import com.android.permission.safetylabel.DataTypeConstants
 import com.android.permission.safetylabel.SafetyLabel
+import com.android.permission.safetylabel.SafetyLabel.KEY_VERSION
 import com.android.permissioncontroller.PermissionControllerApplication
 import com.android.permissioncontroller.permission.model.livedatatypes.SafetyLabelInfo
 import com.android.permissioncontroller.permission.utils.KotlinUtils.isPlaceholderSafetyLabelDataEnabled
@@ -92,10 +93,14 @@ private constructor(
 
         val safetyLabelInfo: SafetyLabelInfo =
             try {
-                val metadataBundle: PersistableBundle? = getAppMetadata()
-                SafetyLabelInfo(
-                    SafetyLabel.getSafetyLabelFromMetadata(metadataBundle),
-                    installSourcePackageName)
+                val metadataBundle: PersistableBundle = getAppMetadata()
+                val safetyLabel: SafetyLabel? =
+                    SafetyLabel.getSafetyLabelFromMetadata(metadataBundle)
+                if (safetyLabel != null) {
+                    SafetyLabelInfo(safetyLabel, installSourcePackageName)
+                } else {
+                    SafetyLabelInfo.UNAVAILABLE
+                }
             } catch (e: PackageManager.NameNotFoundException) {
                 Log.w(LOG_TAG, "SafetyLabel for $packageName not found")
                 invalidateSingle(packageName to user)
@@ -104,53 +109,54 @@ private constructor(
         postValue(safetyLabelInfo)
     }
 
-    // TODO(b/257293222): Update when hooking up PackageManager APIs
-    private fun getAppMetadata(): PersistableBundle? {
+    private fun getAppMetadata(): PersistableBundle {
         return if (isPlaceholderSafetyLabelDataEnabled()) {
             placeholderMetadataBundle()
         } else {
-            null
+            app.packageManager.getAppMetadata(packageName)
         }
     }
 
-    // TODO(b/257293222): Remove when hooking up PackageManager APIs
     private fun placeholderMetadataBundle(): PersistableBundle {
-        val approximateLocationBundle = PersistableBundle().apply {
-            putIntArray(
-                "purposes",
-                (1..7).toList().toIntArray())
-        }
+        val approximateLocationBundle =
+            PersistableBundle().apply { putIntArray("purposes", (1..7).toList().toIntArray()) }
 
-        val locationBundle = PersistableBundle().apply {
-            putPersistableBundle(
-                DataTypeConstants.LOCATION_APPROX_LOCATION,
-                approximateLocationBundle)
-        }
+        val locationBundle =
+            PersistableBundle().apply {
+                putPersistableBundle(
+                    DataTypeConstants.LOCATION_APPROX_LOCATION, approximateLocationBundle)
+            }
 
-        val dataSharedBundle = PersistableBundle().apply {
-            putPersistableBundle(DataCategoryConstants.CATEGORY_LOCATION, locationBundle)
-        }
+        val dataSharedBundle =
+            PersistableBundle().apply {
+                putPersistableBundle(DataCategoryConstants.CATEGORY_LOCATION, locationBundle)
+            }
 
-        val dataLabelBundle = PersistableBundle().apply {
-            putPersistableBundle(DataLabelConstants.DATA_USAGE_SHARED, dataSharedBundle)
-        }
+        val dataLabelBundle =
+            PersistableBundle().apply {
+                putPersistableBundle(DataLabelConstants.DATA_USAGE_SHARED, dataSharedBundle)
+            }
 
         val safetyLabelBundle = PersistableBundle().apply {
+            putLong(KEY_VERSION, INITIAL_SAFETY_LABELS_VERSION)
             putPersistableBundle("data_labels", dataLabelBundle)
         }
 
         return PersistableBundle().apply {
+            putLong(KEY_VERSION, INITIAL_METADATA_VERSION)
             putPersistableBundle("safety_labels", safetyLabelBundle)
         }
     }
 
     companion object : DataRepositoryForPackage<Pair<String, UserHandle>, SafetyLabelInfoLiveData>(
     ) {
+        private const val INITIAL_METADATA_VERSION = 1L
+        private const val INITIAL_SAFETY_LABELS_VERSION = 1L
         private val LOG_TAG = SafetyLabelInfoLiveData::class.java.simpleName
 
         override fun newValue(key: Pair<String, UserHandle>): SafetyLabelInfoLiveData {
-            return SafetyLabelInfoLiveData(PermissionControllerApplication.get(), key.first,
-                key.second)
+            return SafetyLabelInfoLiveData(
+                PermissionControllerApplication.get(), key.first, key.second)
         }
     }
 }

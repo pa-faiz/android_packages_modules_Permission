@@ -20,7 +20,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -42,17 +41,19 @@ import java.util.Objects;
 /**
  * A class that represent all the enabled profiles (profile parent and managed profile(s))
  * associated with a user id.
+ *
+ * @hide
  */
 @RequiresApi(TIRAMISU)
-final class UserProfileGroup {
+public final class UserProfileGroup {
 
     @UserIdInt private final int mProfileParentUserId;
-    @NonNull private final int[] mManagedProfilesUserIds;
-    @NonNull private final int[] mManagedRunningProfilesUserIds;
+    private final int[] mManagedProfilesUserIds;
+    private final int[] mManagedRunningProfilesUserIds;
 
     private UserProfileGroup(
             @UserIdInt int profileParentUserId,
-            @NonNull int[] managedProfilesUserIds,
+            int[] managedProfilesUserIds,
             int[] managedRunningProfilesUserIds) {
         mProfileParentUserId = profileParentUserId;
         mManagedProfilesUserIds = managedProfilesUserIds;
@@ -60,7 +61,7 @@ final class UserProfileGroup {
     }
 
     /** Returns all the alive {@link UserProfileGroup}s. */
-    static List<UserProfileGroup> getAllUserProfileGroups(@NonNull Context context) {
+    public static List<UserProfileGroup> getAllUserProfileGroups(Context context) {
         List<UserProfileGroup> userProfileGroups = new ArrayList<>();
         List<UserHandle> userHandles = UserUtils.getUserHandles(context);
         for (int i = 0; i < userHandles.size(); i++) {
@@ -78,7 +79,7 @@ final class UserProfileGroup {
     }
 
     private static boolean userProfileGroupsContain(
-            @NonNull List<UserProfileGroup> userProfileGroups, @UserIdInt int userId) {
+            List<UserProfileGroup> userProfileGroups, @UserIdInt int userId) {
         for (int i = 0; i < userProfileGroups.size(); i++) {
             UserProfileGroup userProfileGroup = userProfileGroups.get(i);
 
@@ -96,7 +97,7 @@ final class UserProfileGroup {
      * <p>The given {@code userId} could be related to the profile parent or any of its associated
      * managed profile(s).
      */
-    static UserProfileGroup from(@NonNull Context context, @UserIdInt int userId) {
+    public static UserProfileGroup from(Context context, @UserIdInt int userId) {
         UserManager userManager = getUserManagerForUser(userId, context);
         List<UserHandle> userProfiles = getEnabledUserProfiles(userManager);
         UserHandle profileParent = getProfileParent(userManager, userId);
@@ -128,16 +129,12 @@ final class UserProfileGroup {
                 Arrays.copyOf(managedRunningProfilesUserIds, managedRunningProfilesUserIdsLen));
     }
 
-    @NonNull
-    private static UserManager getUserManagerForUser(
-            @UserIdInt int userId, @NonNull Context context) {
+    private static UserManager getUserManagerForUser(@UserIdInt int userId, Context context) {
         Context userContext = getUserContext(context, UserHandle.of(userId));
         return requireNonNull(userContext.getSystemService(UserManager.class));
     }
 
-    @NonNull
-    private static Context getUserContext(
-            @NonNull Context context, @NonNull UserHandle userHandle) {
+    private static Context getUserContext(Context context, UserHandle userHandle) {
         if (Process.myUserHandle().equals(userHandle)) {
             return context;
         } else {
@@ -149,8 +146,7 @@ final class UserProfileGroup {
         }
     }
 
-    @NonNull
-    private static List<UserHandle> getEnabledUserProfiles(@NonNull UserManager userManager) {
+    private static List<UserHandle> getEnabledUserProfiles(UserManager userManager) {
         // This call requires the QUERY_USERS permission.
         final long callingId = Binder.clearCallingIdentity();
         try {
@@ -161,8 +157,7 @@ final class UserProfileGroup {
     }
 
     @Nullable
-    private static UserHandle getProfileParent(
-            @NonNull UserManager userManager, @UserIdInt int userId) {
+    private static UserHandle getProfileParent(UserManager userManager, @UserIdInt int userId) {
         // This call requires the INTERACT_ACROSS_USERS permission.
         final long callingId = Binder.clearCallingIdentity();
         try {
@@ -173,22 +168,40 @@ final class UserProfileGroup {
     }
 
     /** Returns the profile parent user id of the {@link UserProfileGroup}. */
-    int getProfileParentUserId() {
+    public int getProfileParentUserId() {
         return mProfileParentUserId;
     }
 
     /** Returns the managed profile user ids of the {@link UserProfileGroup}. */
-    int[] getManagedProfilesUserIds() {
+    public int[] getManagedProfilesUserIds() {
         return mManagedProfilesUserIds;
     }
 
     /** Returns the running managed profile user ids of the {@link UserProfileGroup}. */
-    int[] getManagedRunningProfilesUserIds() {
+    public int[] getManagedRunningProfilesUserIds() {
         return mManagedRunningProfilesUserIds;
     }
 
+    /**
+     * Convenience method that combines the results of {@link
+     * UserProfileGroup#getProfileParentUserId()} and {@link
+     * UserProfileGroup#getManagedRunningProfilesUserIds()}.
+     */
+    public int[] getProfileParentAndManagedRunningProfilesUserIds() {
+        int[] profileParentAndManagedRunningProfilesUserIds =
+                new int[mManagedRunningProfilesUserIds.length + 1];
+        profileParentAndManagedRunningProfilesUserIds[0] = mProfileParentUserId;
+        System.arraycopy(
+                mManagedRunningProfilesUserIds,
+                0,
+                profileParentAndManagedRunningProfilesUserIds,
+                1,
+                mManagedRunningProfilesUserIds.length);
+        return profileParentAndManagedRunningProfilesUserIds;
+    }
+
     /** Returns whether the {@link UserProfileGroup} contains the given {@code userId}. */
-    boolean contains(@UserIdInt int userId) {
+    public boolean contains(@UserIdInt int userId) {
         if (userId == mProfileParentUserId) {
             return true;
         }

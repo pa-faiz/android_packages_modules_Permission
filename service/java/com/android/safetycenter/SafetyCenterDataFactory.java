@@ -21,7 +21,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.PendingIntent;
@@ -33,6 +32,7 @@ import android.safetycenter.SafetyCenterEntry;
 import android.safetycenter.SafetyCenterEntryGroup;
 import android.safetycenter.SafetyCenterEntryOrGroup;
 import android.safetycenter.SafetyCenterIssue;
+import android.safetycenter.SafetyCenterIssue.Action.ConfirmationDialogDetails;
 import android.safetycenter.SafetyCenterStaticEntry;
 import android.safetycenter.SafetyCenterStaticEntryGroup;
 import android.safetycenter.SafetyCenterStatus;
@@ -49,6 +49,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.android.modules.utils.build.SdkLevel;
+import com.android.safetycenter.data.SafetyCenterDataManager;
 import com.android.safetycenter.internaldata.SafetyCenterEntryId;
 import com.android.safetycenter.internaldata.SafetyCenterIds;
 import com.android.safetycenter.internaldata.SafetyCenterIssueActionId;
@@ -57,7 +58,6 @@ import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
 import com.android.safetycenter.resources.SafetyCenterResourcesContext;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -68,50 +68,40 @@ import javax.annotation.concurrent.NotThreadSafe;
  * with Safety Center listeners, including PermissionController.
  *
  * <p>This class isn't thread safe. Thread safety must be handled by the caller.
+ *
+ * @hide
  */
 @RequiresApi(TIRAMISU)
 @NotThreadSafe
-final class SafetyCenterDataFactory {
+public final class SafetyCenterDataFactory {
 
     private static final String TAG = "SafetyCenterDataFactory";
 
     private static final String ANDROID_LOCK_SCREEN_SOURCES_GROUP_ID = "AndroidLockScreenSources";
 
-    private static final SafetyCenterIssuesBySeverityDescending
-            SAFETY_CENTER_ISSUES_BY_SEVERITY_DESCENDING =
-                    new SafetyCenterIssuesBySeverityDescending();
+    private final SafetyCenterResourcesContext mSafetyCenterResourcesContext;
+    private final SafetyCenterConfigReader mSafetyCenterConfigReader;
+    private final SafetyCenterRefreshTracker mSafetyCenterRefreshTracker;
+    private final PendingIntentFactory mPendingIntentFactory;
 
-    @NonNull private final SafetyCenterResourcesContext mSafetyCenterResourcesContext;
-    @NonNull private final SafetyCenterConfigReader mSafetyCenterConfigReader;
-    @NonNull private final SafetyCenterRefreshTracker mSafetyCenterRefreshTracker;
-    @NonNull private final PendingIntentFactory mPendingIntentFactory;
-    @NonNull private final SafetyCenterIssueCache mSafetyCenterIssueCache;
-    @NonNull private final SafetyCenterRepository mSafetyCenterRepository;
-
-    /** Only available on Android U+. */
-    @Nullable private final SafetyCenterIssueDeduplicator mSafetyCenterIssueDeduplicator;
+    private final SafetyCenterDataManager mSafetyCenterDataManager;
 
     SafetyCenterDataFactory(
-            @NonNull SafetyCenterResourcesContext safetyCenterResourcesContext,
-            @NonNull SafetyCenterConfigReader safetyCenterConfigReader,
-            @NonNull SafetyCenterRefreshTracker safetyCenterRefreshTracker,
-            @NonNull PendingIntentFactory pendingIntentFactory,
-            @NonNull SafetyCenterIssueCache safetyCenterIssueCache,
-            @NonNull SafetyCenterRepository safetyCenterRepository,
-            @Nullable SafetyCenterIssueDeduplicator safetyCenterIssueDeduplicator) {
+            SafetyCenterResourcesContext safetyCenterResourcesContext,
+            SafetyCenterConfigReader safetyCenterConfigReader,
+            SafetyCenterRefreshTracker safetyCenterRefreshTracker,
+            PendingIntentFactory pendingIntentFactory,
+            SafetyCenterDataManager safetyCenterDataManager) {
         mSafetyCenterResourcesContext = safetyCenterResourcesContext;
         mSafetyCenterConfigReader = safetyCenterConfigReader;
         mSafetyCenterRefreshTracker = safetyCenterRefreshTracker;
         mPendingIntentFactory = pendingIntentFactory;
-        mSafetyCenterIssueCache = safetyCenterIssueCache;
-        mSafetyCenterRepository = safetyCenterRepository;
-        mSafetyCenterIssueDeduplicator = safetyCenterIssueDeduplicator;
+        mSafetyCenterDataManager = safetyCenterDataManager;
     }
 
     /**
      * Returns a default {@link SafetyCenterData} object to be returned when the API is disabled.
      */
-    @NonNull
     static SafetyCenterData getDefaultSafetyCenterData() {
         SafetyCenterStatus defaultSafetyCenterStatus =
                 new SafetyCenterStatus.Builder("", "")
@@ -132,9 +122,8 @@ final class SafetyCenterDataFactory {
      * <p>If a {@link SafetySourceData} was not set, the default value from the {@link
      * SafetyCenterConfig} is used.
      */
-    @NonNull
     SafetyCenterData assembleSafetyCenterData(
-            @NonNull String packageName, @NonNull UserProfileGroup userProfileGroup) {
+            String packageName, UserProfileGroup userProfileGroup) {
         return assembleSafetyCenterData(packageName, userProfileGroup, getAllGroups());
     }
 
@@ -146,12 +135,10 @@ final class SafetyCenterDataFactory {
      * <p>If a {@link SafetySourceData} was not set, the default value from the {@link
      * SafetyCenterConfig} is used.
      */
-    @NonNull
-    SafetyCenterData assembleSafetyCenterData(
-            @NonNull String packageName,
-            @NonNull UserProfileGroup userProfileGroup,
-            @NonNull List<SafetySourcesGroup> safetySourcesGroups) {
-        List<SafetyCenterIssueExtended> safetyCenterIssuesExtended = new ArrayList<>();
+    public SafetyCenterData assembleSafetyCenterData(
+            String packageName,
+            UserProfileGroup userProfileGroup,
+            List<SafetySourcesGroup> safetySourcesGroups) {
         List<SafetyCenterEntryOrGroup> safetyCenterEntryOrGroups = new ArrayList<>();
         List<SafetyCenterStaticEntryGroup> safetyCenterStaticEntryGroups = new ArrayList<>();
         SafetyCenterOverallState safetyCenterOverallState = new SafetyCenterOverallState();
@@ -159,7 +146,6 @@ final class SafetyCenterDataFactory {
         for (int i = 0; i < safetySourcesGroups.size(); i++) {
             SafetySourcesGroup safetySourcesGroup = safetySourcesGroups.get(i);
 
-            addSafetyCenterIssues(safetyCenterIssuesExtended, safetySourcesGroup, userProfileGroup);
             int safetySourcesGroupType = safetySourcesGroup.getType();
             switch (safetySourcesGroupType) {
                 case SafetySourcesGroup.SAFETY_SOURCES_GROUP_TYPE_STATEFUL:
@@ -186,27 +172,39 @@ final class SafetyCenterDataFactory {
             }
         }
 
-        safetyCenterIssuesExtended.sort(SAFETY_CENTER_ISSUES_BY_SEVERITY_DESCENDING);
-
-        if (SdkLevel.isAtLeastU() && mSafetyCenterIssueDeduplicator != null) {
-            mSafetyCenterIssueDeduplicator.deduplicateIssues(safetyCenterIssuesExtended);
-        }
+        List<SafetySourceIssueInfo> issuesInfo =
+                mSafetyCenterDataManager.getIssuesDedupedSortedDescFor(userProfileGroup);
 
         List<SafetyCenterIssue> safetyCenterIssues = new ArrayList<>();
         List<SafetyCenterIssue> safetyCenterDismissedIssues = new ArrayList<>();
-        SafetyCenterIssueExtended topNonDismissedIssueExtended = null;
+        SafetySourceIssueInfo topNonDismissedIssueInfo = null;
+        int numTipIssues = 0;
+        int numAutomaticIssues = 0;
 
-        for (int i = 0; i < safetyCenterIssuesExtended.size(); i++) {
-            SafetyCenterIssueExtended issueExtended = safetyCenterIssuesExtended.get(i);
-            if (mSafetyCenterIssueCache.isIssueDismissed(issueExtended)) {
-                safetyCenterDismissedIssues.add(issueExtended.getSafetyCenterIssue());
+        for (int i = 0; i < issuesInfo.size(); i++) {
+            SafetySourceIssueInfo issueInfo = issuesInfo.get(i);
+            SafetyCenterIssue safetyCenterIssue =
+                    toSafetyCenterIssue(
+                            issueInfo.getSafetySourceIssue(),
+                            issueInfo.getSafetySourcesGroup(),
+                            issueInfo.getSafetyCenterIssueKey());
+
+            if (mSafetyCenterDataManager.isIssueDismissed(
+                    issueInfo.getSafetyCenterIssueKey(),
+                    issueInfo.getSafetySourceIssue().getSeverityLevel())) {
+                safetyCenterDismissedIssues.add(safetyCenterIssue);
             } else {
-                safetyCenterIssues.add(issueExtended.getSafetyCenterIssue());
+                safetyCenterIssues.add(safetyCenterIssue);
                 safetyCenterOverallState.addIssueOverallSeverityLevel(
                         toSafetyCenterStatusOverallSeverityLevel(
-                                issueExtended.getSafetySourceIssueSeverityLevel()));
-                if (topNonDismissedIssueExtended == null) {
-                    topNonDismissedIssueExtended = issueExtended;
+                                issueInfo.getSafetySourceIssue().getSeverityLevel()));
+                if (topNonDismissedIssueInfo == null) {
+                    topNonDismissedIssueInfo = issueInfo;
+                }
+                if (isTip(issueInfo.getSafetySourceIssue())) {
+                    numTipIssues++;
+                } else if (isAutomatic(issueInfo.getSafetySourceIssue())) {
+                    numAutomaticIssues++;
                 }
             }
         }
@@ -216,14 +214,16 @@ final class SafetyCenterDataFactory {
                 new SafetyCenterStatus.Builder(
                                 getSafetyCenterStatusTitle(
                                         safetyCenterOverallState.getOverallSeverityLevel(),
-                                        topNonDismissedIssueExtended,
+                                        topNonDismissedIssueInfo,
                                         refreshStatus,
                                         safetyCenterOverallState.hasSettingsToReview()),
                                 getSafetyCenterStatusSummary(
-                                        safetyCenterOverallState.getOverallSeverityLevel(),
+                                        safetyCenterOverallState,
+                                        topNonDismissedIssueInfo,
                                         refreshStatus,
-                                        safetyCenterIssues.size(),
-                                        safetyCenterOverallState.hasSettingsToReview()))
+                                        numTipIssues,
+                                        numAutomaticIssues,
+                                        safetyCenterIssues.size()))
                         .setSeverityLevel(safetyCenterOverallState.getOverallSeverityLevel())
                         .setRefreshStatus(refreshStatus)
                         .build();
@@ -252,93 +252,18 @@ final class SafetyCenterDataFactory {
         }
     }
 
-    @NonNull
     private List<SafetySourcesGroup> getAllGroups() {
         return mSafetyCenterConfigReader.getSafetySourcesGroups();
     }
 
-    private void addSafetyCenterIssues(
-            @NonNull List<SafetyCenterIssueExtended> safetyCenterIssues,
-            @NonNull SafetySourcesGroup safetySourcesGroup,
-            @NonNull UserProfileGroup userProfileGroup) {
-        List<SafetySource> safetySources = safetySourcesGroup.getSafetySources();
-        for (int i = 0; i < safetySources.size(); i++) {
-            SafetySource safetySource = safetySources.get(i);
-
-            if (!SafetySources.isExternal(safetySource)) {
-                continue;
-            }
-
-            addSafetyCenterIssues(
-                    safetyCenterIssues,
-                    safetySource,
-                    safetySourcesGroup,
-                    userProfileGroup.getProfileParentUserId());
-
-            if (!SafetySources.supportsManagedProfiles(safetySource)) {
-                continue;
-            }
-
-            int[] managedRunningProfilesUserIds =
-                    userProfileGroup.getManagedRunningProfilesUserIds();
-            for (int j = 0; j < managedRunningProfilesUserIds.length; j++) {
-                int managedRunningProfileUserId = managedRunningProfilesUserIds[j];
-
-                addSafetyCenterIssues(
-                        safetyCenterIssues,
-                        safetySource,
-                        safetySourcesGroup,
-                        managedRunningProfileUserId);
-            }
-        }
-    }
-
-    private void addSafetyCenterIssues(
-            @NonNull List<SafetyCenterIssueExtended> safetyCenterIssues,
-            @NonNull SafetySource safetySource,
-            @NonNull SafetySourcesGroup safetySourcesGroup,
-            @UserIdInt int userId) {
-        SafetySourceKey key = SafetySourceKey.of(safetySource.getId(), userId);
-        SafetySourceData safetySourceData = mSafetyCenterRepository.getSafetySourceData(key);
-
-        if (safetySourceData == null) {
-            return;
-        }
-
-        List<SafetySourceIssue> safetySourceIssues = safetySourceData.getIssues();
-        for (int i = 0; i < safetySourceIssues.size(); i++) {
-            SafetySourceIssue safetySourceIssue = safetySourceIssues.get(i);
-            SafetyCenterIssue safetyCenterIssue =
-                    toSafetyCenterIssue(
-                            safetySourceIssue, safetySource, safetySourcesGroup, userId);
-
-            SafetyCenterIssueExtended.Builder issueExtendedBuilder =
-                    new SafetyCenterIssueExtended.Builder(
-                            safetyCenterIssue,
-                            safetySourceIssue.getIssueCategory(),
-                            safetySourceIssue.getSeverityLevel());
-            if (SdkLevel.isAtLeastU()) {
-                issueExtendedBuilder.setDeduplicationGroup(safetySource.getDeduplicationGroup());
-                issueExtendedBuilder.setDeduplicationId(safetySourceIssue.getDeduplicationId());
-            }
-            safetyCenterIssues.add(issueExtendedBuilder.build());
-        }
-    }
-
     @Nullable
     private SafetyCenterIssue toSafetyCenterIssue(
-            @NonNull SafetySourceIssue safetySourceIssue,
-            @NonNull SafetySource safetySource,
-            @NonNull SafetySourcesGroup safetySourcesGroup,
-            @UserIdInt int userId) {
+            SafetySourceIssue safetySourceIssue,
+            SafetySourcesGroup safetySourcesGroup,
+            SafetyCenterIssueKey safetyCenterIssueKey) {
         SafetyCenterIssueId safetyCenterIssueId =
                 SafetyCenterIssueId.newBuilder()
-                        .setSafetyCenterIssueKey(
-                                SafetyCenterIssueKey.newBuilder()
-                                        .setSafetySourceId(safetySource.getId())
-                                        .setSafetySourceIssueId(safetySourceIssue.getId())
-                                        .setUserId(userId)
-                                        .build())
+                        .setSafetyCenterIssueKey(safetyCenterIssueKey)
                         .setIssueTypeId(safetySourceIssue.getIssueTypeId())
                         .build();
 
@@ -379,10 +304,9 @@ final class SafetyCenterDataFactory {
         return safetyCenterIssueBuilder.build();
     }
 
-    @NonNull
     private SafetyCenterIssue.Action toSafetyCenterIssueAction(
-            @NonNull SafetySourceIssue.Action safetySourceIssueAction,
-            @NonNull SafetyCenterIssueKey safetyCenterIssueKey) {
+            SafetySourceIssue.Action safetySourceIssueAction,
+            SafetyCenterIssueKey safetyCenterIssueKey) {
         SafetyCenterIssueActionId safetyCenterIssueActionId =
                 SafetyCenterIssueActionId.newBuilder()
                         .setSafetyCenterIssueKey(safetyCenterIssueKey)
@@ -393,22 +317,39 @@ final class SafetyCenterDataFactory {
                         safetyCenterIssueKey.getSafetySourceId(),
                         safetySourceIssueAction.getPendingIntent(),
                         false);
-        return new SafetyCenterIssue.Action.Builder(
-                        SafetyCenterIds.encodeToString(safetyCenterIssueActionId),
-                        safetySourceIssueAction.getLabel(),
-                        requireNonNull(issueActionPendingIntent))
-                .setSuccessMessage(safetySourceIssueAction.getSuccessMessage())
-                .setIsInFlight(mSafetyCenterRepository.actionIsInFlight(safetyCenterIssueActionId))
-                .setWillResolve(safetySourceIssueAction.willResolve())
-                .build();
+
+        SafetyCenterIssue.Action.Builder builder =
+                new SafetyCenterIssue.Action.Builder(
+                                SafetyCenterIds.encodeToString(safetyCenterIssueActionId),
+                                safetySourceIssueAction.getLabel(),
+                                requireNonNull(issueActionPendingIntent))
+                        .setSuccessMessage(safetySourceIssueAction.getSuccessMessage())
+                        .setIsInFlight(
+                                mSafetyCenterDataManager.actionIsInFlight(
+                                        safetyCenterIssueActionId))
+                        .setWillResolve(safetySourceIssueAction.willResolve());
+        if (SdkLevel.isAtLeastU()) {
+            if (safetySourceIssueAction.getConfirmationDialogDetails() != null) {
+                SafetySourceIssue.Action.ConfirmationDialogDetails detailsFrom =
+                        safetySourceIssueAction.getConfirmationDialogDetails();
+                ConfirmationDialogDetails detailsTo =
+                        new ConfirmationDialogDetails(
+                                detailsFrom.getTitle(),
+                                detailsFrom.getText(),
+                                detailsFrom.getAcceptButtonText(),
+                                detailsFrom.getDenyButtonText());
+                builder.setConfirmationDialogDetails(detailsTo);
+            }
+        }
+        return builder.build();
     }
 
     private void addSafetyCenterEntryGroup(
-            @NonNull SafetyCenterOverallState safetyCenterOverallState,
-            @NonNull List<SafetyCenterEntryOrGroup> safetyCenterEntryOrGroups,
-            @NonNull SafetySourcesGroup safetySourcesGroup,
-            @NonNull String defaultPackageName,
-            @NonNull UserProfileGroup userProfileGroup) {
+            SafetyCenterOverallState safetyCenterOverallState,
+            List<SafetyCenterEntryOrGroup> safetyCenterEntryOrGroups,
+            SafetySourcesGroup safetySourcesGroup,
+            String defaultPackageName,
+            UserProfileGroup userProfileGroup) {
         int groupSafetyCenterEntryLevel = SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNSPECIFIED;
 
         List<SafetySource> safetySources = safetySourcesGroup.getSafetySources();
@@ -496,9 +437,9 @@ final class SafetyCenterDataFactory {
 
     @Nullable
     private CharSequence getSafetyCenterEntryGroupSummary(
-            @NonNull SafetySourcesGroup safetySourcesGroup,
+            SafetySourcesGroup safetySourcesGroup,
             @SafetyCenterEntry.EntrySeverityLevel int groupSafetyCenterEntryLevel,
-            @NonNull List<SafetyCenterEntry> entries) {
+            List<SafetyCenterEntry> entries) {
         switch (groupSafetyCenterEntryLevel) {
             case SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_CRITICAL_WARNING:
             case SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_RECOMMENDATION:
@@ -518,7 +459,7 @@ final class SafetyCenterDataFactory {
 
                     SafetySourceKey key = toSafetySourceKey(entry.getId());
                     SafetySourceData safetySourceData =
-                            mSafetyCenterRepository.getSafetySourceData(key);
+                            mSafetyCenterDataManager.getSafetySourceDataInternal(key);
                     boolean hasIssues =
                             safetySourceData != null && !safetySourceData.getIssues().isEmpty();
 
@@ -536,7 +477,7 @@ final class SafetyCenterDataFactory {
                     SafetyCenterEntry entry = entries.get(i);
 
                     SafetySourceKey key = toSafetySourceKey(entry.getId());
-                    if (mSafetyCenterRepository.sourceHasError(key)) {
+                    if (mSafetyCenterDataManager.sourceHasError(key)) {
                         errorEntries++;
                     }
                 }
@@ -557,8 +498,7 @@ final class SafetyCenterDataFactory {
 
     @Nullable
     private CharSequence getDefaultGroupSummary(
-            @NonNull SafetySourcesGroup safetySourcesGroup,
-            @NonNull List<SafetyCenterEntry> entries) {
+            SafetySourcesGroup safetySourcesGroup, List<SafetyCenterEntry> entries) {
         CharSequence groupSummary =
                 mSafetyCenterResourcesContext.getOptionalString(
                         safetySourcesGroup.getSummaryResId());
@@ -582,10 +522,10 @@ final class SafetyCenterDataFactory {
 
     @SafetyCenterEntry.EntrySeverityLevel
     private int addSafetyCenterEntry(
-            @NonNull SafetyCenterOverallState safetyCenterOverallState,
-            @NonNull List<SafetyCenterEntry> entries,
-            @NonNull SafetySource safetySource,
-            @NonNull String defaultPackageName,
+            SafetyCenterOverallState safetyCenterOverallState,
+            List<SafetyCenterEntry> entries,
+            SafetySource safetySource,
+            String defaultPackageName,
             @UserIdInt int userId,
             boolean isUserManaged,
             boolean isManagedUserRunning) {
@@ -610,8 +550,8 @@ final class SafetyCenterDataFactory {
 
     @Nullable
     private SafetyCenterEntry toSafetyCenterEntry(
-            @NonNull SafetySource safetySource,
-            @NonNull String defaultPackageName,
+            SafetySource safetySource,
+            String defaultPackageName,
             @UserIdInt int userId,
             boolean isUserManaged,
             boolean isManagedUserRunning) {
@@ -621,13 +561,18 @@ final class SafetyCenterDataFactory {
             case SafetySource.SAFETY_SOURCE_TYPE_DYNAMIC:
                 SafetySourceKey key = SafetySourceKey.of(safetySource.getId(), userId);
                 SafetySourceStatus safetySourceStatus =
-                        getSafetySourceStatus(mSafetyCenterRepository.getSafetySourceData(key));
+                        getSafetySourceStatus(
+                                mSafetyCenterDataManager.getSafetySourceDataInternal(key));
                 boolean defaultEntryDueToQuietMode = isUserManaged && !isManagedUserRunning;
                 if (safetySourceStatus == null || defaultEntryDueToQuietMode) {
+                    int severityLevel =
+                            defaultEntryDueToQuietMode
+                                    ? SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNSPECIFIED
+                                    : SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNKNOWN;
                     return toDefaultSafetyCenterEntry(
                             safetySource,
                             safetySource.getPackageName(),
-                            SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNKNOWN,
+                            severityLevel,
                             SafetyCenterEntry.SEVERITY_UNSPECIFIED_ICON_TYPE_NO_RECOMMENDATION,
                             userId,
                             isUserManaged,
@@ -698,8 +643,8 @@ final class SafetyCenterDataFactory {
 
     @Nullable
     private SafetyCenterEntry toDefaultSafetyCenterEntry(
-            @NonNull SafetySource safetySource,
-            @NonNull String packageName,
+            SafetySource safetySource,
+            String packageName,
             @SafetyCenterEntry.EntrySeverityLevel int entrySeverityLevel,
             @SafetyCenterEntry.SeverityUnspecifiedIconType int severityUnspecifiedIconType,
             @UserIdInt int userId,
@@ -732,7 +677,7 @@ final class SafetyCenterDataFactory {
                                 safetySource.getTitleForWorkResId())
                         : mSafetyCenterResourcesContext.getString(safetySource.getTitleResId());
         CharSequence summary =
-                mSafetyCenterRepository.sourceHasError(
+                mSafetyCenterDataManager.sourceHasError(
                                 SafetySourceKey.of(safetySource.getId(), userId))
                         ? getRefreshErrorString(1)
                         : mSafetyCenterResourcesContext.getOptionalString(
@@ -753,11 +698,11 @@ final class SafetyCenterDataFactory {
     }
 
     private void addSafetyCenterStaticEntryGroup(
-            @NonNull SafetyCenterOverallState safetyCenterOverallState,
-            @NonNull List<SafetyCenterStaticEntryGroup> safetyCenterStaticEntryGroups,
-            @NonNull SafetySourcesGroup safetySourcesGroup,
-            @NonNull String defaultPackageName,
-            @NonNull UserProfileGroup userProfileGroup) {
+            SafetyCenterOverallState safetyCenterOverallState,
+            List<SafetyCenterStaticEntryGroup> safetyCenterStaticEntryGroups,
+            SafetySourcesGroup safetySourcesGroup,
+            String defaultPackageName,
+            UserProfileGroup userProfileGroup) {
         List<SafetySource> safetySources = safetySourcesGroup.getSafetySources();
         List<SafetyCenterStaticEntry> staticEntries = new ArrayList<>(safetySources.size());
         for (int i = 0; i < safetySources.size(); i++) {
@@ -804,10 +749,10 @@ final class SafetyCenterDataFactory {
     }
 
     private void addSafetyCenterStaticEntry(
-            @NonNull SafetyCenterOverallState safetyCenterOverallState,
-            @NonNull List<SafetyCenterStaticEntry> staticEntries,
-            @NonNull SafetySource safetySource,
-            @NonNull String defaultPackageName,
+            SafetyCenterOverallState safetyCenterOverallState,
+            List<SafetyCenterStaticEntry> staticEntries,
+            SafetySource safetySource,
+            String defaultPackageName,
             @UserIdInt int userId,
             boolean isUserManaged,
             boolean isManagedUserRunning) {
@@ -821,11 +766,10 @@ final class SafetyCenterDataFactory {
         if (staticEntry == null) {
             return;
         }
-        boolean isQuietModeEnabled = isUserManaged && !isManagedUserRunning;
         boolean hasError =
-                mSafetyCenterRepository.sourceHasError(
+                mSafetyCenterDataManager.sourceHasError(
                         SafetySourceKey.of(safetySource.getId(), userId));
-        if (isQuietModeEnabled || hasError) {
+        if (hasError) {
             safetyCenterOverallState.addEntryOverallSeverityLevel(
                     SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_UNKNOWN);
         }
@@ -834,8 +778,8 @@ final class SafetyCenterDataFactory {
 
     @Nullable
     private SafetyCenterStaticEntry toSafetyCenterStaticEntry(
-            @NonNull SafetySource safetySource,
-            @NonNull String defaultPackageName,
+            SafetySource safetySource,
+            String defaultPackageName,
             @UserIdInt int userId,
             boolean isUserManaged,
             boolean isManagedUserRunning) {
@@ -845,7 +789,8 @@ final class SafetyCenterDataFactory {
             case SafetySource.SAFETY_SOURCE_TYPE_DYNAMIC:
                 SafetySourceKey key = SafetySourceKey.of(safetySource.getId(), userId);
                 SafetySourceStatus safetySourceStatus =
-                        getSafetySourceStatus(mSafetyCenterRepository.getSafetySourceData(key));
+                        getSafetySourceStatus(
+                                mSafetyCenterDataManager.getSafetySourceDataInternal(key));
                 boolean defaultEntryDueToQuietMode = isUserManaged && !isManagedUserRunning;
                 if (safetySourceStatus != null && !defaultEntryDueToQuietMode) {
                     PendingIntent pendingIntent = safetySourceStatus.getPendingIntent();
@@ -879,8 +824,8 @@ final class SafetyCenterDataFactory {
 
     @Nullable
     private SafetyCenterStaticEntry toDefaultSafetyCenterStaticEntry(
-            @NonNull SafetySource safetySource,
-            @NonNull String packageName,
+            SafetySource safetySource,
+            String packageName,
             @UserIdInt int userId,
             boolean isUserManaged,
             boolean isManagedUserRunning) {
@@ -909,7 +854,7 @@ final class SafetyCenterDataFactory {
                                 safetySource.getTitleForWorkResId())
                         : mSafetyCenterResourcesContext.getString(safetySource.getTitleResId());
         CharSequence summary =
-                mSafetyCenterRepository.sourceHasError(
+                mSafetyCenterDataManager.sourceHasError(
                                 SafetySourceKey.of(safetySource.getId(), userId))
                         ? getRefreshErrorString(1)
                         : mSafetyCenterResourcesContext.getOptionalString(
@@ -934,9 +879,8 @@ final class SafetyCenterDataFactory {
         return safetySourceData.getStatus();
     }
 
-    @NonNull
     private static String getStaticSourcePackageNameOrDefault(
-            @NonNull SafetySource safetySource, @NonNull String defaultPackageName) {
+            SafetySource safetySource, String defaultPackageName) {
         if (!SdkLevel.isAtLeastU()) {
             return defaultPackageName;
         }
@@ -1037,7 +981,7 @@ final class SafetyCenterDataFactory {
             @SafetySourcesGroup.StatelessIconType int statelessIconType) {
         switch (statelessIconType) {
             case SafetySourcesGroup.STATELESS_ICON_TYPE_NONE:
-                return SafetyCenterEntry.SEVERITY_UNSPECIFIED_ICON_TYPE_NO_ICON;
+                return SafetyCenterEntry.SEVERITY_UNSPECIFIED_ICON_TYPE_NO_RECOMMENDATION;
             case SafetySourcesGroup.STATELESS_ICON_TYPE_PRIVACY:
                 return SafetyCenterEntry.SEVERITY_UNSPECIFIED_ICON_TYPE_PRIVACY;
         }
@@ -1063,10 +1007,9 @@ final class SafetyCenterDataFactory {
         return SafetyCenterEntry.IconAction.ICON_ACTION_TYPE_INFO;
     }
 
-    @NonNull
     private String getSafetyCenterStatusTitle(
             @SafetyCenterStatus.OverallSeverityLevel int overallSeverityLevel,
-            @Nullable SafetyCenterIssueExtended topNonDismissedIssueExtended,
+            @Nullable SafetySourceIssueInfo topNonDismissedIssueInfo,
             @SafetyCenterStatus.RefreshStatus int refreshStatus,
             boolean hasSettingsToReview) {
         boolean overallSeverityUnknown =
@@ -1087,7 +1030,7 @@ final class SafetyCenterDataFactory {
                         "overall_severity_level_ok_title");
             case SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_RECOMMENDATION:
                 return getStatusTitleFromIssueCategories(
-                        topNonDismissedIssueExtended,
+                        topNonDismissedIssueInfo,
                         "overall_severity_level_device_recommendation_title",
                         "overall_severity_level_account_recommendation_title",
                         "overall_severity_level_safety_recommendation_title",
@@ -1096,7 +1039,7 @@ final class SafetyCenterDataFactory {
                         "overall_severity_level_personal_recommendation_title");
             case SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_CRITICAL_WARNING:
                 return getStatusTitleFromIssueCategories(
-                        topNonDismissedIssueExtended,
+                        topNonDismissedIssueInfo,
                         "overall_severity_level_critical_device_warning_title",
                         "overall_severity_level_critical_account_warning_title",
                         "overall_severity_level_critical_safety_warning_title",
@@ -1109,21 +1052,20 @@ final class SafetyCenterDataFactory {
         return "";
     }
 
-    @NonNull
     private String getStatusTitleFromIssueCategories(
-            @Nullable SafetyCenterIssueExtended topNonDismissedIssueExtended,
-            @NonNull String deviceResourceName,
-            @NonNull String accountResourceName,
-            @NonNull String generalResourceName,
-            @NonNull String dataResourceName,
-            @NonNull String passwordsResourceName,
-            @NonNull String personalSafetyResourceName) {
+            @Nullable SafetySourceIssueInfo topNonDismissedIssueInfo,
+            String deviceResourceName,
+            String accountResourceName,
+            String generalResourceName,
+            String dataResourceName,
+            String passwordsResourceName,
+            String personalSafetyResourceName) {
         String generalString = mSafetyCenterResourcesContext.getStringByName(generalResourceName);
-        if (topNonDismissedIssueExtended == null) {
+        if (topNonDismissedIssueInfo == null) {
             Log.w(TAG, "No safety center issues found in a non-green status");
             return generalString;
         }
-        int issueCategory = topNonDismissedIssueExtended.getSafetySourceIssueCategory();
+        int issueCategory = topNonDismissedIssueInfo.getSafetySourceIssue().getIssueCategory();
         switch (issueCategory) {
             case SafetySourceIssue.ISSUE_CATEGORY_DEVICE:
                 return mSafetyCenterResourcesContext.getStringByName(deviceResourceName);
@@ -1148,44 +1090,63 @@ final class SafetyCenterDataFactory {
         return generalString;
     }
 
-    @NonNull
     private String getSafetyCenterStatusSummary(
-            @SafetyCenterStatus.OverallSeverityLevel int overallSeverityLevel,
+            SafetyCenterOverallState safetyCenterOverallState,
+            @Nullable SafetySourceIssueInfo topNonDismissedIssue,
             @SafetyCenterStatus.RefreshStatus int refreshStatus,
-            int numberOfIssues,
-            boolean hasSettingsToReview) {
+            int numTipIssues,
+            int numAutomaticIssues,
+            int numIssues) {
         String refreshStatusSummary = getSafetyCenterRefreshStatusSummary(refreshStatus);
         if (refreshStatusSummary != null) {
             return refreshStatusSummary;
         }
+        int overallSeverityLevel = safetyCenterOverallState.getOverallSeverityLevel();
         switch (overallSeverityLevel) {
             case SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_UNKNOWN:
             case SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_OK:
-                if (numberOfIssues == 0) {
-                    if (hasSettingsToReview) {
+                if (topNonDismissedIssue == null) {
+                    if (safetyCenterOverallState.hasSettingsToReview()) {
                         return mSafetyCenterResourcesContext.getStringByName(
                                 "overall_severity_level_ok_review_summary");
                     }
                     return mSafetyCenterResourcesContext.getStringByName(
                             "overall_severity_level_ok_summary");
+                } else if (isTip(topNonDismissedIssue.getSafetySourceIssue())) {
+                    return mSafetyCenterResourcesContext.getStringByName(
+                            "overall_severity_level_tip_summary", numTipIssues);
+
+                } else if (isAutomatic(topNonDismissedIssue.getSafetySourceIssue())) {
+                    return mSafetyCenterResourcesContext.getStringByName(
+                            "overall_severity_level_action_taken_summary", numAutomaticIssues);
                 }
                 // Fall through.
             case SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_RECOMMENDATION:
             case SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_CRITICAL_WARNING:
-                return getIcuPluralsString("overall_severity_n_alerts_summary", numberOfIssues);
+                return getIcuPluralsString("overall_severity_n_alerts_summary", numIssues);
         }
 
         Log.w(TAG, "Unexpected SafetyCenterStatus.OverallSeverityLevel: " + overallSeverityLevel);
         return "";
     }
 
-    @NonNull
+    private static boolean isTip(SafetySourceIssue safetySourceIssue) {
+        return SdkLevel.isAtLeastU()
+                && safetySourceIssue.getIssueActionability()
+                        == SafetySourceIssue.ISSUE_ACTIONABILITY_TIP;
+    }
+
+    private static boolean isAutomatic(SafetySourceIssue safetySourceIssue) {
+        return SdkLevel.isAtLeastU()
+                && safetySourceIssue.getIssueActionability()
+                        == SafetySourceIssue.ISSUE_ACTIONABILITY_AUTOMATIC;
+    }
+
     private String getRefreshErrorString(int numberOfErrorEntries) {
         return getIcuPluralsString("refresh_error", numberOfErrorEntries);
     }
 
-    @NonNull
-    private String getIcuPluralsString(String name, int count, @NonNull Object... formatArgs) {
+    private String getIcuPluralsString(String name, int count, Object... formatArgs) {
         MessageFormat messageFormat =
                 new MessageFormat(
                         mSafetyCenterResourcesContext.getStringByName(name, formatArgs),
@@ -1229,25 +1190,9 @@ final class SafetyCenterDataFactory {
         return null;
     }
 
-    @NonNull
-    private static SafetySourceKey toSafetySourceKey(@NonNull String safetyCenterEntryIdString) {
+    private static SafetySourceKey toSafetySourceKey(String safetyCenterEntryIdString) {
         SafetyCenterEntryId id = SafetyCenterIds.entryIdFromString(safetyCenterEntryIdString);
         return SafetySourceKey.of(id.getSafetySourceId(), id.getUserId());
-    }
-
-    /** A comparator to order {@link SafetyCenterIssueExtended} by severity level descending. */
-    private static final class SafetyCenterIssuesBySeverityDescending
-            implements Comparator<SafetyCenterIssueExtended> {
-
-        private SafetyCenterIssuesBySeverityDescending() {}
-
-        @Override
-        public int compare(
-                @NonNull SafetyCenterIssueExtended left, @NonNull SafetyCenterIssueExtended right) {
-            return Integer.compare(
-                    right.getSafetyCenterIssue().getSeverityLevel(),
-                    left.getSafetyCenterIssue().getSeverityLevel());
-        }
     }
 
     /**

@@ -91,6 +91,7 @@ android_app {
         // Soong fails to automatically add this dependency because all the
         // *.kt sources are inside a filegroup.
         "kotlin-annotations",
+        "safety-center-annotations",
     ],
 
     static_libs: [
@@ -131,16 +132,19 @@ android_app {
         "SettingsLibFooterPreference",
         "SettingsLibSelectorWithWidgetPreference",
         "SettingsLibTwoTargetPreference",
+        "SettingsLibIllustrationPreference",
         "androidx.annotation_annotation",
         "permissioncontroller-statsd",
         "car-ui-lib",
         "libprotobuf-java-lite",
         "safety-center-internal-data",
+        "safety-center-pending-intents",
         "SettingsLibUtils",
         "modules-utils-build_system",
         "safety-center-resources-lib",
         "lottie",
-        "safety-label"
+        "safety-label",
+        "role-controller",
     ],
 
     proto: {

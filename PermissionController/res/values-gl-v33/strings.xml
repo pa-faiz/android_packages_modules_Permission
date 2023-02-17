@@ -19,7 +19,7 @@
     <string name="role_dialer_request_description" msgid="6188305064871543419">"Esta aplicación vai ter permiso para enviarche notificacións e tamén poderá acceder á cámara, aos contactos, ao micrófono, ao teléfono e ás SMS"</string>
     <string name="role_sms_request_description" msgid="1506966389698625395">"Esta aplicación vai ter permiso para enviarche notificacións e tamén poderá acceder á cámara, aos contactos, aos ficheiros, ao micrófono, ao teléfono e ás SMS"</string>
     <string name="permission_description_summary_storage" msgid="1917071243213043858">"As aplicacións que contan con este permiso poden acceder a todos os ficheiros deste dispositivo"</string>
-    <string name="work_policy_title" msgid="832967780713677409">"Información sobre a túa política de traballo"</string>
+    <string name="work_policy_title" msgid="832967780713677409">"Información sobre a política do teu traballo"</string>
     <string name="work_policy_summary" msgid="3886113358084963931">"A configuración xestiónaa o teu administrador de TI"</string>
     <string name="safety_center_entry_group_expand_action" msgid="5358289574941779652">"Despregar e mostrar lista"</string>
     <string name="safety_center_entry_group_collapse_action" msgid="1525710152244405656">"Contraer lista e ocultar configuración"</string>
@@ -27,7 +27,8 @@
     <string name="safety_center_entry_group_with_actions_needed_content_description" msgid="2708884606775932657">"Lista. <xliff:g id="ENTRY_TITLE">%1$s</xliff:g>. Cómpre realizar accións. <xliff:g id="ENTRY_SUMMARY">%2$s</xliff:g>"</string>
     <string name="safety_center_entry_group_item_content_description" msgid="7348298582877249787">"Elemento da lista. <xliff:g id="ENTRY_ITEM_TITLE">%1$s</xliff:g>. <xliff:g id="ENTRY_ITEM_SUMMARY">%2$s</xliff:g>"</string>
     <string name="safety_center_entry_content_description" msgid="3639565652938224321">"<xliff:g id="ENTRY_ITEM_TITLE">%1$s</xliff:g>. <xliff:g id="ENTRY_ITEM_SUMMARY">%2$s</xliff:g>"</string>
-    <string name="safety_center_more_issues_card_title" msgid="8599419758014246517">"Ver todas as alertas"</string>
+    <!-- no translation found for safety_center_more_issues_card_title (7425844746197493312) -->
+    <skip />
     <string name="safety_center_more_issues_card_expand_action" msgid="7109451851052272946">"{count,plural, =1{Despregar tarxeta e ver 1 alerta máis}other{Despregar tarxeta e ver # alertas máis}}"</string>
     <string name="safety_center_issue_card_content_description" msgid="1281390769721765363">"Alerta. <xliff:g id="ISSUE_CARD_TITLE">%1$s</xliff:g>. <xliff:g id="ISSUE_CARD_SUMMARY">%2$s</xliff:g>"</string>
     <string name="safety_center_issue_card_content_description_with_subtitle" msgid="5504040663935313539">"Alerta. <xliff:g id="ISSUE_CARD_TITLE">%1$s</xliff:g>. <xliff:g id="ISSUE_CARD_SUBTITLE">%2$s</xliff:g>. <xliff:g id="ISSUE_CARD_SUMMARY">%3$s</xliff:g>"</string>

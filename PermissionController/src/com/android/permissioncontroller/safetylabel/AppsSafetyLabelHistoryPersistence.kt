@@ -18,6 +18,7 @@ package com.android.permissioncontroller.safetylabel
 
 import android.content.Context
 import android.os.Build
+import android.provider.DeviceConfig
 import android.util.AtomicFile
 import android.util.Log
 import android.util.Xml
@@ -58,6 +59,18 @@ object AppsSafetyLabelHistoryPersistence {
     private val LOG_TAG = "AppsSafetyLabelHistoryPersistence".take(23)
     private val readWriteLock = Any()
 
+    private var listeners = mutableSetOf<ChangeListener>()
+
+    /** Adds a listener to listen for changes to persisted safety labels. */
+    fun addListener(listener: ChangeListener) {
+        listeners.add(listener)
+    }
+
+    /** Removes a listener from listening for changes to persisted safety labels. */
+    fun removeListener(listener: ChangeListener) {
+        listeners.remove(listener)
+    }
+
     /**
      * Reads the provided file storing safety label history and returns the parsed
      * [AppsSafetyLabelHistory].
@@ -80,6 +93,21 @@ object AppsSafetyLabelHistoryPersistence {
         }
 
         return null
+    }
+
+    /** Returns the last updated time for each stored [AppSafetyLabelHistory]. */
+    fun getSafetyLabelsLastUpdatedTimes(file: File): Map<AppInfo, Instant> {
+        val appHistories = read(file)?.appSafetyLabelHistories ?: return emptyMap()
+
+        val lastUpdatedTimes = mutableMapOf<AppInfo, Instant>()
+        for (appHistory in appHistories) {
+            val lastSafetyLabelReceiptTime: Instant? = appHistory.getLastReceiptTime()
+            if (lastSafetyLabelReceiptTime != null) {
+                lastUpdatedTimes[appHistory.appInfo] = lastSafetyLabelReceiptTime
+            }
+        }
+
+        return lastUpdatedTimes
     }
 
     /**
@@ -110,6 +138,94 @@ object AppsSafetyLabelHistoryPersistence {
         }
     }
 
+    /**
+     * Writes new safety labels to the provided file, if the provided safety labels have changed
+     * from the last recorded (when considered in order of [SafetyLabel.receivedAt]).
+     */
+    fun recordSafetyLabels(safetyLabelsToAdd: Set<SafetyLabel>, file: File) {
+        synchronized(readWriteLock) {
+            val currentAppsSafetyLabelHistory = read(file) ?: AppsSafetyLabelHistory(listOf())
+            val appInfoToOrderedSafetyLabels =
+                safetyLabelsToAdd
+                    .groupBy { it.appInfo }
+                    .mapValues { (appInfo, safetyLabels) ->
+                        safetyLabels.sortedBy { it.receivedAt }
+                    }
+            val currentAppHistories = currentAppsSafetyLabelHistory.appSafetyLabelHistories
+            val newApps =
+                appInfoToOrderedSafetyLabels.keys - currentAppHistories.map { it.appInfo }.toSet()
+
+            // For apps that already have some safety labels persisted, add the provided safety
+            // labels to the history.
+            var updatedAppHistories: List<AppSafetyLabelHistory> =
+                currentAppHistories.map { currentAppHistory: AppSafetyLabelHistory ->
+                    val safetyLabels = appInfoToOrderedSafetyLabels[currentAppHistory.appInfo]
+                    if (safetyLabels != null) {
+                        currentAppHistory.addSafetyLabelsIfChanged(safetyLabels)
+                    } else {
+                        currentAppHistory
+                    }
+                }
+
+            // For apps that don't already have some safety labels persisted, add new
+            // AppSafetyLabelHistory instances for them with the provided safety labels.
+            updatedAppHistories =
+                updatedAppHistories.toMutableList().apply {
+                    newApps.forEach { newAppInfo ->
+                        val safetyLabelsForNewApp = appInfoToOrderedSafetyLabels[newAppInfo]
+                        if (safetyLabelsForNewApp != null) {
+                            add(AppSafetyLabelHistory(newAppInfo, safetyLabelsForNewApp))
+                        }
+                    }
+                }
+
+            write(file, AppsSafetyLabelHistory(updatedAppHistories))
+        }
+    }
+
+    /** Deletes stored safety labels for all apps in [appInfosToRemove]. */
+    fun deleteSafetyLabelsForApps(appInfosToRemove: Set<AppInfo>, file: File) {
+        synchronized(readWriteLock) {
+            val currentAppsSafetyLabelHistory = read(file) ?: AppsSafetyLabelHistory(listOf())
+            val historiesWithAppsRemoved =
+                currentAppsSafetyLabelHistory.appSafetyLabelHistories.filter {
+                    it.appInfo !in appInfosToRemove
+                }
+
+            write(file, AppsSafetyLabelHistory(historiesWithAppsRemoved))
+        }
+    }
+
+    /**
+     * Deletes stored safety labels so that there is at most one safety label for each app with
+     * [SafetyLabel.receivedAt] earlier that [startTime].
+     */
+    fun deleteSafetyLabelsOlderThan(startTime: Instant, file: File) {
+        synchronized(readWriteLock) {
+            val currentAppsSafetyLabelHistory = read(file) ?: AppsSafetyLabelHistory(listOf())
+            val updatedAppHistories =
+                currentAppsSafetyLabelHistory.appSafetyLabelHistories.map { appHistory ->
+                    val history = appHistory.safetyLabelHistory
+                    // Retrieve the last safety label that was received prior to startTime.
+                    val last =
+                        history.indexOfLast { safetyLabels -> safetyLabels.receivedAt <= startTime }
+                    if (last <= 0) {
+                        // If there is only one or no safety labels received prior to startTime,
+                        // then return the history as is.
+                        appHistory
+                    } else {
+                        // Else, discard all safety labels other than the last safety label prior
+                        // to startTime. The aim is retain one safety label prior to start time to
+                        // be used as the "before" safety label when determining updates.
+                        AppSafetyLabelHistory(
+                            appHistory.appInfo, history.subList(last, history.size))
+                    }
+                }
+
+            write(file, AppsSafetyLabelHistory(updatedAppHistories))
+        }
+    }
+
     /** Serializes and writes the provided [AppsSafetyLabelHistory] to the provided file. */
     fun write(file: File, appsSafetyLabelHistory: AppsSafetyLabelHistory) {
         val atomicFile = AtomicFile(file)
@@ -124,6 +240,7 @@ object AppsSafetyLabelHistoryPersistence {
             serializer.serializeAllAppSafetyLabelHistory(appsSafetyLabelHistory)
             serializer.endDocument()
             atomicFile.finishWrite(outputStream)
+            listeners.forEach { it.onSafetyLabelHistoryChanged() }
         } catch (e: Exception) {
             Log.i(
                 LOG_TAG, "Failed to write to $file. Previous version of file will be restored.", e)
@@ -161,6 +278,9 @@ object AppsSafetyLabelHistoryPersistence {
     /** Returns the file persisting safety label history for installed apps. */
     fun getSafetyLabelHistoryFile(context: Context): File =
         File(context.filesDir, APPS_SAFETY_LABEL_HISTORY_PERSISTENCE_FILE_NAME)
+
+    private fun AppSafetyLabelHistory.getLastReceiptTime(): Instant? =
+        this.safetyLabelHistory.lastOrNull()?.receivedAt
 
     private fun XmlPullParser.parseHistoryFile(): AppsSafetyLabelHistory {
         if (eventType != XmlPullParser.START_DOCUMENT) {
@@ -391,7 +511,22 @@ object AppsSafetyLabelHistoryPersistence {
     ): AppSafetyLabelHistory {
         val latestSafetyLabel = safetyLabelHistory.lastOrNull()
         return if (latestSafetyLabel?.dataLabel == safetyLabel.dataLabel) this
-        else this.withSafetyLabel(safetyLabel)
+        else this.withSafetyLabel(safetyLabel, getMaxSafetyLabelsToPersist())
+    }
+
+    private fun AppSafetyLabelHistory.addSafetyLabelsIfChanged(
+        safetyLabels: List<SafetyLabel>
+    ): AppSafetyLabelHistory {
+        var updatedAppHistory = this
+        val maxSafetyLabels = getMaxSafetyLabelsToPersist()
+        for (safetyLabel in safetyLabels) {
+            val latestSafetyLabel = updatedAppHistory.safetyLabelHistory.lastOrNull()
+            if (latestSafetyLabel?.dataLabel != safetyLabel.dataLabel) {
+                updatedAppHistory = updatedAppHistory.withSafetyLabel(safetyLabel, maxSafetyLabels)
+            }
+        }
+
+        return updatedAppHistory
     }
 
     private fun AppSafetyLabelHistory.getLatestSafetyLabel() = safetyLabelHistory.lastOrNull()
@@ -407,4 +542,23 @@ object AppsSafetyLabelHistoryPersistence {
         }
             ?: // the first safety label received after startTime, as a fallback
         safetyLabelHistory.firstOrNull { it.receivedAt.isAfter(startTime) }
+
+    private const val PROPERTY_MAX_SAFETY_LABELS_PERSISTED_PER_APP =
+        "max_safety_labels_persisted_per_app"
+
+    /**
+     * Returns the maximum number of safety labels to persist per app.
+     *
+     * Note that this will be checked at the time of adding a new safety label to storage for an
+     * app; simply changing this Device Config property will not result in any storage being purged.
+     */
+    private fun getMaxSafetyLabelsToPersist() =
+        DeviceConfig.getInt(
+            DeviceConfig.NAMESPACE_PRIVACY, PROPERTY_MAX_SAFETY_LABELS_PERSISTED_PER_APP, 20)
+
+    /** An interface to listen to changes to persisted safety labels. */
+    interface ChangeListener {
+        /** Callback when the persisted safety labels are changed. */
+        fun onSafetyLabelHistoryChanged()
+    }
 }

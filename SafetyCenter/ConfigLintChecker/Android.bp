@@ -21,6 +21,7 @@ java_library_host {
     srcs: [
         "java/**/*.java",
         "java/**/*.kt",
+        ":safetycenter-annotations-sources",
         ":safetycenter-config-api-sources",
         ":safetycenter-config-parser-sources",
     ],
@@ -63,7 +64,11 @@ java_test_host {
                 // Exclude these classes from tradefed's search.
                 name: "exclude-paths",
                 value: "org/apache",
-            }
+            },
+            {
+                name: "exclude-paths",
+                value: "META-INF",
+            },
         ],
     },
 }

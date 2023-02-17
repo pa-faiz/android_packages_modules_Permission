@@ -223,8 +223,8 @@
     <string name="auto_revoked_app_summary_many" msgid="5930976230827378798">"Уклоњено: <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> и још <xliff:g id="NUMBER">%2$s</xliff:g> дозволе"</string>
     <string name="unused_apps_page_title" msgid="6986983535677572559">"Апликације које се не користе"</string>
     <string name="unused_apps_page_summary" msgid="1867593913217272155">"Ако не користите апликацију неколико месеци:\n\n• дозволе се уклањају да би се заштитили подаци\n• обавештења се заустављају да би се штедела батерија\n• привремени фајлови се уклањају да би се ослободио простор\n\nДа бисте поново омогућили дозволе и обавештења, отворите апликацију."</string>
-    <string name="unused_apps_page_tv_summary" msgid="3685907153054355671">"Ако не користите апликацију неколико месеци:\n\n• дозволе се уклањају да би се заштитили подаци\n• привремени фајлови се уклањају да би се ослободио простор\n\nДа бисте поново омогућили дозволе, отворите апликацију."</string>
-    <string name="last_opened_category_title" msgid="7871347400611202595">"Последњи пут отворено пре више од <xliff:g id="NUMBER">%s</xliff:g> мес."</string>
+    <string name="unused_apps_page_tv_summary" msgid="2624911608663778308">"Ако не користите апликацију месец дана:\n\n• дозволе се уклањају да би се заштитили подаци\n• привремени фајлови се уклањају да би се ослободио простор\n\nДа бисте поново омогућили дозволе, отворите апликацију."</string>
+    <string name="last_opened_category_title" msgid="8796557894614236128">"{count,plural, =1{Последњи пут отворено пре више од # месеца}one{Последњи пут отворено пре више од # месеца}few{Последњи пут отворено пре више од # месеца}other{Последњи пут отворено пре више од # месеци}}"</string>
     <string name="last_opened_summary" msgid="5248984030024968808">"Апликација је последњи пут отворена: <xliff:g id="DATE">%s</xliff:g>"</string>
     <string name="last_opened_summary_short" msgid="1646067226191176825">"Последњи пут отворено: <xliff:g id="DATE">%s</xliff:g>"</string>
     <string name="app_permission_footer_special_file_access" msgid="1884202176147657788">"Ако омогућите управљање свим датотекама, ова апликација може да приступа свим датотекама у заједничком меморијском простору на овом уређају или повезаним уређајима за складиштење и да мења и брише те датотеке. Апликација може да приступа датотекама без питања."</string>
@@ -398,11 +398,14 @@
     <string name="role_automotive_navigation_request_title" msgid="7525693151489384300">"Желите да подесите апликацију <xliff:g id="APP_NAME">%1$s</xliff:g> као подразумевану апликацију за навигацију?"</string>
     <string name="role_automotive_navigation_request_description" msgid="7073023813249245540">"Није потребна ниједна дозвола"</string>
     <string name="role_watch_description" msgid="267003778693177779">"<xliff:g id="APP_NAME">%1$s</xliff:g> ће добити дозволу за интеракцију са обавештењима и приступ дозволама за телефон, SMS поруке, контакте и календар."</string>
-    <!-- no translation found for role_companion_device_glasses_description (1775655849566169630) -->
-    <skip />
+    <string name="role_companion_device_glasses_description" msgid="1775655849566169630">"<xliff:g id="APP_NAME">%1$s</xliff:g> ће добити дозволу за интеракцију са обавештењима и приступ дозволама за телефон, SMS, контакте, микрофон и уређаје у близини."</string>
     <string name="role_app_streaming_description" msgid="7341638576226183992">"<xliff:g id="APP_NAME">%1$s</xliff:g> ће добити дозволу за интеракцију са обавештењима и стримовање апликација на повезаном уређају."</string>
     <string name="role_companion_device_nearby_device_streaming_description" msgid="1177524993193492570">"<xliff:g id="APP_NAME">%1$s</xliff:g> ће моћи да стримује садржај на уређајима у близини."</string>
     <string name="role_companion_device_computer_description" msgid="416099879217066377">"Ова услуга дели слике, медијски садржај и обавештења са телефона на другим уређајима."</string>
+    <string name="role_notes_label" msgid="7451627001058089536">"Подразумевана аплик за белешке"</string>
+    <string name="role_notes_short_label" msgid="8796604147546125285">"Апликација за белешке"</string>
+    <string name="role_notes_description" msgid="8496852798616883551">"Апликације које вам омогућавају да правите белешке на уређају"</string>
+    <string name="role_notes_search_keywords" msgid="7710756695666744631">"белешке"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"Тренутно подразумевана"</string>
     <string name="request_role_dont_ask_again" msgid="3556017886029520306">"Не питај поново"</string>
     <string name="request_role_set_as_default" msgid="4253949643984172880">"Подеси као подразум."</string>
@@ -588,5 +591,5 @@
     <string name="show_clip_access_notification_summary" msgid="3532020182782112687">"Приказује поруку када апликације приступају тексту, сликама или другом садржају који сте копирали"</string>
     <string name="show_password_title" msgid="2877269286984684659">"Приказуј лозинке"</string>
     <string name="show_password_summary" msgid="1110166488865981610">"Приказује знакове накратко док куцате"</string>
-    <string name="permission_rationale_message_template" msgid="4497650516269082051">"Ова апликација наводи да може да дели податке (<xliff:g id="PERMISSION_NAME">%s</xliff:g>) са трећим странама"</string>
+    <string name="permission_rationale_message_location" msgid="2153841534298068414">"Ова апликација наводи да може да дели податке са трећим странама"</string>
 </resources>

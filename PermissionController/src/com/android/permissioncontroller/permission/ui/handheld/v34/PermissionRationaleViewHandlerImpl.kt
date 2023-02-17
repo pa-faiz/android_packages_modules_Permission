@@ -17,6 +17,8 @@
 package com.android.permissioncontroller.permission.ui.handheld.v34
 
 import android.app.Activity
+import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
@@ -44,44 +46,64 @@ import com.android.permissioncontroller.permission.ui.v34.PermissionRationaleVie
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 class PermissionRationaleViewHandlerImpl(
     private val mActivity: Activity,
-    private val resultListener: PermissionRationaleViewHandler.ResultListener
+    private val resultListener: PermissionRationaleViewHandler.ResultListener,
+    private val shouldShowSettingsSection: Boolean
 ) : PermissionRationaleViewHandler, OnClickListener {
 
     private var groupName: String? = null
+    private var title: CharSequence? = null
+    private var dataSharingSourceMessage: CharSequence? = null
+    private var purposeTitle: CharSequence? = null
     private var purposeMessage: CharSequence? = null
-    private var settingsMessage: CharSequence? = null
     private var learnMoreMessage: CharSequence? = null
+    private var settingsMessage: CharSequence? = null
 
     private var rootView: ViewGroup? = null
+    private var titleView: TextView? = null
+    private var dataSharingSourceMessageView: TextView? = null
+    private var purposeTitleView: TextView? = null
     private var purposeMessageView: TextView? = null
-    private var settingsMessageView: TextView? = null
     private var learnMoreMessageView: TextView? = null
+    private var settingsMessageView: TextView? = null
     private var backButton: Button? = null
 
     override fun saveInstanceState(outState: Bundle) {
         outState.putString(ARG_GROUP_NAME, groupName)
+        outState.putCharSequence(ARG_TITLE, title)
+        outState.putCharSequence(ARG_DATA_SHARING_SOURCE_MESSAGE, dataSharingSourceMessage)
+        outState.putCharSequence(ARG_PURPOSE_TITLE, purposeTitle)
         outState.putCharSequence(ARG_PURPOSE_MESSAGE, purposeMessage)
-        outState.putCharSequence(ARG_SETTINGS_MESSAGE, settingsMessage)
         outState.putCharSequence(ARG_LEARN_MORE_MESSAGE, learnMoreMessage)
+        outState.putCharSequence(ARG_SETTINGS_MESSAGE, settingsMessage)
     }
 
     override fun loadInstanceState(savedInstanceState: Bundle) {
         groupName = savedInstanceState.getString(ARG_GROUP_NAME)
+        title = savedInstanceState.getCharSequence(ARG_TITLE)
+        dataSharingSourceMessage =
+            savedInstanceState.getCharSequence(ARG_DATA_SHARING_SOURCE_MESSAGE)
+        purposeTitle = savedInstanceState.getCharSequence(ARG_PURPOSE_TITLE)
         purposeMessage = savedInstanceState.getCharSequence(ARG_PURPOSE_MESSAGE)
-        settingsMessage = savedInstanceState.getCharSequence(ARG_SETTINGS_MESSAGE)
         learnMoreMessage = savedInstanceState.getCharSequence(ARG_LEARN_MORE_MESSAGE)
+        settingsMessage = savedInstanceState.getCharSequence(ARG_SETTINGS_MESSAGE)
     }
 
     override fun updateUi(
         groupName: String,
+        title: CharSequence,
+        dataSharingSourceMessage: CharSequence,
+        purposeTitle: CharSequence,
         purposeMessage: CharSequence,
-        settingsMessage: CharSequence,
-        learnMoreMessage: CharSequence
+        learnMoreMessage: CharSequence,
+        settingsMessage: CharSequence
     ) {
         this.groupName = groupName
+        this.title = title
+        this.dataSharingSourceMessage = dataSharingSourceMessage
+        this.purposeTitle = purposeTitle
         this.purposeMessage = purposeMessage
-        this.settingsMessage = settingsMessage
         this.learnMoreMessage = learnMoreMessage
+        this.settingsMessage = settingsMessage
 
         // If view already created, update all children
         if (rootView != null) {
@@ -90,9 +112,12 @@ class PermissionRationaleViewHandlerImpl(
     }
 
     private fun updateAll() {
+        updateTitle()
+        updateDataSharingSourceMessage()
+        updatePurposeTitle()
         updatePurposeMessage()
-        updateSettingsMessage()
         updateLearnMoreMessage()
+        updateSettingsMessage()
 
         // Animate change in size
         // Grow or shrink the content container to size of new content
@@ -104,33 +129,45 @@ class PermissionRationaleViewHandlerImpl(
     }
 
     override fun createView(): View {
-        // Make this activity be Non-IME target to prevent hiding keyboard flicker when it show up.
-        mActivity.window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-
         val rootView = LayoutInflater.from(mActivity)
             .inflate(R.layout.permission_rationale, null) as ViewGroup
 
         // Uses the vertical gravity of the PermissionGrantSingleton style to position the window
-        val gravity = rootView.requireViewById<LinearLayout>(R.id.grant_singleton).gravity
+        val gravity =
+            rootView.requireViewById<LinearLayout>(R.id.permission_rationale_singleton).gravity
         val verticalGravity = Gravity.VERTICAL_GRAVITY_MASK and gravity
         mActivity.window.setGravity(Gravity.CENTER_HORIZONTAL or verticalGravity)
 
         // Cancel dialog
-        rootView.findViewById<View>(R.id.grant_singleton)!!.setOnClickListener(this)
+        rootView.findViewById<View>(R.id.permission_rationale_singleton)!!.setOnClickListener(this)
         // Swallow click event
-        rootView.findViewById<View>(R.id.grant_dialog)!!.setOnClickListener(this)
+        rootView.findViewById<View>(R.id.permission_rationale_dialog)!!.setOnClickListener(this)
 
+        titleView = rootView.findViewById(R.id.permission_rationale_title)
+
+        dataSharingSourceMessageView = rootView.findViewById(R.id.data_sharing_source_message)
+        dataSharingSourceMessageView!!.movementMethod = LinkMovementMethod.getInstance()
+
+        purposeTitleView = rootView.findViewById(R.id.purpose_title)
         purposeMessageView = rootView.findViewById(R.id.purpose_message)
-        purposeMessageView!!.movementMethod = LinkMovementMethod.getInstance()
-
-        settingsMessageView = rootView.findViewById(R.id.settings_message)
-        settingsMessageView!!.movementMethod = LinkMovementMethod.getInstance()
 
         learnMoreMessageView = rootView.findViewById(R.id.learn_more_message)
         learnMoreMessageView!!.movementMethod = LinkMovementMethod.getInstance()
 
-        backButton = rootView.findViewById<Button>(R.id.back_button)
-        backButton!!.setOnClickListener(this)
+        settingsMessageView = rootView.findViewById(R.id.settings_message)
+        settingsMessageView!!.movementMethod = LinkMovementMethod.getInstance()
+
+        if (!shouldShowSettingsSection) {
+            val settingsSectionView: ViewGroup? = rootView.findViewById(R.id.settings_section)
+            settingsSectionView?.visibility = View.GONE
+        }
+        backButton = rootView.findViewById<Button>(R.id.back_button)!!.apply {
+            setOnClickListener(this@PermissionRationaleViewHandlerImpl)
+
+            // Load the text color from the activity theme rather than the Material Design theme
+            val textColor = getColorStateListForAttr(mActivity, android.R.attr.textColorPrimary)!!
+            setTextColor(textColor)
+        }
 
         this.rootView = rootView
 
@@ -145,7 +182,7 @@ class PermissionRationaleViewHandlerImpl(
     override fun onClick(view: View) {
         val id = view.id
 
-        if (id == R.id.grant_singleton) {
+        if (id == R.id.permission_rationale_singleton) {
             onCancelled()
             return
         }
@@ -163,21 +200,39 @@ class PermissionRationaleViewHandlerImpl(
         resultListener.onPermissionRationaleResult(groupName, CANCELLED)
     }
 
+    private fun updateTitle() {
+        if (title == null) {
+            titleView!!.visibility = View.GONE
+        } else {
+            titleView!!.text = title
+            titleView!!.visibility = View.VISIBLE
+        }
+    }
+
+    private fun updateDataSharingSourceMessage() {
+        if (dataSharingSourceMessage == null) {
+            dataSharingSourceMessageView!!.visibility = View.GONE
+        } else {
+            dataSharingSourceMessageView!!.text = dataSharingSourceMessage
+            dataSharingSourceMessageView!!.visibility = View.VISIBLE
+        }
+    }
+
+    private fun updatePurposeTitle() {
+        if (purposeTitle == null) {
+            purposeTitleView!!.visibility = View.GONE
+        } else {
+            purposeTitleView!!.text = purposeTitle
+            purposeTitleView!!.visibility = View.VISIBLE
+        }
+    }
+
     private fun updatePurposeMessage() {
         if (purposeMessage == null) {
             purposeMessageView!!.visibility = View.GONE
         } else {
             purposeMessageView!!.text = purposeMessage
             purposeMessageView!!.visibility = View.VISIBLE
-        }
-    }
-
-    private fun updateSettingsMessage() {
-        if (settingsMessage == null) {
-            settingsMessageView!!.visibility = View.GONE
-        } else {
-            settingsMessageView!!.text = settingsMessage
-            settingsMessageView!!.visibility = View.VISIBLE
         }
     }
 
@@ -190,15 +245,34 @@ class PermissionRationaleViewHandlerImpl(
         }
     }
 
+    private fun updateSettingsMessage() {
+        if (settingsMessage == null) {
+            settingsMessageView!!.visibility = View.GONE
+        } else {
+            settingsMessageView!!.text = settingsMessage
+            settingsMessageView!!.visibility = View.VISIBLE
+        }
+    }
+
     companion object {
         private val TAG = PermissionRationaleViewHandlerImpl::class.java.simpleName
 
         const val ARG_GROUP_NAME = "ARG_GROUP_NAME"
+        const val ARG_TITLE = "ARG_TITLE"
+        const val ARG_DATA_SHARING_SOURCE_MESSAGE = "ARG_DATA_SHARING_SOURCE_MESSAGE"
+        const val ARG_PURPOSE_TITLE = "ARG_PURPOSE_TITLE"
         const val ARG_PURPOSE_MESSAGE = "ARG_PURPOSE_MESSAGE"
-        const val ARG_SETTINGS_MESSAGE = "ARG_SETTINGS_MESSAGE"
         const val ARG_LEARN_MORE_MESSAGE = "ARG_LEARN_MORE_MESSAGE"
+        const val ARG_SETTINGS_MESSAGE = "ARG_SETTINGS_MESSAGE"
 
         // Animation parameters.
         private const val ANIMATION_DURATION_MILLIS: Long = 200
+
+        fun getColorStateListForAttr(context: Context, attr: Int): ColorStateList? {
+            val typedArray = context.obtainStyledAttributes(intArrayOf(attr))
+            val colorStateList = typedArray.getColorStateList(0)
+            typedArray.recycle()
+            return colorStateList
+        }
     }
 }
