@@ -189,7 +189,10 @@
         <item name="android:layout_marginStart">24dp</item>
         <item name="android:layout_marginEnd">24dp</item>
         <item name="android:layout_marginBottom">24dp</item>
-        <item name="android:padding">12dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:background">@drawable/grant_dialog_permission_rationale_background</item>
     </style>
@@ -211,6 +214,8 @@
         <item name="android:layout_marginStart">12dp</item>
         <item name="android:layout_marginEnd">12dp</item>
         <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">20sp</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
     </style>
 
     <style name="PermissionGrantPermissionRationaleMoreInfoIcon">
@@ -445,36 +450,37 @@
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
-    <style name="AppPermissionMessage"
-           parent="@style/TextAppearance.CategoryTitle">
+    <style name="AppPermissionMessage">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingStart">8dp</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textColor">?android:attr/colorAccent</item>
         <item name="android:textDirection">locale</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">20sp</item>
     </style>
 
     <!-- APP PERMISSION RATIONALE CONTAINER  -->
     <style name="AppPermissionRationaleContainer">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">16dp</item>
-        <item name="android:layout_marginBottom">24dp</item>
         <item name="android:orientation">vertical</item>
     </style>
 
     <style name="AppPermissionRationaleContent">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">16dp</item>
-        <item name="android:layout_marginBottom">24dp</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginBottom">20dp</item>
         <item name="android:orientation">horizontal</item>
     </style>
 
     <style name="AppPermissionRationaleTextContent">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginStart">24dp</item>
         <item name="android:orientation">vertical</item>
         <item name="android:layout_weight">1</item>
     </style>
@@ -482,24 +488,27 @@
     <style name="AppPermissionRationaleTitle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
         <item name="android:textDirection">locale</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:lineHeight">24sp</item>
     </style>
 
     <style name="AppPermissionRationaleSubtitle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
         <item name="android:textDirection">locale</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">20sp</item>
     </style>
 
     <style name="AppPermissionRationaleIcon">
-        <item name="android:layout_width">20dp</item>
-        <item name="android:layout_height">20dp</item>
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
         <item name="android:layout_gravity">start|center_vertical</item>
         <item name="android:scaleType">centerInside</item>
-        <item name="android:tint">?android:attr/textColorSecondary</item>
+        <item name="android:tint">?android:attr/textColorPrimary</item>
     </style>
     <!-- END APP PERMISSION RATIONALE CONTAINER -->
 
@@ -541,7 +550,6 @@
     <style name="AppPermissionLocationAccuracy">
         <item name="android:layout_marginTop">24dp</item>
         <item name="android:layout_marginBottom">8dp</item>
-        <item name="android:paddingStart">8dp</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
         <item name="android:background">?android:attr/selectableItemBackground</item>

@@ -51,6 +51,19 @@ object SafetyCenterFlags {
     private val notificationsFlag =
         Flag("safety_center_notifications_enabled", defaultValue = false, BooleanParser())
 
+    /*
+     * Flag that determines the minimum delay before Safety Center sends a notification with
+     * {@link android.safetycenter.SafetySourceIssue.NotificationBehavior.NOTIFICATION_BEHAVIOR_DELAYED}.
+     *
+     * The actual delay used may be longer.
+     */
+    private val notificationsMinDelayFlag =
+        Flag(
+            "safety_center_notifications_min_delay",
+            defaultValue = Duration.ofHours(2),
+            DurationParser()
+        )
+
     /**
      * Flag containing a comma delimited list of IDs of sources that Safety Center can send
      * notifications about, in addition to those permitted by the current XML config.
@@ -58,6 +71,17 @@ object SafetyCenterFlags {
     private val notificationsAllowedSourcesFlag =
         Flag(
             "safety_center_notifications_allowed_sources",
+            defaultValue = emptySet(),
+            SetParser(StringParser())
+        )
+
+    /**
+     * Flag containing a comma-delimited list of the issue type IDs for which, if otherwise
+     * undefined, Safety Center should use the "immediate" notification behavior.
+     */
+    private val immediateNotificationBehaviorIssuesFlag =
+        Flag(
+            "safety_center_notifications_immediate_behavior_issues",
             defaultValue = emptySet(),
             SetParser(StringParser())
         )
@@ -232,6 +256,14 @@ object SafetyCenterFlags {
             DurationParser()
         )
 
+    /** Flag for allowlisting additional certificates for a given package. */
+    private val allowedAdditionalPackageCertsFlag =
+        Flag(
+            "safety_center_additional_allow_package_certs",
+            defaultValue = emptyMap(),
+            MapParser(StringParser(), SetParser(StringParser(), delimiter = "|"))
+        )
+
     /**
      * Flag that determines whether background refreshes require charging in
      * [SafetyCenterBackgroundRefreshJobService]. See [JobInfo.setRequiresCharging] for details.
@@ -245,6 +277,8 @@ object SafetyCenterFlags {
             isEnabledFlag,
             notificationsFlag,
             notificationsAllowedSourcesFlag,
+            notificationsMinDelayFlag,
+            immediateNotificationBehaviorIssuesFlag,
             showErrorEntriesOnTimeoutFlag,
             replaceLockScreenIconActionFlag,
             refreshSourceTimeoutsFlag,
@@ -254,6 +288,7 @@ object SafetyCenterFlags {
             resurfaceIssueMaxCountsFlag,
             resurfaceIssueDelaysFlag,
             issueCategoryAllowlistsFlag,
+            allowedAdditionalPackageCertsFlag,
             backgroundRefreshDeniedSourcesFlag,
             allowStatsdLoggingInTestsFlag,
             qsTileComponentSettingFlag,
@@ -276,8 +311,14 @@ object SafetyCenterFlags {
     /** A property that allows getting and setting the [notificationsFlag]. */
     var notificationsEnabled: Boolean by notificationsFlag
 
-    /** A property that allowed getting and setting the [notificationsAllowedSourcesFlag]. */
+    /** A property that allows getting and setting the [notificationsAllowedSourcesFlag]. */
     var notificationsAllowedSources: Set<String> by notificationsAllowedSourcesFlag
+
+    /** A property that allows getting and setting the [notificationsMinDelayFlag]. */
+    var notificationsMinDelay: Duration by notificationsMinDelayFlag
+
+    /** A property that allows getting and setting the [immediateNotificationBehaviorIssuesFlag]. */
+    var immediateNotificationBehaviorIssues: Set<String> by immediateNotificationBehaviorIssuesFlag
 
     /** A property that allows getting and setting the [showErrorEntriesOnTimeoutFlag]. */
     var showErrorEntriesOnTimeout: Boolean by showErrorEntriesOnTimeoutFlag
@@ -305,6 +346,8 @@ object SafetyCenterFlags {
 
     /** A property that allows getting and setting the [issueCategoryAllowlistsFlag]. */
     var issueCategoryAllowlists: Map<Int, Set<String>> by issueCategoryAllowlistsFlag
+
+    var allowedAdditionalPackageCerts: Map<String, Set<String>> by allowedAdditionalPackageCertsFlag
 
     /** A property that allows getting and setting the [backgroundRefreshDeniedSourcesFlag]. */
     var backgroundRefreshDeniedSources: Set<String> by backgroundRefreshDeniedSourcesFlag

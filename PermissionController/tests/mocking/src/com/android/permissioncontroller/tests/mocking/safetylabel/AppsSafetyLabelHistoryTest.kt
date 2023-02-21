@@ -19,6 +19,7 @@ package com.android.permissioncontroller.tests.mocking.safetylabel
 import android.os.Build
 import android.os.PersistableBundle
 import androidx.test.filters.SdkSuppress
+import com.android.permission.safetylabel.SafetyLabel.KEY_VERSION
 import com.android.permission.safetylabel.SafetyLabel as AppMetadataSafetyLabel
 import com.android.permissioncontroller.safetylabel.AppsSafetyLabelHistory
 import com.android.permissioncontroller.safetylabel.AppsSafetyLabelHistory.AppInfo
@@ -87,13 +88,15 @@ class AppsSafetyLabelHistoryTest {
         private const val PACKAGE_NAME_1 = "package_name_1"
         private const val PACKAGE_NAME_2 = "package_name_2"
         private const val LOCATION_CATEGORY = "location"
-        private const val APPROX_LOCATION = "APPROX_LOCATION"
+        private const val APPROX_LOCATION = "approx_location"
         private const val PURPOSE_FRAUD_PREVENTION_SECURITY = 4
         private const val PURPOSE_ADVERTISING = 5
         private const val SAFETY_LABEL_KEY = "safety_labels"
         private const val DATA_SHARED_KEY = "data_shared"
         private const val DATA_LABEL_KEY = "data_labels"
         private const val PURPOSES_KEY = "purposes"
+        private const val TOP_LEVEL_VERSION = 1L
+        private const val SAFETY_LABELS_VERSION = 1L
         private val DATE_2022_09_01 = ZonedDateTime.parse("2022-09-01T00:00:00.000Z").toInstant()
         private val DATE_2022_10_10 = ZonedDateTime.parse("2022-10-10T00:00:00.000Z").toInstant()
 
@@ -140,9 +143,12 @@ class AppsSafetyLabelHistoryTest {
                 }
 
             val safetyLabelBundle =
-                PersistableBundle().apply { putPersistableBundle(DATA_LABEL_KEY, dataLabelBundle) }
+                PersistableBundle().apply {
+                    putLong(KEY_VERSION, SAFETY_LABELS_VERSION)
+                    putPersistableBundle(DATA_LABEL_KEY, dataLabelBundle) }
 
             return PersistableBundle().apply {
+                putLong(KEY_VERSION, TOP_LEVEL_VERSION)
                 putPersistableBundle(SAFETY_LABEL_KEY, safetyLabelBundle)
             }
         }

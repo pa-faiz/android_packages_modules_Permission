@@ -54,6 +54,12 @@ public final class SafetyCenterFlags {
     private static final String PROPERTY_NOTIFICATIONS_ALLOWED_SOURCES =
             "safety_center_notifications_allowed_sources";
 
+    private static final String PROPERTY_NOTIFICATIONS_MIN_DELAY =
+            "safety_center_notifications_min_delay";
+
+    private static final String PROPERTY_NOTIFICATIONS_IMMEDIATE_BEHAVIOR_ISSUES =
+            "safety_center_notifications_immediate_behavior_issues";
+
     private static final String PROPERTY_SHOW_ERROR_ENTRIES_ON_TIMEOUT =
             "safety_center_show_error_entries_on_timeout";
 
@@ -91,6 +97,9 @@ public final class SafetyCenterFlags {
     private static final String PROPERTY_OVERRIDE_REFRESH_ON_PAGE_OPEN_SOURCES =
             "safety_center_override_refresh_on_page_open_sources";
 
+    private static final String PROPERTY_ADDITIONAL_ALLOW_PACKAGE_CERTS =
+            "safety_center_additional_allow_package_certs";
+
     private static final Duration REFRESH_SOURCES_TIMEOUT_DEFAULT_DURATION = Duration.ofSeconds(15);
 
     private static final Duration RESOLVING_ACTION_TIMEOUT_DEFAULT_DURATION =
@@ -102,12 +111,19 @@ public final class SafetyCenterFlags {
 
     private static final Duration RESURFACE_ISSUE_DEFAULT_DELAY = Duration.ofDays(180);
 
+    private static final Duration NOTIFICATIONS_MIN_DELAY_DEFAULT_DURATION = Duration.ofDays(180);
+
     /** Dumps state for debugging purposes. */
     static void dump(@NonNull PrintWriter fout) {
         fout.println("FLAGS");
         printFlag(fout, PROPERTY_SAFETY_CENTER_ENABLED, getSafetyCenterEnabled());
         printFlag(fout, PROPERTY_NOTIFICATIONS_ENABLED, getNotificationsEnabled());
         printFlag(fout, PROPERTY_NOTIFICATIONS_ALLOWED_SOURCES, getNotificationsAllowedSourceIds());
+        printFlag(fout, PROPERTY_NOTIFICATIONS_MIN_DELAY, getNotificationsMinDelay());
+        printFlag(
+                fout,
+                PROPERTY_NOTIFICATIONS_IMMEDIATE_BEHAVIOR_ISSUES,
+                getImmediateNotificationBehaviorIssues());
         printFlag(fout, PROPERTY_SHOW_ERROR_ENTRIES_ON_TIMEOUT, getShowErrorEntriesOnTimeout());
         printFlag(fout, PROPERTY_REPLACE_LOCK_SCREEN_ICON_ACTION, getReplaceLockScreenIconAction());
         printFlag(fout, PROPERTY_RESOLVING_ACTION_TIMEOUT_MILLIS, getResolvingActionTimeout());
@@ -128,6 +144,10 @@ public final class SafetyCenterFlags {
                 fout,
                 PROPERTY_OVERRIDE_REFRESH_ON_PAGE_OPEN_SOURCES,
                 getOverrideRefreshOnPageOpenSourceIds());
+        printFlag(
+                fout,
+                PROPERTY_ADDITIONAL_ALLOW_PACKAGE_CERTS,
+                getAdditionalAllowedPackageCertsString());
         fout.println();
     }
 
@@ -164,6 +184,31 @@ public final class SafetyCenterFlags {
     @NonNull
     static ArraySet<String> getNotificationsAllowedSourceIds() {
         return getCommaSeparatedStrings(PROPERTY_NOTIFICATIONS_ALLOWED_SOURCES);
+    }
+
+    /*
+     * Returns the minimum delay before Safety Center sends a notification with
+     * {@link android.safetycenter.SafetySourceIssue.NotificationBehavior.NOTIFICATION_BEHAVIOR_DELAYED}.
+     *
+     * The actual delay used may be longer.
+     */
+    @NonNull
+    static Duration getNotificationsMinDelay() {
+        return getDuration(
+                PROPERTY_NOTIFICATIONS_MIN_DELAY, NOTIFICATIONS_MIN_DELAY_DEFAULT_DURATION);
+    }
+    /**
+     * Returns the issue type IDs for which, if otherwise undefined, Safety Center should use the
+     * "immediate" notification behavior.
+     *
+     * <p>If a safety source specifies the notification behavior of an issue explicitly this flag
+     * has no effect, even if the issue matches one of the entries in this flag.
+     *
+     * <p>Entries in this set should be strings of the form "safety_source_id/issue_type_id".
+     */
+    @NonNull
+    static ArraySet<String> getImmediateNotificationBehaviorIssues() {
+        return getCommaSeparatedStrings(PROPERTY_NOTIFICATIONS_IMMEDIATE_BEHAVIOR_ISSUES);
     }
 
     /**
@@ -317,6 +362,17 @@ public final class SafetyCenterFlags {
         return false;
     }
 
+    /** Returns a set of package certificates allowlisted for the given package name. */
+    @NonNull
+    public static ArraySet<String> getAdditionalAllowedPackageCerts(@NonNull String packageName) {
+        String property = getAdditionalAllowedPackageCertsString();
+        String allowlistedCertString = getStringValueFromStringMapping(property, packageName);
+        if (allowlistedCertString == null) {
+            return new ArraySet<>();
+        }
+        return new ArraySet<String>(allowlistedCertString.split("\\|"));
+    }
+
     /**
      * Returns a comma-delimited list of colon-delimited pairs where the left value is an issue
      * {@link SafetySourceIssue.IssueCategory} and the right value is a vertical-bar-delimited list
@@ -325,6 +381,11 @@ public final class SafetyCenterFlags {
     @NonNull
     private static String getIssueCategoryAllowlists() {
         return getString(PROPERTY_ISSUE_CATEGORY_ALLOWLISTS, "");
+    }
+
+    @NonNull
+    private static String getAdditionalAllowedPackageCertsString() {
+        return getString(PROPERTY_ADDITIONAL_ALLOW_PACKAGE_CERTS, "");
     }
 
     /** Returns whether we allow statsd logging in tests. */

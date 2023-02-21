@@ -30,7 +30,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.safetycenter.data.SafetyCenterIssueRepository;
+import com.android.safetycenter.data.SafetyCenterIssueDismissalRepository;
 import com.android.safetycenter.internaldata.SafetyCenterIds;
 import com.android.safetycenter.internaldata.SafetyCenterIssueActionId;
 import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
@@ -127,16 +127,22 @@ final class SafetyCenterNotificationReceiver extends BroadcastReceiver {
 
     @GuardedBy("mApiLock")
     @NonNull
-    private final SafetyCenterIssueRepository mSafetyCenterIssueRepository;
+    private final SafetyCenterIssueDismissalRepository mSafetyCenterIssueDismissalRepository;
+
+    @GuardedBy("mApiLock")
+    @NonNull
+    private final SafetyCenterDataChangeNotifier mSafetyCenterDataChangeNotifier;
 
     @NonNull private final Object mApiLock;
 
     SafetyCenterNotificationReceiver(
             @NonNull SafetyCenterService service,
-            @NonNull SafetyCenterIssueRepository safetyCenterIssueRepository,
+            @NonNull SafetyCenterIssueDismissalRepository safetyCenterIssueDismissalRepository,
+            @NonNull SafetyCenterDataChangeNotifier safetyCenterDataChangeNotifier,
             @NonNull Object apiLock) {
         mService = service;
-        mSafetyCenterIssueRepository = safetyCenterIssueRepository;
+        mSafetyCenterIssueDismissalRepository = safetyCenterIssueDismissalRepository;
+        mSafetyCenterDataChangeNotifier = safetyCenterDataChangeNotifier;
         mApiLock = apiLock;
     }
 
@@ -169,7 +175,7 @@ final class SafetyCenterNotificationReceiver extends BroadcastReceiver {
 
         switch (action) {
             case ACTION_NOTIFICATION_DISMISSED:
-                onNotificationDismissed(intent);
+                onNotificationDismissed(context, intent);
                 break;
             case ACTION_NOTIFICATION_ACTION_CLICKED:
                 onNotificationActionClicked(intent);
@@ -180,13 +186,16 @@ final class SafetyCenterNotificationReceiver extends BroadcastReceiver {
         }
     }
 
-    private void onNotificationDismissed(@NonNull Intent intent) {
+    private void onNotificationDismissed(@NonNull Context context, @NonNull Intent intent) {
         SafetyCenterIssueKey issueKey = getIssueKeyExtra(intent);
         if (issueKey == null) {
             return;
         }
+        int userId = issueKey.getUserId();
+        UserProfileGroup userProfileGroup = UserProfileGroup.from(context, userId);
         synchronized (mApiLock) {
-            mSafetyCenterIssueRepository.dismissNotification(issueKey);
+            mSafetyCenterIssueDismissalRepository.dismissNotification(issueKey);
+            mSafetyCenterDataChangeNotifier.updateDataConsumers(userProfileGroup, userId);
         }
     }
 

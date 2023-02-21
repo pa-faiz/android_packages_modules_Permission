@@ -30,6 +30,7 @@ import android.content.Context;
 import android.os.Binder;
 import android.os.UserHandle;
 import android.safetycenter.SafetySourceIssue;
+import android.safetycenter.config.SafetySource;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
@@ -37,13 +38,15 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.android.modules.utils.build.SdkLevel;
+import com.android.safetycenter.data.SafetyCenterIssueDismissalRepository;
 import com.android.safetycenter.data.SafetyCenterIssueRepository;
-import com.android.safetycenter.data.SafetyCenterRepository;
+import com.android.safetycenter.internaldata.SafetyCenterIds;
 import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -93,11 +96,10 @@ final class SafetyCenterNotificationSender {
 
     @NonNull private final SafetyCenterNotificationFactory mNotificationFactory;
 
+    @NonNull
+    private final SafetyCenterIssueDismissalRepository mSafetyCenterIssueDismissalRepository;
+
     @NonNull private final SafetyCenterIssueRepository mSafetyCenterIssueRepository;
-
-    @NonNull private final SafetyCenterRepository mSafetyCenterRepository;
-
-    @NonNull private final SafetyCenterConfigReader mSafetyCenterConfigReader;
 
     private final ArrayMap<SafetyCenterIssueKey, SafetySourceIssue> mNotifiedIssues =
             new ArrayMap<>();
@@ -105,20 +107,31 @@ final class SafetyCenterNotificationSender {
     SafetyCenterNotificationSender(
             @NonNull Context context,
             @NonNull SafetyCenterNotificationFactory notificationFactory,
-            @NonNull SafetyCenterIssueRepository safetyCenterIssueRepository,
-            @NonNull SafetyCenterRepository safetyCenterRepository,
-            @NonNull SafetyCenterConfigReader safetyCenterConfigReader) {
+            @NonNull SafetyCenterIssueDismissalRepository safetyCenterIssueDismissalRepository,
+            @NonNull SafetyCenterIssueRepository safetyCenterIssueRepository) {
         mContext = context;
         mNotificationFactory = notificationFactory;
+        mSafetyCenterIssueDismissalRepository = safetyCenterIssueDismissalRepository;
         mSafetyCenterIssueRepository = safetyCenterIssueRepository;
-        mSafetyCenterRepository = safetyCenterRepository;
-        mSafetyCenterConfigReader = safetyCenterConfigReader;
+    }
+
+    /** Updates Safety Center notifications for the given {@link UserProfileGroup}. */
+    void updateNotifications(@NonNull UserProfileGroup userProfileGroup) {
+        updateNotifications(userProfileGroup.getProfileParentUserId());
+
+        int[] managedProfileUserIds = userProfileGroup.getManagedProfilesUserIds();
+        for (int i = 0; i < managedProfileUserIds.length; i++) {
+            updateNotifications(managedProfileUserIds[i]);
+        }
     }
 
     /**
      * Updates Safety Center notifications, usually in response to a change in the issues for the
      * given userId.
      */
+    // TODO(b/266819195): Make sure to do the right thing if this method is called for a userId
+    //   which is not running. We might want to update data related to it, but not send
+    //   the notification...
     void updateNotifications(@UserIdInt int userId) {
         if (!SafetyCenterFlags.getNotificationsEnabled()) {
             return;
@@ -134,8 +147,9 @@ final class SafetyCenterNotificationSender {
         ArrayMap<SafetyCenterIssueKey, SafetySourceIssue> issuesToNotify =
                 getIssuesToNotify(userId);
 
-        // Post or update notifications for notifiable issues, depending on their behavior,
-        // keeping track of which issues notifications were posted/updated for:
+        // Post or update notifications for notifiable issues. We keep track of the "fresh" issues
+        // keys of those issues which were just notified because doing so allows us to cancel any
+        // notifications for other, non-fresh issues.
         ArraySet<SafetyCenterIssueKey> freshIssueKeys = new ArraySet<>();
         for (int i = 0; i < issuesToNotify.size(); i++) {
             SafetyCenterIssueKey issueKey = issuesToNotify.keyAt(i);
@@ -153,7 +167,6 @@ final class SafetyCenterNotificationSender {
             }
         }
 
-        // Cancel previously-posted notifications, for this user, which were not just updated:
         cancelStaleNotifications(notificationManager, userId, freshIssueKeys);
     }
 
@@ -186,31 +199,51 @@ final class SafetyCenterNotificationSender {
     private ArrayMap<SafetyCenterIssueKey, SafetySourceIssue> getIssuesToNotify(
             @UserIdInt int userId) {
         ArrayMap<SafetyCenterIssueKey, SafetySourceIssue> result = new ArrayMap<>();
-        List<SafetyCenterIssueKey> allIssueKeys =
+        List<SafetySourceIssueInfo> allIssuesInfo =
                 mSafetyCenterIssueRepository.getIssuesForUser(userId);
 
-        for (int i = 0; i < allIssueKeys.size(); i++) {
-            SafetyCenterIssueKey issueKey = allIssueKeys.get(i);
+        Duration minNotificationsDelay = SafetyCenterFlags.getNotificationsMinDelay();
 
-            if (!areNotificationsAllowed(issueKey.getSafetySourceId())) {
-                // Notifications are not allowed for this source
+        for (int i = 0; i < allIssuesInfo.size(); i++) {
+            SafetySourceIssueInfo issueInfo = allIssuesInfo.get(i);
+            SafetyCenterIssueKey issueKey = issueInfo.getSafetyCenterIssueKey();
+            SafetySourceIssue issue = issueInfo.getSafetySourceIssue();
+
+            if (!areNotificationsAllowed(issueInfo.getSafetySource())) {
                 continue;
             }
 
-            // TODO(b/259084807): Consider extracting this policy to a separate class
-            Instant dismissedAt = mSafetyCenterIssueRepository.getNotificationDismissedAt(issueKey);
+            // TODO(b/266680614): Notification resurfacing
+            Instant dismissedAt =
+                    mSafetyCenterIssueDismissalRepository.getNotificationDismissedAt(issueKey);
             if (dismissedAt != null) {
-                // Issue was previously dismissed and is skipped
                 continue;
             }
 
-            // Now retrieve the issue itself and use it to determine the behavior:
-            SafetySourceIssue issue = mSafetyCenterRepository.getSafetySourceIssue(issueKey);
+            // The current code for dismissing an issue/warning card also dismisses any
+            // corresponding notification, but it is still necessary to check the issue dismissal
+            // status, in addition to the notification dismissal (above) because some issues were
+            // dismissed by an earlier version of the code which lacked this functionality.
+            if (mSafetyCenterIssueDismissalRepository.isIssueDismissed(
+                    issueKey, issue.getSeverityLevel())) {
+                continue;
+            }
+
+            // Get the notification behavior for this issue which determines whether we should
+            // send a notification about it now
             int behavior = getBehavior(issue, issueKey);
             if (behavior == NOTIFICATION_BEHAVIOR_INTERNAL_IMMEDIATELY) {
                 result.put(issueKey, issue);
+            } else if (behavior == NOTIFICATION_BEHAVIOR_INTERNAL_DELAYED) {
+                Instant delayedNotificationTime =
+                        mSafetyCenterIssueDismissalRepository
+                                .getIssueFirstSeenAt(issueKey)
+                                .plus(minNotificationsDelay);
+                if (Instant.now().isAfter(delayedNotificationTime)) {
+                    result.put(issueKey, issue);
+                }
+                // TODO(b/259094736): else handle delayed notifications using a scheduled job
             }
-            // TODO(b/259094736): handle delayed notifications using a scheduled job to post later
         }
         return result;
     }
@@ -229,25 +262,27 @@ final class SafetyCenterNotificationSender {
             }
         }
         // On Android T all issues are assumed to have "unspecified" behavior
-        return getBehaviorForIssueWithUnspecifiedBehavior(issueKey);
+        return getBehaviorForIssueWithUnspecifiedBehavior(issue, issueKey);
     }
 
     @NotificationBehaviorInternal
-    private int getBehaviorForIssueWithUnspecifiedBehavior(@NonNull SafetyCenterIssueKey issueKey) {
-        // TODO(b/259083775): Make this implementation more useful/complex
-        return NOTIFICATION_BEHAVIOR_INTERNAL_IMMEDIATELY;
+    private int getBehaviorForIssueWithUnspecifiedBehavior(
+            @NonNull SafetySourceIssue issue, @NonNull SafetyCenterIssueKey issueKey) {
+        String flagKey = issueKey.getSafetySourceId() + "/" + issue.getIssueTypeId();
+        if (SafetyCenterFlags.getImmediateNotificationBehaviorIssues().contains(flagKey)) {
+            return NOTIFICATION_BEHAVIOR_INTERNAL_IMMEDIATELY;
+        } else {
+            return NOTIFICATION_BEHAVIOR_INTERNAL_NEVER;
+        }
     }
 
-    private boolean areNotificationsAllowed(@NonNull String sourceId) {
+    private boolean areNotificationsAllowed(@NonNull SafetySource safetySource) {
         if (SdkLevel.isAtLeastU()) {
-            SafetyCenterConfigReader.ExternalSafetySource externalSafetySource =
-                    mSafetyCenterConfigReader.getExternalSafetySource(sourceId);
-            if (externalSafetySource != null
-                    && externalSafetySource.getSafetySource().areNotificationsAllowed()) {
+            if (safetySource.areNotificationsAllowed()) {
                 return true;
             }
         }
-        return SafetyCenterFlags.getNotificationsAllowedSourceIds().contains(sourceId);
+        return SafetyCenterFlags.getNotificationsAllowedSourceIds().contains(safetySource.getId());
     }
 
     private boolean postNotificationForIssue(
@@ -258,10 +293,8 @@ final class SafetyCenterNotificationSender {
                 mNotificationFactory.newNotificationForIssue(
                         notificationManager, safetySourceIssue, key);
         if (notification == null) {
-            // Could not make a Notification for this issue!
             return false;
         }
-        // The fixed notification ID is OK because notifications are keyed by (tag, id)
         String tag = getNotificationTag(key);
         boolean wasPosted = notifyFromSystem(notificationManager, tag, notification);
         if (wasPosted) {
@@ -280,7 +313,6 @@ final class SafetyCenterNotificationSender {
         for (int i = mNotifiedIssues.size() - 1; i >= 0; i--) {
             SafetyCenterIssueKey key = mNotifiedIssues.keyAt(i);
             if (key.getUserId() == userId && !freshIssueKeys.contains(key)) {
-                // Notification should no longer be shown
                 String tag = getNotificationTag(key);
                 cancelNotificationFromSystem(notificationManager, tag);
                 mNotifiedIssues.removeAt(i);
@@ -290,8 +322,8 @@ final class SafetyCenterNotificationSender {
 
     @NonNull
     private static String getNotificationTag(@NonNull SafetyCenterIssueKey issueKey) {
-        // TODO(b/259084094): Make this tag creation more robust
-        return issueKey.getSafetySourceId() + ":" + issueKey.getSafetySourceIssueId();
+        // Base 64 encoding of the issueKey proto:
+        return SafetyCenterIds.encodeToString(issueKey);
     }
 
     /** Returns a {@link NotificationManager} which will send notifications to the given user. */
@@ -317,6 +349,7 @@ final class SafetyCenterNotificationSender {
         // necessary POST_NOTIFICATIONS permission.
         final long callingId = Binder.clearCallingIdentity();
         try {
+            // The fixed notification ID is OK because notifications are keyed by (tag, id)
             notificationManager.notify(tag, FIXED_NOTIFICATION_ID, notification);
             return true;
         } catch (Throwable e) {

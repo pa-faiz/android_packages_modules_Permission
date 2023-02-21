@@ -38,7 +38,8 @@ import java.security.MessageDigest
  * up safety sources for testing.
  */
 class SafetyCenterTestConfigs(private val context: Context) {
-    private val packageCertHash =
+    /** The certificate hash signing the current package. */
+    val packageCertHash =
         MessageDigest.getInstance("SHA256")!!.digest(
                 context.packageManager
                     .getPackageInfo(
@@ -224,6 +225,19 @@ class SafetyCenterTestConfigs(private val context: Context) {
                                 DEDUPLICATION_GROUP_3
                             )
                         )
+                        .build()
+                )
+                .build()
+
+    /** A simple [SafetyCenterConfig] with multiple sources for testing the Privacy subpage. */
+    val privacySubpageConfig: SafetyCenterConfig
+        @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        get() =
+            SafetyCenterConfig.Builder()
+                .addSafetySourcesGroup(
+                    safetySourcesGroupBuilder(PRIVACY_SOURCES_GROUP_ID)
+                        .addSafetySource(dynamicSafetySource(PRIVACY_SOURCE_ID_1))
+                        .addSafetySource(dynamicSafetySource(PRIVACY_SOURCE_ID_2))
                         .build()
                 )
                 .build()
@@ -773,6 +787,12 @@ class SafetyCenterTestConfigs(private val context: Context) {
         /** ID of a source provided by [summaryTestConfig]. */
         const val SOURCE_ID_7 = "test_source_id_7"
 
+        /** ID of a source provided by [privacySubpageConfig]. */
+        const val PRIVACY_SOURCE_ID_1 = "AndroidPermissionUsage"
+
+        /** ID of a source provided by [privacySubpageConfig]. */
+        const val PRIVACY_SOURCE_ID_2 = "AndroidPrivacyAppDataSharingUpdates"
+
         /**
          * ID of a [SafetySourcesGroup] provided by [multipleSourcesConfig], containing two sources
          * of ids [SOURCE_ID_1] and [SOURCE_ID_2].
@@ -941,5 +961,11 @@ class SafetyCenterTestConfigs(private val context: Context) {
          * [androidLockScreenSourcesConfig], to replicate the lock screen sources group.
          */
         const val ANDROID_LOCK_SCREEN_SOURCES_GROUP_ID = "AndroidLockScreenSources"
+
+        /**
+         * ID of a [SafetySourcesGroup] provided by [privacySubpageConfig], to replicate the privacy
+         * sources group.
+         */
+        const val PRIVACY_SOURCES_GROUP_ID = "AndroidPrivacySources"
     }
 }
