@@ -53,8 +53,9 @@ import com.android.safetycenter.testing.SafetySourceReceiver
 import com.android.safetycenter.testing.SafetySourceTestData
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.CRITICAL_ISSUE_ID
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.RECOMMENDATION_ISSUE_ID
+import com.android.safetycenter.testing.UiTestHelper.MORE_ISSUES_LABEL
 import com.android.safetycenter.testing.UiTestHelper.RESCAN_BUTTON_LABEL
-import com.android.safetycenter.testing.UiTestHelper.expandMoreIssuesCard
+import com.android.safetycenter.testing.UiTestHelper.clickMoreIssuesCard
 import com.android.safetycenter.testing.UiTestHelper.resetRotation
 import com.android.safetycenter.testing.UiTestHelper.rotate
 import com.android.safetycenter.testing.UiTestHelper.setAnimationsEnabled
@@ -472,6 +473,16 @@ class SafetyCenterActivityTest {
     }
 
     @Test
+    fun entryListWithSingleSource_clickingDefaultEntryImplicitIntent_redirectsToDifferentScreen() {
+        safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.implicitIntentSingleSourceConfig)
+
+        context.launchSafetyCenterActivity {
+            waitDisplayed(By.text("OK")) { it.click() }
+            waitButtonDisplayed("Exit test activity") { it.click() }
+        }
+    }
+
+    @Test
     fun entryListWithSingleSource_clickingTheUpdatedEntry_redirectsToDifferentScreen() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
         safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, safetySourceTestData.information)
@@ -861,7 +872,7 @@ class SafetyCenterActivityTest {
         bundle.putBoolean(EXPAND_ISSUE_GROUP_QS_FRAGMENT_KEY, true)
         context.launchSafetyCenterActivity(bundle) {
             // Verify cards expanded
-            waitAllTextNotDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.informationIssue)
@@ -886,7 +897,7 @@ class SafetyCenterActivityTest {
         bundle.putString(EXTRA_SAFETY_SOURCE_ISSUE_ID, CRITICAL_ISSUE_ID)
         context.launchSafetyCenterActivity(bundle) {
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
-            waitAllTextDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueNotDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitSourceIssueNotDisplayed(safetySourceTestData.informationIssue)
         }
@@ -910,7 +921,7 @@ class SafetyCenterActivityTest {
         bundle.putString(EXTRA_SAFETY_SOURCE_ISSUE_ID, CRITICAL_ISSUE_ID)
         context.launchSafetyCenterActivity(bundle) {
             waitSourceIssueDisplayed(safetySourceTestData.criticalRedirectingIssue)
-            waitAllTextDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueNotDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueNotDisplayed(safetySourceTestData.informationIssue)
         }
@@ -935,7 +946,7 @@ class SafetyCenterActivityTest {
         context.launchSafetyCenterActivity(bundle) {
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
-            waitAllTextDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueNotDisplayed(safetySourceTestData.informationIssue)
         }
     }
@@ -958,7 +969,7 @@ class SafetyCenterActivityTest {
         bundle.putString(EXTRA_SAFETY_SOURCE_ISSUE_ID, CRITICAL_ISSUE_ID)
         context.launchSafetyCenterActivity(bundle) {
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
-            waitAllTextDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueNotDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitSourceIssueNotDisplayed(safetySourceTestData.informationIssue)
         }
@@ -974,7 +985,7 @@ class SafetyCenterActivityTest {
 
         context.launchSafetyCenterActivity {
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
-            waitAllTextNotDisplayed("See all alerts")
+            waitAllTextNotDisplayed(MORE_ISSUES_LABEL)
         }
     }
 
@@ -993,7 +1004,7 @@ class SafetyCenterActivityTest {
 
         context.launchSafetyCenterActivity {
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
-            waitAllTextDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueNotDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitSourceIssueNotDisplayed(safetySourceTestData.informationIssue)
         }
@@ -1015,10 +1026,10 @@ class SafetyCenterActivityTest {
         context.launchSafetyCenterActivity {
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
 
-            expandMoreIssuesCard()
+            clickMoreIssuesCard()
 
             // Verify cards expanded
-            waitAllTextNotDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.informationIssue)
@@ -1039,13 +1050,13 @@ class SafetyCenterActivityTest {
         safetyCenterTestHelper.setData(SOURCE_ID_3, safetySourceTestData.informationWithIssue)
 
         context.launchSafetyCenterActivity {
-            expandMoreIssuesCard()
+            clickMoreIssuesCard()
 
             val uiDevice = getUiDevice()
             uiDevice.waitForIdle()
 
             // Verify cards initially expanded
-            waitAllTextNotDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.informationIssue)
@@ -1054,7 +1065,7 @@ class SafetyCenterActivityTest {
             uiDevice.rotate()
 
             // Verify cards remain expanded
-            waitAllTextNotDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.informationIssue)
@@ -1080,13 +1091,13 @@ class SafetyCenterActivityTest {
         context.launchSafetyCenterActivity(bundle) {
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
-            waitAllTextDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueNotDisplayed(safetySourceTestData.informationIssue)
 
-            expandMoreIssuesCard()
+            clickMoreIssuesCard()
 
             // Verify cards expanded
-            waitAllTextNotDisplayed("See all alerts")
+            waitAllTextDisplayed(MORE_ISSUES_LABEL)
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.informationIssue)
@@ -1312,6 +1323,43 @@ class SafetyCenterActivityTest {
             )
             waitAllTextDisplayed(
                 context.getString(safetyCenterTestConfigs.dynamicSourceGroup3.summaryResId)
+            )
+        }
+    }
+
+    @Test
+    @SdkSuppress(maxSdkVersion = TIRAMISU)
+    fun launchSafetyCenter_enableSubpagesFlagOnT_stillShowsExpandAndCollapseEntries() {
+        // TODO(b/258228790): Remove after U is no longer in pre-release
+        assumeFalse(CODENAME == "UpsideDownCake")
+
+        SafetyCenterFlags.showSubpages = true
+        val sourceTestData = safetySourceTestData.information
+        val config = safetyCenterTestConfigs.multipleSourceGroupsConfig
+        with(safetyCenterTestHelper) {
+            setConfig(config)
+            setData(SOURCE_ID_1, sourceTestData)
+            setData(SOURCE_ID_2, sourceTestData)
+            setData(SOURCE_ID_3, sourceTestData)
+            setData(SOURCE_ID_4, sourceTestData)
+            setData(SOURCE_ID_5, sourceTestData)
+        }
+        val firstGroup = config.safetySourcesGroups.first()
+        val lastGroup = config.safetySourcesGroups.last()
+
+        context.launchSafetyCenterActivity {
+            waitAllTextDisplayed(
+                context.getString(lastGroup.titleResId),
+                context.getString(lastGroup.summaryResId)
+            )
+
+            waitDisplayed(By.text(context.getString(firstGroup.titleResId))) { it.click() }
+
+            waitAllTextDisplayed(
+                sourceTestData.status!!.title,
+                sourceTestData.status!!.summary,
+                context.getString(lastGroup.titleResId),
+                context.getString(lastGroup.summaryResId),
             )
         }
     }

@@ -19,6 +19,7 @@ package com.android.safetycenter.testing
 import android.app.PendingIntent
 import android.content.Context
 import android.icu.text.MessageFormat
+import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.os.Bundle
 import android.os.UserHandle
@@ -37,6 +38,7 @@ import android.safetycenter.SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK
 import android.safetycenter.SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_RECOMMENDATION
 import android.safetycenter.SafetyCenterStatus
 import android.safetycenter.SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_CRITICAL_WARNING
+import android.safetycenter.SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_OK
 import android.safetycenter.SafetyCenterStatus.OVERALL_SEVERITY_LEVEL_UNKNOWN
 import android.util.ArrayMap
 import androidx.annotation.RequiresApi
@@ -61,6 +63,7 @@ import java.util.Locale
  * A class that provides [SafetyCenterData] objects and associated constants to facilitate asserting
  * on specific Safety Center states in SafetyCenter for testing.
  */
+@RequiresApi(TIRAMISU)
 class SafetyCenterTestData(context: Context) {
 
     private val safetyCenterResourcesContext = SafetyCenterResourcesContext.forTests(context)
@@ -88,12 +91,56 @@ class SafetyCenterTestData(context: Context) {
     fun safetyCenterStatusOneAlert(
         statusResource: String,
         overallSeverityLevel: Int
+    ): SafetyCenterStatus = safetyCenterStatusNAlerts(statusResource, overallSeverityLevel, 1)
+
+    /**
+     * Returns a [SafetyCenterStatus] with [numAlerts] and the given [statusResource] and
+     * [overallSeverityLevel].
+     */
+    fun safetyCenterStatusNAlerts(
+        statusResource: String,
+        overallSeverityLevel: Int,
+        numAlerts: Int,
     ): SafetyCenterStatus =
         SafetyCenterStatus.Builder(
                 safetyCenterResourcesContext.getStringByName(statusResource),
-                getAlertString(1)
+                getAlertString(numAlerts)
             )
             .setSeverityLevel(overallSeverityLevel)
+            .build()
+
+    /**
+     * Returns an information [SafetyCenterStatus] that has "Tip(s) available" as a summary for the
+     * given [numTipIssues].
+     */
+    fun safetyCenterStatusTips(
+        numTipIssues: Int,
+    ): SafetyCenterStatus =
+        SafetyCenterStatus.Builder(
+                safetyCenterResourcesContext.getStringByName("overall_severity_level_ok_title"),
+                safetyCenterResourcesContext.getStringByName(
+                    "overall_severity_level_tip_summary",
+                    numTipIssues
+                )
+            )
+            .setSeverityLevel(OVERALL_SEVERITY_LEVEL_OK)
+            .build()
+
+    /**
+     * Returns an information [SafetyCenterStatus] that has "Action(s) taken" as a summary for the
+     * given [numAutomaticIssues].
+     */
+    fun safetyCenterStatusActionsTaken(
+        numAutomaticIssues: Int,
+    ): SafetyCenterStatus =
+        SafetyCenterStatus.Builder(
+                safetyCenterResourcesContext.getStringByName("overall_severity_level_ok_title"),
+                safetyCenterResourcesContext.getStringByName(
+                    "overall_severity_level_action_taken_summary",
+                    numAutomaticIssues
+                )
+            )
+            .setSeverityLevel(OVERALL_SEVERITY_LEVEL_OK)
             .build()
 
     /**
@@ -281,7 +328,8 @@ class SafetyCenterTestData(context: Context) {
         sourceId: String,
         userId: Int = UserHandle.myUserId(),
         attributionTitle: String? = "OK",
-        groupId: String? = SINGLE_SOURCE_GROUP_ID
+        groupId: String? = SINGLE_SOURCE_GROUP_ID,
+        confirmationDialog: Boolean = false
     ) =
         SafetyCenterIssue.Builder(
                 issueId(sourceId, RECOMMENDATION_ISSUE_ID, userId = userId),
@@ -301,6 +349,18 @@ class SafetyCenterTestData(context: Context) {
                             "See issue",
                             safetySourceTestData.testActivityRedirectPendingIntent
                         )
+                        .apply {
+                            if (confirmationDialog && SdkLevel.isAtLeastU()) {
+                                setConfirmationDialogDetails(
+                                    SafetyCenterIssue.Action.ConfirmationDialogDetails(
+                                        "Confirmation title",
+                                        "Confirmation text",
+                                        "Confirmation yes",
+                                        "Confirmation no"
+                                    )
+                                )
+                            }
+                        }
                         .build()
                 )
             )

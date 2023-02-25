@@ -23,6 +23,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.preference.PreferenceGroup
 import com.android.permissioncontroller.R
+import com.android.permissioncontroller.safetycenter.ui.SafetyBrandChipPreference.Companion.closeSubpage
 import com.android.permissioncontroller.safetycenter.ui.model.SafetyCenterUiData
 import com.android.safetycenter.resources.SafetyCenterResourcesContext
 import com.android.settingslib.widget.IllustrationPreference
@@ -60,7 +61,7 @@ class SafetyCenterSubpageFragment : SafetyCenterFragment() {
         val entryGroup = uiData?.getMatchingGroup(sourceGroupId)
         if (entryGroup == null) {
             Log.w(TAG, "$sourceGroupId doesn't match any of the existing SafetySourcesGroup IDs")
-            requireActivity().finish()
+            closeSubpage(requireActivity(), requireContext())
             return
         }
 
@@ -88,20 +89,24 @@ class SafetyCenterSubpageFragment : SafetyCenterFragment() {
     private fun updateSafetyCenterIssues(uiData: SafetyCenterUiData?) {
         subpageIssueGroup.removeAll()
         val subpageIssues = uiData?.safetyCenterData?.issues?.filter { it.groupId == sourceGroupId }
-        if (subpageIssues.isNullOrEmpty()) {
+        val subpageDismissedIssues =
+            uiData?.safetyCenterData?.dismissedIssues?.filter { it.groupId == sourceGroupId }
+
+        subpageIllustration.isVisible =
+            subpageIssues.isNullOrEmpty() && subpageIllustration.imageDrawable != null
+
+        if (subpageIssues.isNullOrEmpty() && subpageDismissedIssues.isNullOrEmpty()) {
             Log.w(TAG, "$sourceGroupId doesn't have any matching SafetyCenterIssues")
-            if (subpageIllustration.imageDrawable == null) return
-            subpageIllustration.setVisible(true)
             return
         }
 
-        subpageIllustration.setVisible(false)
         collapsableIssuesCardHelper.addIssues(
             requireContext(),
             safetyCenterViewModel,
             getChildFragmentManager(),
             subpageIssueGroup,
             subpageIssues,
+            subpageDismissedIssues,
             uiData.resolvedIssues,
             requireActivity().getTaskId()
         )

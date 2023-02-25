@@ -21,6 +21,7 @@ import android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
 import android.content.pm.PackageManager.PackageInfoFlags
 import android.content.res.Resources
 import android.os.Build
+import android.os.Build.VERSION_CODES.TIRAMISU
 import android.safetycenter.SafetySourceData
 import android.safetycenter.config.SafetyCenterConfig
 import android.safetycenter.config.SafetySource
@@ -37,10 +38,12 @@ import java.security.MessageDigest
  * A class that provides [SafetyCenterConfig] objects and associated constants to facilitate setting
  * up safety sources for testing.
  */
+@RequiresApi(TIRAMISU)
 class SafetyCenterTestConfigs(private val context: Context) {
     /** The certificate hash signing the current package. */
     val packageCertHash =
-        MessageDigest.getInstance("SHA256")!!.digest(
+        MessageDigest.getInstance("SHA256")
+            .digest(
                 context.packageManager
                     .getPackageInfo(
                         context.packageName,
@@ -62,6 +65,22 @@ class SafetyCenterTestConfigs(private val context: Context) {
     val singleSourceInvalidIntentConfig =
         singleSourceConfig(
             dynamicSafetySourceBuilder(SINGLE_SOURCE_ID).setIntentAction("stub").build()
+        )
+
+    /**
+     * Same as [singleSourceConfig] but with an `intentAction` that will resolve implicitly; i.e.
+     * the source's `packageName` does not own the activity resolved by the `intentAction`.
+     */
+    val implicitIntentSingleSourceConfig =
+        singleSourceConfig(
+            dynamicSafetySourceBuilder(SINGLE_SOURCE_ID)
+                // A valid package name that is *not* CTS.
+                .setPackageName(context.packageManager.permissionControllerPackageName)
+                // Exported activity that lives in the CTS package. The PC package does
+                // implement this intent action so the activity has to resolve
+                // implicitly.
+                .setIntentAction(ACTION_TEST_ACTIVITY_EXPORTED)
+                .build()
         )
 
     /** A simple [SafetyCenterConfig] for tests with a source max severity level of 0. */
@@ -168,6 +187,18 @@ class SafetyCenterTestConfigs(private val context: Context) {
             )
             .build()
 
+    /** A simple [SafetyCenterConfig] with multiple sources in a single [SafetySourcesGroup]. */
+    val multipleSourcesInSingleGroupConfig =
+        SafetyCenterConfig.Builder()
+            .addSafetySourcesGroup(
+                safetySourcesGroupBuilder(MULTIPLE_SOURCES_GROUP_ID_1)
+                    .addSafetySource(dynamicSafetySource(SOURCE_ID_1))
+                    .addSafetySource(dynamicSafetySource(SOURCE_ID_2))
+                    .addSafetySource(dynamicSafetySource(SOURCE_ID_3))
+                    .build()
+            )
+            .build()
+
     /** A simple [SafetyCenterConfig] for tests with multiple sources with deduplication info. */
     val multipleSourcesWithDeduplicationInfoConfig: SafetyCenterConfig
         @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -235,7 +266,7 @@ class SafetyCenterTestConfigs(private val context: Context) {
         get() =
             SafetyCenterConfig.Builder()
                 .addSafetySourcesGroup(
-                    safetySourcesGroupBuilder(PRIVACY_SOURCES_GROUP_ID)
+                    safetySourcesGroupBuilder(ANDROID_PRIVACY_SOURCES_GROUP_ID)
                         .addSafetySource(dynamicSafetySource(PRIVACY_SOURCE_ID_1))
                         .addSafetySource(dynamicSafetySource(PRIVACY_SOURCE_ID_2))
                         .build()
@@ -734,8 +765,15 @@ class SafetyCenterTestConfigs(private val context: Context) {
         /** ID of a source not used in any config. */
         const val SAMPLE_SOURCE_ID = "test_sample_source_id"
 
-        /** Activity action: Launch the [TestActivity] used to check redirects in tests. */
+        /** Activity action: Launches the [TestActivity] used to check redirects in tests. */
         const val ACTION_TEST_ACTIVITY = "com.android.safetycenter.testing.action.TEST_ACTIVITY"
+
+        /**
+         * Activity action: Launches the [TestActivity] used to check redirects in tests, but with
+         * an exported activity alias.
+         */
+        const val ACTION_TEST_ACTIVITY_EXPORTED =
+            "com.android.safetycenter.testing.action.TEST_ACTIVITY_EXPORTED"
 
         /**
          * ID of the only source provided in [singleSourceConfig], [severityZeroConfig] and
@@ -966,6 +1004,6 @@ class SafetyCenterTestConfigs(private val context: Context) {
          * ID of a [SafetySourcesGroup] provided by [privacySubpageConfig], to replicate the privacy
          * sources group.
          */
-        const val PRIVACY_SOURCES_GROUP_ID = "AndroidPrivacySources"
+        const val ANDROID_PRIVACY_SOURCES_GROUP_ID = "AndroidPrivacySources"
     }
 }

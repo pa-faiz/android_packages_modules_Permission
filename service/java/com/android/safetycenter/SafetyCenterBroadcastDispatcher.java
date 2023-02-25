@@ -34,6 +34,7 @@ import static java.util.Collections.unmodifiableList;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.BroadcastOptions;
 import android.content.Context;
@@ -52,7 +53,7 @@ import androidx.annotation.RequiresApi;
 
 import com.android.permission.util.PackageUtils;
 import com.android.safetycenter.SafetyCenterConfigReader.Broadcast;
-import com.android.safetycenter.data.SafetySourceDataRepository;
+import com.android.safetycenter.data.SafetyCenterDataManager;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -75,17 +76,17 @@ final class SafetyCenterBroadcastDispatcher {
     @NonNull private final Context mContext;
     @NonNull private final SafetyCenterConfigReader mSafetyCenterConfigReader;
     @NonNull private final SafetyCenterRefreshTracker mSafetyCenterRefreshTracker;
-    @NonNull private final SafetySourceDataRepository mSafetySourceDataRepository;
+    @NonNull private final SafetyCenterDataManager mSafetyCenterDataManager;
 
     SafetyCenterBroadcastDispatcher(
             @NonNull Context context,
             @NonNull SafetyCenterConfigReader safetyCenterConfigReader,
             @NonNull SafetyCenterRefreshTracker safetyCenterRefreshTracker,
-            @NonNull SafetySourceDataRepository safetySourceDataRepository) {
+            @NonNull SafetyCenterDataManager safetyCenterDataManager) {
         mContext = context;
         mSafetyCenterConfigReader = safetyCenterConfigReader;
         mSafetyCenterRefreshTracker = safetyCenterRefreshTracker;
-        mSafetySourceDataRepository = safetySourceDataRepository;
+        mSafetyCenterDataManager = safetyCenterDataManager;
     }
 
     /**
@@ -247,6 +248,8 @@ final class SafetyCenterBroadcastDispatcher {
         return true;
     }
 
+    // TODO(b/193460475): Remove when tooling supports SystemApi to public API.
+    @SuppressLint("NewApi")
     private void sendBroadcast(
             @NonNull Intent intent,
             @NonNull UserHandle userHandle,
@@ -301,6 +304,8 @@ final class SafetyCenterBroadcastDispatcher {
         return new Intent(intentAction).setFlags(FLAG_RECEIVER_FOREGROUND);
     }
 
+    // TODO(b/193460475): Remove when tooling supports SystemApi to public API.
+    @SuppressLint("NewApi")
     @NonNull
     private static BroadcastOptions createBroadcastOptions() {
         BroadcastOptions broadcastOptions = BroadcastOptions.makeBasic();
@@ -400,7 +405,7 @@ final class SafetyCenterBroadcastDispatcher {
             String sourceId = allSourceIds.get(i);
             if (pageOpenSourceIds.contains(sourceId)
                     || flagAllowListedSourceIds.contains(sourceId)
-                    || mSafetySourceDataRepository.getSafetySourceDataInternal(
+                    || mSafetyCenterDataManager.getSafetySourceDataInternal(
                                     SafetySourceKey.of(sourceId, userId))
                             == null) {
                 sourceIds.add(sourceId);

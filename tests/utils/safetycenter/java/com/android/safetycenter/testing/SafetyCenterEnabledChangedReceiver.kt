@@ -21,14 +21,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build.VERSION_CODES.TIRAMISU
 import android.safetycenter.SafetyCenterManager.ACTION_SAFETY_CENTER_ENABLED_CHANGED
+import androidx.annotation.RequiresApi
+import com.android.compatibility.common.util.SystemUtil
 import com.android.safetycenter.testing.Coroutines.TIMEOUT_LONG
 import com.android.safetycenter.testing.Coroutines.runBlockingWithTimeout
-import com.android.compatibility.common.util.SystemUtil
 import com.android.safetycenter.testing.ShellPermissions.callWithShellPermissionIdentity
 import java.time.Duration
 
 /** Broadcast receiver used for testing broadcasts sent when the SafetyCenter flag changes. */
+@RequiresApi(TIRAMISU)
 class SafetyCenterEnabledChangedReceiver(private val context: Context) : BroadcastReceiver() {
 
     private val mSafetySourceIntentHandler = SafetySourceIntentHandler()

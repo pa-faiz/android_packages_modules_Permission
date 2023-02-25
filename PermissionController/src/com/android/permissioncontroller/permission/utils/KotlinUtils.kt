@@ -53,7 +53,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
-import android.healthconnect.HealthConnectManager
+import android.health.connect.HealthConnectManager
 import android.os.Build
 import android.os.Bundle
 import android.os.UserHandle
@@ -265,7 +265,7 @@ object KotlinUtils {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, codename = "UpsideDownCake")
     fun isPhotoPickerPromptEnabled(): Boolean {
         return SdkLevel.isAtLeastU() && DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_PRIVACY,
-            PROPERTY_PHOTO_PICKER_PROMPT_ENABLED, false)
+            PROPERTY_PHOTO_PICKER_PROMPT_ENABLED, true)
     }
 
     /*

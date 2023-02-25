@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_RECEIVER_FOREGROUND
 import android.content.pm.PackageManager.ResolveInfoFlags
+import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.safetycenter.SafetyEvent
 import android.safetycenter.SafetySourceData
@@ -35,6 +36,7 @@ import android.safetycenter.SafetySourceStatus.IconAction
 import android.safetycenter.SafetySourceStatus.IconAction.ICON_TYPE_GEAR
 import android.safetycenter.SafetySourceStatus.IconAction.ICON_TYPE_INFO
 import androidx.annotation.RequiresApi
+import com.android.modules.utils.build.SdkLevel
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.ACTION_TEST_ACTIVITY
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SINGLE_SOURCE_ID
 import com.android.safetycenter.testing.SafetySourceIntentHandler.Companion.ACTION_DISMISS_ISSUE
@@ -49,6 +51,7 @@ import kotlin.math.max
  * A class that provides [SafetySourceData] objects and associated constants to facilitate setting
  * up specific states in SafetyCenter for testing.
  */
+@RequiresApi(TIRAMISU)
 class SafetySourceTestData(private val context: Context) {
 
     /** A [PendingIntent] that redirects to the [TestActivity] page. */
@@ -101,16 +104,11 @@ class SafetySourceTestData(private val context: Context) {
      * A [SafetySourceIssue.Builder] with a [SEVERITY_LEVEL_INFORMATION] and a redirecting [Action].
      */
     fun defaultInformationIssueBuilder(
+        id: String = INFORMATION_ISSUE_ID,
         title: String = "Information issue title",
         summary: String = "Information issue summary"
     ) =
-        SafetySourceIssue.Builder(
-                INFORMATION_ISSUE_ID,
-                title,
-                summary,
-                SEVERITY_LEVEL_INFORMATION,
-                ISSUE_TYPE_ID
-            )
+        SafetySourceIssue.Builder(id, title, summary, SEVERITY_LEVEL_INFORMATION, ISSUE_TYPE_ID)
             .addAction(
                 Action.Builder(
                         INFORMATION_ISSUE_ACTION_ID,
@@ -302,7 +300,8 @@ class SafetySourceTestData(private val context: Context) {
      */
     fun defaultRecommendationIssueBuilder(
         title: String = "Recommendation issue title",
-        summary: String = "Recommendation issue summary"
+        summary: String = "Recommendation issue summary",
+        confirmationDialog: Boolean = false
     ) =
         SafetySourceIssue.Builder(
                 RECOMMENDATION_ISSUE_ID,
@@ -317,6 +316,18 @@ class SafetySourceTestData(private val context: Context) {
                         "See issue",
                         testActivityRedirectPendingIntent
                     )
+                    .apply {
+                        if (confirmationDialog && SdkLevel.isAtLeastU()) {
+                            setConfirmationDialogDetails(
+                                SafetySourceIssue.Action.ConfirmationDialogDetails(
+                                    "Confirmation title",
+                                    "Confirmation text",
+                                    "Confirmation yes",
+                                    "Confirmation no"
+                                )
+                            )
+                        }
+                    }
                     .build()
             )
 
@@ -333,6 +344,10 @@ class SafetySourceTestData(private val context: Context) {
     @RequiresApi(UPSIDE_DOWN_CAKE)
     fun recommendationIssueWithDeduplicationId(deduplicationId: String) =
         defaultRecommendationIssueBuilder().setDeduplicationId(deduplicationId).build()
+
+    val recommendationIssueWithActionConfirmation: SafetySourceIssue
+        @RequiresApi(UPSIDE_DOWN_CAKE)
+        get() = defaultRecommendationIssueBuilder(confirmationDialog = true).build()
 
     /**
      * A [SafetySourceIssue] with a [SEVERITY_LEVEL_RECOMMENDATION], account category and a
@@ -384,6 +399,13 @@ class SafetySourceTestData(private val context: Context) {
      */
     val recommendationWithGeneralIssue =
         defaultRecommendationDataBuilder().addIssue(recommendationGeneralIssue).build()
+
+    val recommendationWithIssueWithActionConfirmation: SafetySourceData
+        @RequiresApi(UPSIDE_DOWN_CAKE)
+        get() =
+            defaultRecommendationDataBuilder()
+                .addIssue(recommendationIssueWithActionConfirmation)
+                .build()
 
     /**
      * A [SafetySourceData] with a [SEVERITY_LEVEL_RECOMMENDATION] redirecting [SafetySourceIssue]

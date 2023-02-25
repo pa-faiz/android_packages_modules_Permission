@@ -131,7 +131,7 @@
     <string name="permission_group_usage_title" msgid="2595013198075285173">"Uso de <xliff:g id="PERMGROUP">%1$s</xliff:g>"</string>
     <string name="perm_usage_adv_info_title" msgid="3357831829538873708">"Ver otros permisos"</string>
     <string name="perm_usage_adv_info_summary_2_items" msgid="3702175198750127822">"<xliff:g id="PERMGROUP_0">%1$s</xliff:g>, <xliff:g id="PERMGROUP_1">%2$s</xliff:g>"</string>
-    <string name="perm_usage_adv_info_summary_more_items" msgid="949055326299562218">"<xliff:g id="PERMGROUP_0">%1$s</xliff:g>, <xliff:g id="PERMGROUP_1">%2$s</xliff:g>, <xliff:g id="NUM">%3$s</xliff:g> más"</string>
+    <string name="perm_usage_adv_info_summary_more_items" msgid="949055326299562218">"<xliff:g id="PERMGROUP_0">%1$s</xliff:g>, <xliff:g id="PERMGROUP_1">%2$s</xliff:g> y <xliff:g id="NUM">%3$s</xliff:g> más"</string>
     <string name="permission_group_usage_subtitle_24h" msgid="5120155996322114181">"Cronología de cuándo han usado las aplicaciones el permiso <xliff:g id="PERMGROUP">%1$s</xliff:g> en las últimas 24 horas"</string>
     <string name="permission_group_usage_subtitle_7d" msgid="1465828402260324654">"Cronología de cuándo han usado las aplicaciones el permiso <xliff:g id="PERMGROUP">%1$s</xliff:g> en los últimos 7 días"</string>
     <string name="permission_usage_access_dialog_subtitle" msgid="4171772805196955753">"Cuándo ha utilizado esta aplicación tu permiso de <xliff:g id="PERMGROUP">%1$s</xliff:g>"</string>
@@ -591,6 +591,5 @@
     <string name="show_clip_access_notification_summary" msgid="3532020182782112687">"Muestra un mensaje cuando las aplicaciones acceden a texto, imágenes u otro contenido que has copiado"</string>
     <string name="show_password_title" msgid="2877269286984684659">"Mostrar contraseñas"</string>
     <string name="show_password_summary" msgid="1110166488865981610">"Muestra los caracteres brevemente mientras escribes"</string>
-    <!-- no translation found for permission_rationale_message_location (2153841534298068414) -->
-    <skip />
+    <string name="permission_rationale_message_location" msgid="2153841534298068414">"Esta aplicación ha indicado que puede compartir datos de ubicación con terceros"</string>
 </resources>

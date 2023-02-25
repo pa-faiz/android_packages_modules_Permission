@@ -19,11 +19,13 @@ package com.android.safetycenter.testing
 import android.Manifest.permission.READ_SAFETY_CENTER_STATUS
 import android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE
 import android.content.Context
+import android.os.Build.VERSION_CODES.TIRAMISU
 import android.safetycenter.SafetyCenterManager
 import android.safetycenter.SafetyEvent
 import android.safetycenter.SafetySourceData
 import android.safetycenter.config.SafetyCenterConfig
 import android.safetycenter.config.SafetySource.SAFETY_SOURCE_TYPE_STATIC
+import androidx.annotation.RequiresApi
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.addOnSafetyCenterDataChangedListenerWithPermission
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.clearAllSafetySourceDataForTestsWithPermission
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.clearSafetyCenterConfigForTestsWithPermission
@@ -38,6 +40,7 @@ import com.android.safetycenter.testing.ShellPermissions.callWithShellPermission
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 
 /** A class that facilitates settings up Safety Center in tests. */
+@RequiresApi(TIRAMISU)
 class SafetyCenterTestHelper(private val context: Context) {
 
     private val safetyCenterManager = context.getSystemService(SafetyCenterManager::class.java)!!
@@ -70,18 +73,20 @@ class SafetyCenterTestHelper(private val context: Context) {
 
     /** Enables or disables SafetyCenter based on [value]. */
     fun setEnabled(value: Boolean) {
-        val currentValue = SafetyCenterFlags.isEnabled
-        if (currentValue == value) {
-            return
-        }
         val safetyCenterConfig = safetyCenterManager.getSafetyCenterConfigWithPermission()
         if (safetyCenterConfig == null) {
             // No broadcasts are dispatched when toggling the flag when SafetyCenter is not
-            // supported by the device.
+            // supported by the device. In this case, toggling this flag should end up being a no-op
+            // as Safety Center will remain disabled regardless, but we still toggle it so that this
+            // no-op behavior can be covered.
             SafetyCenterFlags.isEnabled = value
-        } else {
-            setEnabledWaitingForSafetyCenterBroadcastIdle(value, safetyCenterConfig)
+            return
         }
+        val currentValue = safetyCenterManager.isSafetyCenterEnabledWithPermission()
+        if (currentValue == value) {
+            return
+        }
+        setEnabledWaitingForSafetyCenterBroadcastIdle(value, safetyCenterConfig)
     }
 
     /** Sets the given [SafetyCenterConfig]. */
