@@ -18,11 +18,14 @@ package com.android.safetycenter.data;
 
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
-import android.annotation.NonNull;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -41,11 +44,15 @@ import javax.annotation.concurrent.NotThreadSafe;
 @NotThreadSafe
 final class SafetyCenterIssueDeduplicator {
 
-    @NonNull
+    private static final String TAG = "SafetyCenterDedup";
+
     private final SafetyCenterIssueDismissalRepository mSafetyCenterIssueDismissalRepository;
 
+    // issues removed due to being duplicates in the most recent call to deduplicateIssues()
+    private List<SafetySourceIssueInfo> mMostRecentlyFilteredOutDuplicates = emptyList();
+
     SafetyCenterIssueDeduplicator(
-            @NonNull SafetyCenterIssueDismissalRepository safetyCenterIssueDismissalRepository) {
+            SafetyCenterIssueDismissalRepository safetyCenterIssueDismissalRepository) {
         this.mSafetyCenterIssueDismissalRepository = safetyCenterIssueDismissalRepository;
     }
 
@@ -61,20 +68,68 @@ final class SafetyCenterIssueDeduplicator {
      *
      * <p>This method modifies the given argument.
      */
-    void deduplicateIssues(@NonNull List<SafetySourceIssueInfo> sortedIssues) {
+    void deduplicateIssues(List<SafetySourceIssueInfo> sortedIssues) {
         // (dedup key) -> list(issues)
         ArrayMap<DeduplicationKey, List<SafetySourceIssueInfo>> dedupBuckets =
                 createDedupBuckets(sortedIssues);
 
-        dismissDuplicateIssuesOfDismissedIssue(dedupBuckets);
+        // There is no further work to do when there are no dedup buckets
+        if (dedupBuckets.isEmpty()) {
+            return;
+        }
+
+        alignAllDismissals(dedupBuckets);
 
         ArraySet<SafetyCenterIssueKey> duplicatesToFilterOut =
                 getDuplicatesToFilterOut(dedupBuckets);
 
+        resurfaceHiddenIssuesIfNeeded(dedupBuckets);
+
+        if (duplicatesToFilterOut.isEmpty()) {
+            return;
+        }
+
+        List<SafetySourceIssueInfo> filteredOut = new ArrayList<>(duplicatesToFilterOut.size());
         Iterator<SafetySourceIssueInfo> it = sortedIssues.iterator();
         while (it.hasNext()) {
-            if (duplicatesToFilterOut.contains(it.next().getSafetyCenterIssueKey())) {
+            SafetySourceIssueInfo issueInfo = it.next();
+            SafetyCenterIssueKey issueKey = issueInfo.getSafetyCenterIssueKey();
+            if (duplicatesToFilterOut.contains(issueKey)) {
                 it.remove();
+                filteredOut.add(issueInfo);
+                // mark as temporarily hidden, which will delay showing these issues if the top
+                // issue gets resolved.
+                mSafetyCenterIssueDismissalRepository.hideIssue(issueKey);
+            }
+        }
+        mMostRecentlyFilteredOutDuplicates = unmodifiableList(filteredOut);
+    }
+
+    /**
+     * Returns the list of issues which were removed from the given list of issues in the most
+     * recent {@link SafetyCenterIssueDeduplicator#deduplicateIssues} call. These issues were
+     * removed because they were duplicates of other issues.
+     *
+     * <p>If this method is called before any calls to {@link
+     * SafetyCenterIssueDeduplicator#deduplicateIssues} then an empty list is returned.
+     */
+    List<SafetySourceIssueInfo> getMostRecentFilteredOutDuplicateIssues() {
+        return mMostRecentlyFilteredOutDuplicates;
+    }
+
+    private void resurfaceHiddenIssuesIfNeeded(
+            ArrayMap<DeduplicationKey, List<SafetySourceIssueInfo>> dedupBuckets) {
+        for (int i = 0; i < dedupBuckets.size(); i++) {
+            List<SafetySourceIssueInfo> duplicates = dedupBuckets.valueAt(i);
+            if (duplicates.isEmpty()) {
+                Log.w(TAG, "List of duplicates in a dedupBucket is empty");
+                continue;
+            }
+
+            // top issue in the bucket, if hidden, should resurface after certain period
+            SafetyCenterIssueKey topIssueKey = duplicates.get(0).getSafetyCenterIssueKey();
+            if (mSafetyCenterIssueDismissalRepository.isIssueHidden(topIssueKey)) {
+                mSafetyCenterIssueDismissalRepository.resurfaceHiddenIssueAfterPeriod(topIssueKey);
             }
         }
     }
@@ -82,45 +137,85 @@ final class SafetyCenterIssueDeduplicator {
     /**
      * Handles dismissals logic: in each bucket, dismissal details of the top (highest priority)
      * dismissed issue will be copied to all other duplicate issues in that bucket, that are of
-     * equal or lower severity (not priority).
+     * equal or lower severity (not priority). Notification-dismissal details are handled similarly.
      */
-    private void dismissDuplicateIssuesOfDismissedIssue(
-            @NonNull ArrayMap<DeduplicationKey, List<SafetySourceIssueInfo>> dedupBuckets) {
+    private void alignAllDismissals(
+            ArrayMap<DeduplicationKey, List<SafetySourceIssueInfo>> dedupBuckets) {
         for (int i = 0; i < dedupBuckets.size(); i++) {
             List<SafetySourceIssueInfo> duplicates = dedupBuckets.valueAt(i);
+            if (duplicates.size() < 2) {
+                continue;
+            }
             SafetySourceIssueInfo topDismissed = getHighestPriorityDismissedIssue(duplicates);
-            alignDismissalsDataWithinBucket(topDismissed, duplicates);
+            SafetySourceIssueInfo topNotificationDismissed =
+                    getHighestPriorityNotificationDismissedIssue(duplicates);
+            alignDismissalsInBucket(topDismissed, duplicates);
+            alignNotificationDismissalsInBucket(topNotificationDismissed, duplicates);
         }
     }
 
     /**
-     * Dismisses all issues of lower or equal severity relative to the given top dismissed issue in
-     * the bucket.
+     * Dismisses all recipient issues of lower or equal severity than the given top dismissed issue
+     * in the bucket.
      */
-    private void alignDismissalsDataWithinBucket(
-            @Nullable SafetySourceIssueInfo topDismissed,
-            @NonNull List<SafetySourceIssueInfo> duplicates) {
+    private void alignDismissalsInBucket(
+            @Nullable SafetySourceIssueInfo topDismissed, List<SafetySourceIssueInfo> duplicates) {
         if (topDismissed == null) {
             return;
         }
-        SafetyCenterIssueKey topDismissedIssueKey = topDismissed.getSafetyCenterIssueKey();
-        int topDismissedSeverityLevel = topDismissed.getSafetySourceIssue().getSeverityLevel();
+        SafetyCenterIssueKey topDismissedKey = topDismissed.getSafetyCenterIssueKey();
+        List<SafetyCenterIssueKey> recipients = getRecipientKeys(topDismissed, duplicates);
+        for (int i = 0; i < recipients.size(); i++) {
+            mSafetyCenterIssueDismissalRepository.copyDismissalData(
+                    topDismissedKey, recipients.get(i));
+        }
+    }
+
+    /**
+     * Dismisses notifications for all recipient issues of lower or equal severity than the given
+     * top notification-dismissed issue in the bucket.
+     */
+    private void alignNotificationDismissalsInBucket(
+            @Nullable SafetySourceIssueInfo topNotificationDismissed,
+            List<SafetySourceIssueInfo> duplicates) {
+        if (topNotificationDismissed == null) {
+            return;
+        }
+        SafetyCenterIssueKey topNotificationDismissedKey =
+                topNotificationDismissed.getSafetyCenterIssueKey();
+        List<SafetyCenterIssueKey> recipients =
+                getRecipientKeys(topNotificationDismissed, duplicates);
+        for (int i = 0; i < recipients.size(); i++) {
+            mSafetyCenterIssueDismissalRepository.copyNotificationDismissalData(
+                    topNotificationDismissedKey, recipients.get(i));
+        }
+    }
+
+    /**
+     * Returns the "recipient" issues for the given top issue from a bucket of duplicates.
+     * Recipients are those issues with a lower or equal severity level. The top issue is not its
+     * own recipient.
+     */
+    private List<SafetyCenterIssueKey> getRecipientKeys(
+            SafetySourceIssueInfo topIssue, List<SafetySourceIssueInfo> duplicates) {
+        ArrayList<SafetyCenterIssueKey> recipients = new ArrayList<>();
+        SafetyCenterIssueKey topKey = topIssue.getSafetyCenterIssueKey();
+        int topSeverity = topIssue.getSafetySourceIssue().getSeverityLevel();
+
         for (int i = 0; i < duplicates.size(); i++) {
             SafetySourceIssueInfo issueInfo = duplicates.get(i);
             SafetyCenterIssueKey issueKey = issueInfo.getSafetyCenterIssueKey();
-            if (!issueKey.equals(topDismissedIssueKey)
-                    && issueInfo.getSafetySourceIssue().getSeverityLevel()
-                            <= topDismissedSeverityLevel) {
-                // all duplicate issues should have same dismissals data as top dismissed issue
-                mSafetyCenterIssueDismissalRepository.copyDismissalData(
-                        topDismissedIssueKey, issueKey);
+            if (!issueKey.equals(topKey)
+                    && issueInfo.getSafetySourceIssue().getSeverityLevel() <= topSeverity) {
+                recipients.add(issueKey);
             }
         }
+        return recipients;
     }
 
     @Nullable
     private SafetySourceIssueInfo getHighestPriorityDismissedIssue(
-            @NonNull List<SafetySourceIssueInfo> duplicates) {
+            List<SafetySourceIssueInfo> duplicates) {
         for (int i = 0; i < duplicates.size(); i++) {
             SafetySourceIssueInfo issueInfo = duplicates.get(i);
             if (mSafetyCenterIssueDismissalRepository.isIssueDismissed(
@@ -133,17 +228,33 @@ final class SafetyCenterIssueDeduplicator {
         return null;
     }
 
+    @Nullable
+    private SafetySourceIssueInfo getHighestPriorityNotificationDismissedIssue(
+            List<SafetySourceIssueInfo> duplicates) {
+        for (int i = 0; i < duplicates.size(); i++) {
+            SafetySourceIssueInfo issueInfo = duplicates.get(i);
+            if (mSafetyCenterIssueDismissalRepository.isNotificationDismissedNow(
+                    issueInfo.getSafetyCenterIssueKey(),
+                    issueInfo.getSafetySourceIssue().getSeverityLevel())) {
+                return issueInfo;
+            }
+        }
+
+        return null;
+    }
+
     /** Returns a set of duplicate issues that need to be filtered out. */
-    @NonNull
-    private static ArraySet<SafetyCenterIssueKey> getDuplicatesToFilterOut(
-            @NonNull ArrayMap<DeduplicationKey, List<SafetySourceIssueInfo>> dedupBuckets) {
+    private ArraySet<SafetyCenterIssueKey> getDuplicatesToFilterOut(
+            ArrayMap<DeduplicationKey, List<SafetySourceIssueInfo>> dedupBuckets) {
         ArraySet<SafetyCenterIssueKey> duplicatesToFilterOut = new ArraySet<>();
 
         for (int i = 0; i < dedupBuckets.size(); i++) {
             List<SafetySourceIssueInfo> duplicates = dedupBuckets.valueAt(i);
+
             // all but the top one in the bucket
             for (int j = 1; j < duplicates.size(); j++) {
-                duplicatesToFilterOut.add(duplicates.get(j).getSafetyCenterIssueKey());
+                SafetyCenterIssueKey issueKey = duplicates.get(j).getSafetyCenterIssueKey();
+                duplicatesToFilterOut.add(issueKey);
             }
         }
 
@@ -151,9 +262,8 @@ final class SafetyCenterIssueDeduplicator {
     }
 
     /** Returns a mapping (dedup key) -> list(issues). */
-    @NonNull
     private static ArrayMap<DeduplicationKey, List<SafetySourceIssueInfo>> createDedupBuckets(
-            @NonNull List<SafetySourceIssueInfo> sortedIssues) {
+            List<SafetySourceIssueInfo> sortedIssues) {
         ArrayMap<DeduplicationKey, List<SafetySourceIssueInfo>> dedupBuckets = new ArrayMap<>();
 
         for (int i = 0; i < sortedIssues.size(); i++) {
@@ -176,7 +286,7 @@ final class SafetyCenterIssueDeduplicator {
 
     /** Returns deduplication key of the given {@code issueInfo}. */
     @Nullable
-    private static DeduplicationKey getDedupKey(@NonNull SafetySourceIssueInfo issueInfo) {
+    private static DeduplicationKey getDedupKey(SafetySourceIssueInfo issueInfo) {
         String deduplicationGroup = issueInfo.getSafetySource().getDeduplicationGroup();
         String deduplicationId = issueInfo.getSafetySourceIssue().getDeduplicationId();
 
@@ -189,16 +299,14 @@ final class SafetyCenterIssueDeduplicator {
                 issueInfo.getSafetyCenterIssueKey().getUserId());
     }
 
-    private static class DeduplicationKey {
+    private static final class DeduplicationKey {
 
-        @NonNull private final String mDeduplicationGroup;
-        @NonNull private final String mDeduplicationId;
+        private final String mDeduplicationGroup;
+        private final String mDeduplicationId;
         private final int mUserId;
 
         private DeduplicationKey(
-                @NonNull String deduplicationGroup,
-                @NonNull String deduplicationId,
-                @UserIdInt int userId) {
+                String deduplicationGroup, String deduplicationId, @UserIdInt int userId) {
             mDeduplicationGroup = deduplicationGroup;
             mDeduplicationId = deduplicationId;
             mUserId = userId;

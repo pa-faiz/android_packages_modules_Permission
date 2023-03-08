@@ -41,8 +41,10 @@ import com.android.safetycenter.testing.UiTestHelper.MORE_ISSUES_LABEL
 import com.android.safetycenter.testing.UiTestHelper.clickMoreIssuesCard
 import com.android.safetycenter.testing.UiTestHelper.resetRotation
 import com.android.safetycenter.testing.UiTestHelper.waitAllTextDisplayed
+import com.android.safetycenter.testing.UiTestHelper.waitAllTextNotDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitButtonDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitDisplayed
+import com.android.safetycenter.testing.UiTestHelper.waitPageTitleDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueNotDisplayed
 import org.junit.After
@@ -112,6 +114,25 @@ class PrivacySubpageTest {
                 context.getString(lastSource.titleResId),
                 context.getString(lastSource.summaryResId)
             )
+        }
+    }
+
+    @Test
+    fun privacySubpage_withoutDataSources_hidesDataCategory() {
+        val config = safetyCenterTestConfigs.privacySubpageWithoutDataSourcesConfig
+        safetyCenterTestHelper.setConfig(config)
+        val sourcesGroup = config.safetySourcesGroups.first()
+        val firstSource: SafetySource = sourcesGroup.safetySources.first()
+        val extras = Bundle()
+        extras.putString(EXTRA_SAFETY_SOURCES_GROUP_ID, sourcesGroup.id)
+
+        context.launchSafetyCenterActivity(extras) {
+            waitAllTextDisplayed(
+                context.getString(firstSource.titleResId),
+                context.getString(firstSource.summaryResId),
+                "Controls",
+            )
+            waitAllTextNotDisplayed("Data")
         }
     }
 
@@ -187,7 +208,7 @@ class PrivacySubpageTest {
 
         context.launchSafetyCenterActivity(extras) {
             openPageAndExit("Location Settings") {
-                waitDisplayed(By.desc("Location"))
+                waitPageTitleDisplayed("Location")
                 waitAllTextDisplayed("Use location")
             }
 

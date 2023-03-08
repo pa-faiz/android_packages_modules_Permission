@@ -34,7 +34,6 @@ import static com.android.safetycenter.internaldata.SafetyCenterIds.toUserFriend
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.PendingIntent;
@@ -110,58 +109,46 @@ public final class SafetyCenterService extends SystemService {
     @GuardedBy("mApiLock")
     private final SafetyCenterTimeouts mSafetyCenterTimeouts = new SafetyCenterTimeouts();
 
-    @NonNull private final SafetyCenterResourcesContext mSafetyCenterResourcesContext;
+    private final SafetyCenterResourcesContext mSafetyCenterResourcesContext;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterConfigReader mSafetyCenterConfigReader;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterRefreshTracker mSafetyCenterRefreshTracker;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterDataManager mSafetyCenterDataManager;
 
     @GuardedBy("mApiLock")
-    @NonNull
-    private final PendingIntentFactory mPendingIntentFactory;
-
-    @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterDataFactory mSafetyCenterDataFactory;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterListeners mSafetyCenterListeners;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterNotificationSender mNotificationSender;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterBroadcastDispatcher mSafetyCenterBroadcastDispatcher;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterDataChangeNotifier mSafetyCenterDataChangeNotifier;
 
-    @NonNull private final StatsPullAtomCallback mPullAtomCallback;
+    private final StatsPullAtomCallback mPullAtomCallback;
     private final boolean mDeviceSupportsSafetyCenter;
 
     /** Whether the {@link SafetyCenterConfig} was successfully loaded. */
     private volatile boolean mConfigAvailable;
 
-    public SafetyCenterService(@NonNull Context context) {
+    public SafetyCenterService(Context context) {
         super(context);
         mSafetyCenterResourcesContext = new SafetyCenterResourcesContext(context);
+        SafetyCenterFlags.init(mSafetyCenterResourcesContext);
         mSafetyCenterConfigReader = new SafetyCenterConfigReader(mSafetyCenterResourcesContext);
         SafetyCenterStatsdLogger safetyCenterStatsdLogger =
                 new SafetyCenterStatsdLogger(context, mSafetyCenterConfigReader);
         mSafetyCenterRefreshTracker = new SafetyCenterRefreshTracker(safetyCenterStatsdLogger);
-        mPendingIntentFactory = new PendingIntentFactory(context, mSafetyCenterResourcesContext);
         mSafetyCenterDataManager =
                 new SafetyCenterDataManager(
                         context,
@@ -174,7 +161,7 @@ public final class SafetyCenterService extends SystemService {
                         mSafetyCenterResourcesContext,
                         mSafetyCenterConfigReader,
                         mSafetyCenterRefreshTracker,
-                        mPendingIntentFactory,
+                        new PendingIntentFactory(context, mSafetyCenterResourcesContext),
                         mSafetyCenterDataManager);
         mSafetyCenterListeners = new SafetyCenterListeners(mSafetyCenterDataFactory);
         mNotificationSender =
@@ -217,6 +204,7 @@ public final class SafetyCenterService extends SystemService {
         publishBinderService(Context.SAFETY_CENTER_SERVICE, new Stub());
         if (mDeviceSupportsSafetyCenter) {
             synchronized (mApiLock) {
+                SafetyCenterFlags.init(mSafetyCenterResourcesContext);
                 mConfigAvailable = mSafetyCenterConfigReader.loadConfig();
                 if (mConfigAvailable) {
                     mSafetyCenterDataManager.loadPersistableDataStateFromFile();
@@ -268,10 +256,10 @@ public final class SafetyCenterService extends SystemService {
 
         @Override
         public void setSafetySourceData(
-                @NonNull String safetySourceId,
+                String safetySourceId,
                 @Nullable SafetySourceData safetySourceData,
-                @NonNull SafetyEvent safetyEvent,
-                @NonNull String packageName,
+                SafetyEvent safetyEvent,
+                String packageName,
                 @UserIdInt int userId) {
             requireNonNull(safetySourceId);
             requireNonNull(safetyEvent);
@@ -299,9 +287,7 @@ public final class SafetyCenterService extends SystemService {
         @Override
         @Nullable
         public SafetySourceData getSafetySourceData(
-                @NonNull String safetySourceId,
-                @NonNull String packageName,
-                @UserIdInt int userId) {
+                String safetySourceId, String packageName, @UserIdInt int userId) {
             requireNonNull(safetySourceId);
             requireNonNull(packageName);
             getContext()
@@ -321,9 +307,9 @@ public final class SafetyCenterService extends SystemService {
 
         @Override
         public void reportSafetySourceError(
-                @NonNull String safetySourceId,
-                @NonNull SafetySourceErrorDetails errorDetails,
-                @NonNull String packageName,
+                String safetySourceId,
+                SafetySourceErrorDetails errorDetails,
+                String packageName,
                 @UserIdInt int userId) {
             requireNonNull(safetySourceId);
             requireNonNull(errorDetails);
@@ -377,7 +363,7 @@ public final class SafetyCenterService extends SystemService {
         public void refreshSpecificSafetySources(
                 @RefreshReason int refreshReason,
                 @UserIdInt int userId,
-                @NonNull List<String> safetySourceIds) {
+                List<String> safetySourceIds) {
             requireNonNull(safetySourceIds, "safetySourceIds cannot be null");
             RefreshReasons.validate(refreshReason);
             getContext()
@@ -408,9 +394,7 @@ public final class SafetyCenterService extends SystemService {
         }
 
         @Override
-        @NonNull
-        public SafetyCenterData getSafetyCenterData(
-                @NonNull String packageName, @UserIdInt int userId) {
+        public SafetyCenterData getSafetyCenterData(String packageName, @UserIdInt int userId) {
             requireNonNull(packageName);
             getContext()
                     .enforceCallingOrSelfPermission(MANAGE_SAFETY_CENTER, "getSafetyCenterData");
@@ -430,8 +414,8 @@ public final class SafetyCenterService extends SystemService {
 
         @Override
         public void addOnSafetyCenterDataChangedListener(
-                @NonNull IOnSafetyCenterDataChangedListener listener,
-                @NonNull String packageName,
+                IOnSafetyCenterDataChangedListener listener,
+                String packageName,
                 @UserIdInt int userId) {
             requireNonNull(listener);
             requireNonNull(packageName);
@@ -460,7 +444,7 @@ public final class SafetyCenterService extends SystemService {
 
         @Override
         public void removeOnSafetyCenterDataChangedListener(
-                @NonNull IOnSafetyCenterDataChangedListener listener, @UserIdInt int userId) {
+                IOnSafetyCenterDataChangedListener listener, @UserIdInt int userId) {
             requireNonNull(listener);
             getContext()
                     .enforceCallingOrSelfPermission(
@@ -476,7 +460,7 @@ public final class SafetyCenterService extends SystemService {
         }
 
         @Override
-        public void dismissSafetyCenterIssue(@NonNull String issueId, @UserIdInt int userId) {
+        public void dismissSafetyCenterIssue(String issueId, @UserIdInt int userId) {
             requireNonNull(issueId);
             getContext()
                     .enforceCallingOrSelfPermission(
@@ -496,10 +480,15 @@ public final class SafetyCenterService extends SystemService {
                 SafetySourceIssue safetySourceIssue =
                         mSafetyCenterDataManager.getSafetySourceIssue(safetyCenterIssueKey);
                 if (safetySourceIssue == null) {
-                    Log.w(
-                            TAG,
-                            "Attempt to dismiss an issue that is not provided by the source, or "
-                                    + "that was dismissed already");
+                    Log.w(TAG, "Attempt to dismiss an issue that is not provided by the source");
+                    // Don't send the error to the UI here, since it could happen when clicking the
+                    // button multiple times in a row (e.g. if the source is clearing the issue as a
+                    // result of the onDismissPendingIntent).
+                    return;
+                }
+                if (mSafetyCenterDataManager.isIssueDismissed(
+                        safetyCenterIssueKey, safetySourceIssue.getSeverityLevel())) {
+                    Log.w(TAG, "Attempt to dismiss an issue that is already dismissed");
                     // Don't send the error to the UI here, since it could happen when clicking the
                     // button multiple times in a row.
                     return;
@@ -525,7 +514,7 @@ public final class SafetyCenterService extends SystemService {
 
         @Override
         public void executeSafetyCenterIssueAction(
-                @NonNull String issueId, @NonNull String issueActionId, @UserIdInt int userId) {
+                String issueId, String issueActionId, @UserIdInt int userId) {
             requireNonNull(issueId);
             requireNonNull(issueActionId);
             getContext()
@@ -578,7 +567,7 @@ public final class SafetyCenterService extends SystemService {
         }
 
         @Override
-        public void setSafetyCenterConfigForTests(@NonNull SafetyCenterConfig safetyCenterConfig) {
+        public void setSafetyCenterConfigForTests(SafetyCenterConfig safetyCenterConfig) {
             requireNonNull(safetyCenterConfig);
             getContext()
                     .enforceCallingOrSelfPermission(
@@ -620,8 +609,7 @@ public final class SafetyCenterService extends SystemService {
             return canUseSafetyCenter() && SafetyCenterFlags.getSafetyCenterEnabled();
         }
 
-        private void enforceAnyCallingOrSelfPermissions(
-                @NonNull String message, @NonNull String... permissions) {
+        private void enforceAnyCallingOrSelfPermissions(String message, String... permissions) {
             if (permissions.length == 0) {
                 throw new IllegalArgumentException("Must check at least one permission");
             }
@@ -639,7 +627,7 @@ public final class SafetyCenterService extends SystemService {
         }
 
         /** Enforces cross user permission and returns whether the user is existent. */
-        private boolean enforceCrossUserPermission(@NonNull String message, @UserIdInt int userId) {
+        private boolean enforceCrossUserPermission(String message, @UserIdInt int userId) {
             UserUtils.enforceCrossUserPermission(userId, false, message, getContext());
             if (!UserUtils.isUserExistent(userId, getContext())) {
                 Log.e(
@@ -661,8 +649,7 @@ public final class SafetyCenterService extends SystemService {
          * <p>Throws a {@link SecurityException} if the {@code packageName} does not belong to the
          * {@code callingUid}.
          */
-        private boolean enforcePackage(
-                int callingUid, @NonNull String packageName, @UserIdInt int userId) {
+        private boolean enforcePackage(int callingUid, String packageName, @UserIdInt int userId) {
             if (TextUtils.isEmpty(packageName)) {
                 throw new IllegalArgumentException("packageName may not be empty");
             }
@@ -689,7 +676,7 @@ public final class SafetyCenterService extends SystemService {
             return true;
         }
 
-        private boolean checkApiEnabled(@NonNull String message) {
+        private boolean checkApiEnabled(String message) {
             if (!isApiEnabled()) {
                 Log.w(TAG, "Called " + message + ", but Safety Center is disabled");
                 return false;
@@ -698,9 +685,7 @@ public final class SafetyCenterService extends SystemService {
         }
 
         private void enforceSameUserProfileGroup(
-                @NonNull String message,
-                @NonNull UserProfileGroup userProfileGroup,
-                @UserIdInt int userId) {
+                String message, UserProfileGroup userProfileGroup, @UserIdInt int userId) {
             if (!userProfileGroup.contains(userId)) {
                 throw new SecurityException(
                         message
@@ -713,10 +698,10 @@ public final class SafetyCenterService extends SystemService {
 
         @Override
         public int handleShellCommand(
-                @NonNull ParcelFileDescriptor in,
-                @NonNull ParcelFileDescriptor out,
-                @NonNull ParcelFileDescriptor err,
-                @NonNull String[] args) {
+                ParcelFileDescriptor in,
+                ParcelFileDescriptor out,
+                ParcelFileDescriptor err,
+                String[] args) {
             return new SafetyCenterShellCommandHandler(
                             getContext(), this, mDeviceSupportsSafetyCenter)
                     .exec(
@@ -729,8 +714,7 @@ public final class SafetyCenterService extends SystemService {
 
         /** Dumps state for debugging purposes. */
         @Override
-        protected void dump(
-                @NonNull FileDescriptor fd, @NonNull PrintWriter fout, @Nullable String[] args) {
+        protected void dump(FileDescriptor fd, PrintWriter fout, @Nullable String[] args) {
             if (!checkDumpPermission(fout)) {
                 return;
             }
@@ -764,7 +748,7 @@ public final class SafetyCenterService extends SystemService {
             }
         }
 
-        private boolean checkDumpPermission(@NonNull PrintWriter writer) {
+        private boolean checkDumpPermission(PrintWriter writer) {
             if (getContext().checkCallingOrSelfPermission(android.Manifest.permission.DUMP)
                     != PERMISSION_GRANTED) {
                 writer.println(
@@ -802,7 +786,7 @@ public final class SafetyCenterService extends SystemService {
         private boolean mSafetyCenterEnabled;
 
         @Override
-        public void onPropertiesChanged(@NonNull DeviceConfig.Properties properties) {
+        public void onPropertiesChanged(DeviceConfig.Properties properties) {
             if (!properties.getKeyset().contains(PROPERTY_SAFETY_CENTER_ENABLED)) {
                 return;
             }
@@ -848,11 +832,10 @@ public final class SafetyCenterService extends SystemService {
     /** A {@link Runnable} that is called to signal a refresh timeout. */
     private final class RefreshTimeout implements Runnable {
 
-        @NonNull private final String mRefreshBroadcastId;
-        @NonNull private final UserProfileGroup mUserProfileGroup;
+        private final String mRefreshBroadcastId;
+        private final UserProfileGroup mUserProfileGroup;
 
-        RefreshTimeout(
-                @NonNull String refreshBroadcastId, @NonNull UserProfileGroup userProfileGroup) {
+        RefreshTimeout(String refreshBroadcastId, UserProfileGroup userProfileGroup) {
             mRefreshBroadcastId = refreshBroadcastId;
             mUserProfileGroup = userProfileGroup;
         }
@@ -903,12 +886,12 @@ public final class SafetyCenterService extends SystemService {
     /** A {@link Runnable} that is called to signal a resolving action timeout. */
     private final class ResolvingActionTimeout implements Runnable {
 
-        @NonNull private final SafetyCenterIssueActionId mSafetyCenterIssueActionId;
-        @NonNull private final UserProfileGroup mUserProfileGroup;
+        private final SafetyCenterIssueActionId mSafetyCenterIssueActionId;
+        private final UserProfileGroup mUserProfileGroup;
 
         ResolvingActionTimeout(
-                @NonNull SafetyCenterIssueActionId safetyCenterIssueActionId,
-                @NonNull UserProfileGroup userProfileGroup) {
+                SafetyCenterIssueActionId safetyCenterIssueActionId,
+                UserProfileGroup userProfileGroup) {
             mSafetyCenterIssueActionId = safetyCenterIssueActionId;
             mUserProfileGroup = userProfileGroup;
         }
@@ -960,8 +943,7 @@ public final class SafetyCenterService extends SystemService {
 
         private static final String TAG = "UserBroadcastReceiver";
 
-        @NonNull
-        void register(@NonNull Context context) {
+        void register(Context context) {
             IntentFilter filter = new IntentFilter();
             filter.addAction(Intent.ACTION_USER_ADDED);
             filter.addAction(Intent.ACTION_USER_REMOVED);
@@ -973,7 +955,7 @@ public final class SafetyCenterService extends SystemService {
         }
 
         @Override
-        public void onReceive(@NonNull Context context, @NonNull Intent intent) {
+        public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action == null) {
                 Log.w(TAG, "Received broadcast with null action!");
@@ -1056,7 +1038,7 @@ public final class SafetyCenterService extends SystemService {
      *
      * <p>No validation is performed on the contents of the given ID.
      */
-    void executeIssueActionInternal(@NonNull SafetyCenterIssueActionId safetyCenterIssueActionId) {
+    void executeIssueActionInternal(SafetyCenterIssueActionId safetyCenterIssueActionId) {
         SafetyCenterIssueKey safetyCenterIssueKey =
                 safetyCenterIssueActionId.getSafetyCenterIssueKey();
         UserProfileGroup userProfileGroup =
@@ -1066,9 +1048,9 @@ public final class SafetyCenterService extends SystemService {
     }
 
     private void executeIssueActionInternal(
-            @NonNull SafetyCenterIssueKey safetyCenterIssueKey,
-            @NonNull SafetyCenterIssueActionId safetyCenterIssueActionId,
-            @NonNull UserProfileGroup userProfileGroup,
+            SafetyCenterIssueKey safetyCenterIssueKey,
+            SafetyCenterIssueActionId safetyCenterIssueActionId,
+            UserProfileGroup userProfileGroup,
             @Nullable Integer taskId) {
         synchronized (mApiLock) {
             SafetySourceIssue.Action safetySourceIssueAction =
@@ -1083,11 +1065,7 @@ public final class SafetyCenterService extends SystemService {
                 // button multiple times in a row.
                 return;
             }
-            PendingIntent issueActionPendingIntent =
-                    mPendingIntentFactory.maybeOverridePendingIntent(
-                            safetyCenterIssueKey.getSafetySourceId(),
-                            safetySourceIssueAction.getPendingIntent(),
-                            false);
+            PendingIntent issueActionPendingIntent = safetySourceIssueAction.getPendingIntent();
             if (!dispatchPendingIntent(issueActionPendingIntent, taskId)) {
                 Log.w(
                         TAG,
@@ -1118,7 +1096,7 @@ public final class SafetyCenterService extends SystemService {
     }
 
     private boolean dispatchPendingIntent(
-            @NonNull PendingIntent pendingIntent, @Nullable Integer launchTaskId) {
+            PendingIntent pendingIntent, @Nullable Integer launchTaskId) {
         if (launchTaskId != null
                 && getContext().checkCallingOrSelfPermission(START_TASKS_FROM_RECENTS)
                         != PERMISSION_GRANTED) {
@@ -1137,7 +1115,7 @@ public final class SafetyCenterService extends SystemService {
 
     /** Dumps state for debugging purposes. */
     @GuardedBy("mApiLock")
-    private void dumpLocked(@NonNull PrintWriter fout) {
+    private void dumpLocked(PrintWriter fout) {
         fout.println("SERVICE");
         fout.println(
                 "\tSafetyCenterService{"

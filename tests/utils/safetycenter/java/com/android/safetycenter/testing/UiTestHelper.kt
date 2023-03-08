@@ -16,10 +16,12 @@
 
 package com.android.safetycenter.testing
 
+import android.content.Context
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.SystemClock
 import android.safetycenter.SafetySourceData
 import android.safetycenter.SafetySourceIssue
+import android.safetycenter.config.SafetySourcesGroup
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.test.uiautomator.By
@@ -43,6 +45,7 @@ object UiTestHelper {
     /** The title of collapsible card that controls the visibility of additional issue cards. */
     const val MORE_ISSUES_LABEL = "More alerts"
 
+    private const val DISMISS_ISSUE_LABEL = "Dismiss"
     private val WAIT_TIMEOUT = Duration.ofSeconds(25)
     private val NOT_DISPLAYED_TIMEOUT = Duration.ofMillis(500)
 
@@ -119,6 +122,64 @@ object UiTestHelper {
     @RequiresApi(TIRAMISU)
     fun waitSourceIssueNotDisplayed(sourceIssue: SafetySourceIssue) {
         waitAllTextNotDisplayed(sourceIssue.title)
+    }
+
+    /**
+     * Waits for only one [SafetySourceIssue] to be displayed together with [MORE_ISSUES_LABEL]
+     * card, and for all other [SafetySourceIssue]s not to be diplayed.
+     */
+    fun waitCollapsedIssuesDisplayed(vararg sourceIssues: SafetySourceIssue) {
+        waitSourceIssueDisplayed(sourceIssues.first())
+        waitAllTextDisplayed(MORE_ISSUES_LABEL)
+        sourceIssues.asSequence().drop(1).forEach { waitSourceIssueNotDisplayed(it) }
+    }
+
+    /** Waits for all the [SafetySourceIssue] to be displayed with the [MORE_ISSUES_LABEL] card. */
+    fun waitExpandedIssuesDisplayed(vararg sourceIssues: SafetySourceIssue) {
+        // to make landscape checks less flaky it is important to match their order with visuals
+        waitSourceIssueDisplayed(sourceIssues.first())
+        waitAllTextDisplayed(MORE_ISSUES_LABEL)
+        sourceIssues.asSequence().drop(1).forEach { waitSourceIssueDisplayed(it) }
+    }
+
+    /** Waits for the specified screen title to be displayed. */
+    fun waitPageTitleDisplayed(title: String) {
+        // CollapsingToolbar title can't be found by text, so using description instead.
+        waitDisplayed(By.desc(title))
+    }
+
+    /** Waits for the specified screen title not to be displayed. */
+    fun waitPageTitleNotDisplayed(title: String) {
+        // CollapsingToolbar title can't be found by text, so using description instead.
+        waitNotDisplayed(By.desc(title))
+    }
+
+    /** Waits for the group title and summary to be displayed on the homepage */
+    fun waitGroupShownOnHomepage(context: Context, group: SafetySourcesGroup) {
+        waitAllTextDisplayed(
+            context.getString(group.titleResId),
+            context.getString(group.summaryResId)
+        )
+    }
+
+    /** Dismisses the issue card by clicking the dismiss button. */
+    fun clickDismissIssueCard() {
+        waitDisplayed(By.desc(DISMISS_ISSUE_LABEL)) { it.click() }
+    }
+
+    /** Confirms the dismiss action by clicking on the dialog that pops up. */
+    fun clickConfirmDismissal() {
+        waitButtonDisplayed(DISMISS_ISSUE_LABEL) { it.click() }
+    }
+
+    /** Clicks the brand chip button on a subpage in Safety Center. */
+    fun clickSubpageBrandChip() {
+        waitButtonDisplayed("Security & privacy") { it.click() }
+    }
+
+    /** Opens the subpage by clicking on the group title. */
+    fun clickOpenSubpage(context: Context, group: SafetySourcesGroup) {
+        waitDisplayed(By.text(context.getString(group.titleResId))) { it.click() }
     }
 
     /** Clicks the more issues card button to show or hide additional issues. */

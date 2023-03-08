@@ -71,8 +71,12 @@ import com.android.permissioncontroller.permission.utils.Utils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * An activity which displays runtime permission rationale on behalf of an app. This activity is
@@ -119,6 +123,22 @@ public class PermissionRationaleActivity extends SettingsActivity implements
      */
     public static final String EXTRA_SHOULD_SHOW_SETTINGS_SECTION =
             "com.android.permissioncontroller.extra.SHOULD_SHOW_SETTINGS_SECTION";
+
+    // Data class defines these values in a different natural order. Swap advertising and fraud
+    // prevention order for display in permission rationale dialog
+    private static final List<Integer> ORDERED_PURPOSES = Arrays.asList(
+            PURPOSE_APP_FUNCTIONALITY,
+            PURPOSE_ANALYTICS,
+            PURPOSE_DEVELOPER_COMMUNICATIONS,
+            PURPOSE_ADVERTISING,
+            PURPOSE_FRAUD_PREVENTION_SECURITY,
+            PURPOSE_PERSONALIZATION,
+            PURPOSE_ACCOUNT_MANAGEMENT
+    );
+
+    /** Comparator used to update purpose order to expected display order */
+    private static final Comparator<Integer> ORDERED_PURPOSE_COMPARATOR =
+            Comparator.comparingInt(purposeInt -> ORDERED_PURPOSES.indexOf(purposeInt));
 
     /** Unique Id of a request. Inherited from GrantPermissionDialog if provide via intent extra */
     private long mSessionId;
@@ -335,20 +355,20 @@ public class PermissionRationaleActivity extends SettingsActivity implements
         CharSequence purposeTitle =
                 getString(getPurposeTitleResIdForPermissionGroup(mPermissionGroupName));
 
-        // TODO(b/260144215): update ordering (enum ordering doesn't match expected ux ordering)
-        List<String> purposesList =
-                new ArrayList<>(mPermissionRationaleInfo.getPurposeSet().size());
-        for (@Purpose int purpose : mPermissionRationaleInfo.getPurposeSet()) {
-            purposesList.add(getStringForPurpose(purpose));
-        }
+        List<Integer> purposeList = new ArrayList<>(mPermissionRationaleInfo.getPurposeSet());
+        Collections.sort(purposeList, ORDERED_PURPOSE_COMPARATOR);
+        List<String> purposeStringList = purposeList.stream()
+                .map(this::getStringForPurpose)
+                .collect(Collectors.toList());
+
         CharSequence purposeMessage =
                 createPurposeMessageWithBulletSpan(
                         getText(R.string.permission_rationale_purpose_message),
-                        purposesList);
+                        purposeStringList);
 
         CharSequence learnMoreMessage =
                 setLink(
-                        getText(R.string.permission_rationale_permission_learn_more_message),
+                        getText(R.string.permission_rationale_data_sharing_varies_message),
                         getLearnMoreLink()
                 );
 
@@ -415,25 +435,25 @@ public class PermissionRationaleActivity extends SettingsActivity implements
         Preconditions.checkArgument(LOCATION.equals(permissionGroupName),
                 "Permission Rationale does not support %s", permissionGroupName);
 
-        return R.string.permission_rationale_permission_location_settings_message;
+        return R.string.permission_rationale_permission_settings_message;
     }
 
     private String getStringForPurpose(@Purpose int purpose) {
         switch (purpose) {
             case PURPOSE_APP_FUNCTIONALITY:
-                return getString(R.string.permission_rational_purpose_app_functionality);
+                return getString(R.string.permission_rationale_purpose_app_functionality);
             case PURPOSE_ANALYTICS:
-                return getString(R.string.permission_rational_purpose_analytics);
+                return getString(R.string.permission_rationale_purpose_analytics);
             case PURPOSE_DEVELOPER_COMMUNICATIONS:
-                return getString(R.string.permission_rational_purpose_developer_communications);
+                return getString(R.string.permission_rationale_purpose_developer_communications);
             case PURPOSE_FRAUD_PREVENTION_SECURITY:
-                return getString(R.string.permission_rational_purpose_fraud_prevention_security);
+                return getString(R.string.permission_rationale_purpose_fraud_prevention_security);
             case PURPOSE_ADVERTISING:
-                return getString(R.string.permission_rational_purpose_advertising);
+                return getString(R.string.permission_rationale_purpose_advertising);
             case PURPOSE_PERSONALIZATION:
-                return getString(R.string.permission_rational_purpose_personalization);
+                return getString(R.string.permission_rationale_purpose_personalization);
             case PURPOSE_ACCOUNT_MANAGEMENT:
-                return getString(R.string.permission_rational_purpose_account_management);
+                return getString(R.string.permission_rationale_purpose_account_management);
             default:
                 throw new IllegalArgumentException("Invalid purpose: " + purpose);
         }

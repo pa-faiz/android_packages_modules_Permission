@@ -38,7 +38,7 @@ genrule {
     tools: ["stats-log-api-gen"],
     cmd: "$(location stats-log-api-gen) --java $(out) --module permissioncontroller" +
          " --javaPackage com.android.permissioncontroller" +
-         " --javaClass PermissionControllerStatsLog --minApiLevel 29",
+         " --javaClass PermissionControllerStatsLog --minApiLevel 30",
     out: ["com/android/permissioncontroller/PermissionControllerStatsLog.java"],
 }
 
@@ -86,11 +86,19 @@ android_app {
 
     srcs: [":permissioncontroller-sources"],
 
+    //javacflags: ["-Werror"],
+    kotlincflags: [
+        "-Werror",
+        "-opt-in=kotlinx.coroutines.DelicateCoroutinesApi",
+        "-Xjvm-default=all"
+    ],
+
     libs: [
         "android.car-stubs",
         // Soong fails to automatically add this dependency because all the
         // *.kt sources are inside a filegroup.
         "kotlin-annotations",
+        "safety-center-annotations",
     ],
 
     static_libs: [
@@ -158,8 +166,6 @@ android_app {
     optimize: {
         proguard_flags_files: ["proguard.flags"],
     },
-
-    kotlincflags: ["-Xjvm-default=enable"],
 
     apex_available: [
         "//apex_available:platform",

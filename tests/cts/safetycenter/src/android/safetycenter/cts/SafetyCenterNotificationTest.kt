@@ -25,6 +25,8 @@ import android.safetycenter.SafetyCenterData
 import android.safetycenter.SafetyCenterIssue
 import android.safetycenter.SafetyCenterManager
 import android.safetycenter.SafetyCenterStatus
+import android.safetycenter.SafetyEvent
+import android.safetycenter.SafetySourceErrorDetails
 import android.safetycenter.SafetySourceIssue
 import android.safetycenter.cts.testing.NotificationCharacteristics
 import android.safetycenter.cts.testing.TestNotificationListener
@@ -36,12 +38,14 @@ import com.android.safetycenter.testing.Coroutines.TIMEOUT_SHORT
 import com.android.safetycenter.testing.SafetyCenterActivityLauncher.executeBlockAndExit
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.clearAllSafetySourceDataForTestsWithPermission
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.dismissSafetyCenterIssueWithPermission
+import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.reportSafetySourceErrorWithPermission
 import com.android.safetycenter.testing.SafetyCenterFlags
 import com.android.safetycenter.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
 import com.android.safetycenter.testing.SafetyCenterTestConfigs
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SINGLE_SOURCE_ID
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE_ID_1
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE_ID_2
+import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE_ID_5
 import com.android.safetycenter.testing.SafetyCenterTestData
 import com.android.safetycenter.testing.SafetyCenterTestHelper
 import com.android.safetycenter.testing.SafetySourceIntentHandler.Request
@@ -90,9 +94,7 @@ class SafetyCenterNotificationTest {
         safetyCenterTestHelper.setup()
         TestNotificationListener.setup()
         SafetyCenterFlags.notificationsEnabled = true
-        SafetyCenterFlags.notificationsAllowedSources = setOf(SINGLE_SOURCE_ID)
-        SafetyCenterFlags.immediateNotificationBehaviorIssues =
-            setOf("$SINGLE_SOURCE_ID/$ISSUE_TYPE_ID")
+        setFlagsForImmediateNotifications(SINGLE_SOURCE_ID)
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
     }
 
@@ -538,6 +540,23 @@ class SafetyCenterNotificationTest {
     }
 
     @Test
+    fun reportSafetySourceError_sourceWithNotification_cancelsNotification() {
+        val data = safetySourceTestData.recommendationWithAccountIssue
+        val error =
+            SafetySourceErrorDetails(
+                SafetyEvent.Builder(SafetyEvent.SAFETY_EVENT_TYPE_SOURCE_STATE_CHANGED).build()
+            )
+
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data)
+
+        TestNotificationListener.waitForSingleNotification()
+
+        safetyCenterManager.reportSafetySourceErrorWithPermission(SINGLE_SOURCE_ID, error)
+
+        TestNotificationListener.waitForZeroNotifications()
+    }
+
+    @Test
     fun setSafetySourceData_withDismissedIssueId_doesNotNotify() {
         // We use two different issues/data here to ensure that the reason the notification is not
         // posted the second time is specifically because of the dismissal. Notifications are not
@@ -578,6 +597,101 @@ class SafetyCenterNotificationTest {
         safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data2)
 
         TestNotificationListener.waitForZeroNotifications()
+    }
+
+    @Test
+    fun setSafetySourceData_withDismissedIssueIdButResurfaceDelayZero_doesNotify() {
+        SafetyCenterFlags.notificationResurfaceInterval = Duration.ZERO
+        val data1 =
+            safetySourceTestData
+                .defaultRecommendationDataBuilder()
+                .addIssue(
+                    safetySourceTestData
+                        .defaultRecommendationIssueBuilder("Initial", "Blah")
+                        .build()
+                )
+                .build()
+        val data2 =
+            safetySourceTestData
+                .defaultRecommendationDataBuilder()
+                .addIssue(
+                    safetySourceTestData
+                        .defaultRecommendationIssueBuilder("Revised", "Different")
+                        .build()
+                )
+                .build()
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data1)
+        val notificationWithChannel = TestNotificationListener.waitForSingleNotification()
+        TestNotificationListener.cancelAndWait(notificationWithChannel.statusBarNotification.key)
+
+        safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, data2)
+
+        TestNotificationListener.waitForSingleNotification()
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun setSafetySourceData_duplicateIssues_sendsOneNotification() {
+        safetyCenterTestHelper.setConfig(
+            safetyCenterTestConfigs.multipleSourcesWithDeduplicationInfoConfig
+        )
+        setFlagsForImmediateNotifications(SOURCE_ID_1, SOURCE_ID_5)
+
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceTestData.issuesOnly(
+                safetySourceTestData.recommendationIssueWithDeduplicationId("same")
+            )
+        )
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceTestData.issuesOnly(
+                safetySourceTestData.criticalIssueWithDeduplicationId("same")
+            )
+        )
+
+        TestNotificationListener.waitForNotificationsMatching(
+            NotificationCharacteristics(
+                "Critical issue title",
+                "Critical issue summary",
+                actions = listOf("Solve issue"),
+            )
+        )
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun setSafetySourceData_duplicateIssueOfLowerSeverityDismissed_sendsNotification() {
+        safetyCenterTestHelper.setConfig(
+            safetyCenterTestConfigs.multipleSourcesWithDeduplicationInfoConfig
+        )
+        setFlagsForImmediateNotifications(SOURCE_ID_1, SOURCE_ID_5)
+
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceTestData.issuesOnly(
+                safetySourceTestData.recommendationIssueWithDeduplicationId("same")
+            )
+        )
+
+        val notificationWithChannel = TestNotificationListener.waitForSingleNotification()
+
+        TestNotificationListener.cancelAndWait(notificationWithChannel.statusBarNotification.key)
+
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceTestData.issuesOnly(
+                safetySourceTestData.criticalIssueWithDeduplicationId("same")
+            )
+        )
+
+        TestNotificationListener.waitForNotificationsMatching(
+            NotificationCharacteristics(
+                "Critical issue title",
+                "Critical issue summary",
+                actions = listOf("Solve issue"),
+            )
+        )
     }
 
     @Test
@@ -670,6 +784,45 @@ class SafetyCenterNotificationTest {
     }
 
     @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun dismissingNotification_withDuplicateIssues_allDismissed() {
+        safetyCenterTestHelper.setConfig(
+            safetyCenterTestConfigs.multipleSourcesWithDeduplicationInfoConfig
+        )
+        setFlagsForImmediateNotifications(SOURCE_ID_1, SOURCE_ID_5)
+
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceTestData.issuesOnly(
+                safetySourceTestData.criticalIssueWithDeduplicationId("same")
+            )
+        )
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceTestData.issuesOnly(
+                safetySourceTestData.recommendationIssueWithDeduplicationId("same")
+            )
+        )
+
+        val notificationWithChannel =
+            TestNotificationListener.waitForSingleNotificationMatching(
+                NotificationCharacteristics(
+                    "Critical issue title",
+                    "Critical issue summary",
+                    actions = listOf("Solve issue"),
+                )
+            )
+
+        // We dismiss the notification and then clear the corresponding issue belonging to
+        // SOURCE_ID_1. This ensures that the only reason no notification is shown for the issue
+        // belonging to SOURCE_ID_5 is that the dismissal data was copied.
+        TestNotificationListener.cancelAndWait(notificationWithChannel.statusBarNotification.key)
+        safetyCenterTestHelper.setData(SOURCE_ID_1, SafetySourceTestData.issuesOnly())
+
+        TestNotificationListener.waitForZeroNotifications()
+    }
+
+    @Test
     fun clearSafetySourceData_cancelsAllNotifications() {
         val data = safetySourceTestData.recommendationWithAccountIssue
 
@@ -756,9 +909,7 @@ class SafetyCenterNotificationTest {
     @Test
     fun sendContentPendingIntent_anotherHigherSeverityIssue_opensSafetyCenterWithIssueVisible() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.multipleSourcesConfig)
-        SafetyCenterFlags.notificationsAllowedSources = setOf(SOURCE_ID_1)
-        SafetyCenterFlags.immediateNotificationBehaviorIssues =
-            setOf("$SOURCE_ID_1/$ISSUE_TYPE_ID", "$SOURCE_ID_2/$ISSUE_TYPE_ID")
+        setFlagsForImmediateNotifications(SOURCE_ID_1)
         safetyCenterTestHelper.setData(
             SOURCE_ID_1,
             safetySourceTestData.recommendationWithDeviceIssue
@@ -790,6 +941,12 @@ class SafetyCenterNotificationTest {
                 // it to be received by the fake receiver below.
                 SafetySourceReceiver.receiveResolveAction()
             }
+        }
+
+        private fun setFlagsForImmediateNotifications(vararg sourceIds: String) {
+            SafetyCenterFlags.notificationsAllowedSources = sourceIds.toSet()
+            SafetyCenterFlags.immediateNotificationBehaviorIssues =
+                sourceIds.map { "$it/$ISSUE_TYPE_ID" }.toSet()
         }
     }
 }

@@ -22,7 +22,6 @@ import static com.android.permission.PermissionStatsLog.SAFETY_STATE;
 
 import static java.util.Collections.emptyList;
 
-import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.app.StatsManager;
 import android.app.StatsManager.StatsPullAtomCallback;
@@ -45,6 +44,7 @@ import com.android.safetycenter.ApiLock;
 import com.android.safetycenter.SafetyCenterConfigReader;
 import com.android.safetycenter.SafetyCenterDataFactory;
 import com.android.safetycenter.SafetyCenterFlags;
+import com.android.safetycenter.SafetySourceIssueInfo;
 import com.android.safetycenter.SafetySourceKey;
 import com.android.safetycenter.SafetySources;
 import com.android.safetycenter.UserProfileGroup;
@@ -68,32 +68,28 @@ public final class SafetyCenterPullAtomCallback implements StatsPullAtomCallback
 
     private static final String TAG = "SafetyCenterPullAtom";
 
-    @NonNull private final Context mContext;
-    @NonNull private final ApiLock mApiLock;
+    private final Context mContext;
+    private final ApiLock mApiLock;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterStatsdLogger mSafetyCenterStatsdLogger;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterConfigReader mSafetyCenterConfigReader;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterDataFactory mSafetyCenterDataFactory;
 
     @GuardedBy("mApiLock")
-    @NonNull
     private final SafetyCenterDataManager mSafetyCenterDataManager;
 
     public SafetyCenterPullAtomCallback(
-            @NonNull Context context,
-            @NonNull ApiLock apiLock,
-            @NonNull SafetyCenterStatsdLogger safetyCenterStatsdLogger,
-            @NonNull SafetyCenterConfigReader safetyCenterConfigReader,
-            @NonNull SafetyCenterDataFactory safetyCenterDataFactory,
-            @NonNull SafetyCenterDataManager safetyCenterDataManager) {
+            Context context,
+            ApiLock apiLock,
+            SafetyCenterStatsdLogger safetyCenterStatsdLogger,
+            SafetyCenterConfigReader safetyCenterConfigReader,
+            SafetyCenterDataFactory safetyCenterDataFactory,
+            SafetyCenterDataManager safetyCenterDataManager) {
         mContext = context;
         mApiLock = apiLock;
         mSafetyCenterStatsdLogger = safetyCenterStatsdLogger;
@@ -103,7 +99,7 @@ public final class SafetyCenterPullAtomCallback implements StatsPullAtomCallback
     }
 
     @Override
-    public int onPullAtom(int atomTag, @NonNull List<StatsEvent> statsEvents) {
+    public int onPullAtom(int atomTag, List<StatsEvent> statsEvents) {
         if (atomTag != SAFETY_STATE) {
             Log.w(TAG, "Attempt to pull atom: " + atomTag + ", but only SAFETY_STATE is supported");
             return StatsManager.PULL_SKIP;
@@ -136,10 +132,8 @@ public final class SafetyCenterPullAtomCallback implements StatsPullAtomCallback
     }
 
     @GuardedBy("mApiLock")
-    @NonNull
     private StatsEvent createOverallSafetyStateAtomLocked(
-            @NonNull UserProfileGroup userProfileGroup,
-            @NonNull List<SafetySourcesGroup> loggableGroups) {
+            UserProfileGroup userProfileGroup, List<SafetySourcesGroup> loggableGroups) {
         SafetyCenterData loggableData =
                 mSafetyCenterDataFactory.assembleSafetyCenterData(
                         "android", userProfileGroup, loggableGroups);
@@ -152,7 +146,7 @@ public final class SafetyCenterPullAtomCallback implements StatsPullAtomCallback
 
     @GuardedBy("mApiLock")
     private long getDismissedIssuesCountLocked(
-            @NonNull SafetyCenterData loggableData, @NonNull UserProfileGroup userProfileGroup) {
+            SafetyCenterData loggableData, UserProfileGroup userProfileGroup) {
         if (SdkLevel.isAtLeastU()) {
             return loggableData.getDismissedIssues().size();
         }
@@ -162,8 +156,7 @@ public final class SafetyCenterPullAtomCallback implements StatsPullAtomCallback
 
     @GuardedBy("mApiLock")
     private void writeSafetySourceStateCollectedAtomsLocked(
-            @NonNull UserProfileGroup userProfileGroup,
-            @NonNull List<SafetySourcesGroup> loggableGroups) {
+            UserProfileGroup userProfileGroup, List<SafetySourcesGroup> loggableGroups) {
         for (int i = 0; i < loggableGroups.size(); i++) {
             List<SafetySource> loggableSources = loggableGroups.get(i).getSafetySources();
 
@@ -197,7 +190,7 @@ public final class SafetyCenterPullAtomCallback implements StatsPullAtomCallback
 
     @GuardedBy("mApiLock")
     private void writeSafetySourceStateCollectedAtomLocked(
-            @NonNull SafetySource safetySource, @UserIdInt int userId, boolean isUserManaged) {
+            SafetySource safetySource, @UserIdInt int userId, boolean isUserManaged) {
         SafetySourceKey key = SafetySourceKey.of(safetySource.getId(), userId);
         SafetySourceData safetySourceData =
                 mSafetyCenterDataManager.getSafetySourceDataInternal(key);
@@ -234,12 +227,25 @@ public final class SafetyCenterPullAtomCallback implements StatsPullAtomCallback
             maxSeverityLevel = Math.max(maxSeverityLevel, safetySourceStatus.getSeverityLevel());
         }
         Integer maxSeverityOrNull = maxSeverityLevel > Integer.MIN_VALUE ? maxSeverityLevel : null;
+        long duplicateFilteredOutIssuesCount = 0;
+        List<SafetySourceIssueInfo> filteredOutDuplicateIssues =
+                mSafetyCenterDataManager.getMostRecentFilteredOutDuplicateIssues(userId);
+        for (int i = 0; i < filteredOutDuplicateIssues.size(); i++) {
+            if (filteredOutDuplicateIssues
+                    .get(i)
+                    .getSafetySource()
+                    .getId()
+                    .equals(safetySource.getId())) {
+                duplicateFilteredOutIssuesCount++;
+            }
+        }
 
         mSafetyCenterStatsdLogger.writeSafetySourceStateCollected(
                 safetySource.getId(),
                 isUserManaged,
                 maxSeverityOrNull,
                 openIssuesCount,
-                dismissedIssuesCount);
+                dismissedIssuesCount,
+                duplicateFilteredOutIssuesCount);
     }
 }

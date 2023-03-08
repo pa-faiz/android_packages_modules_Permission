@@ -1,9 +1,13 @@
 package com.android.permissioncontroller.safetycenter.ui.view
 
+import android.animation.Animator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
 import android.os.Build
 import android.safetycenter.SafetyCenterIssue
 import android.text.TextUtils
@@ -23,6 +27,7 @@ import com.android.permissioncontroller.permission.utils.StringUtils
 import com.android.permissioncontroller.safetycenter.ui.MoreIssuesCardAnimator
 import com.android.permissioncontroller.safetycenter.ui.MoreIssuesCardData
 import java.text.NumberFormat
+import java.time.Duration
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 internal class MoreIssuesHeaderView
@@ -48,17 +53,24 @@ constructor(
     private val expandCollapseIcon: ImageView by lazy {
         expandCollapseLayout.findViewById(R.id.widget_icon)
     }
+    private var cornerAnimator: Animator? = null
 
     fun showExpandableHeader(
         previousData: MoreIssuesCardData?,
         nextData: MoreIssuesCardData,
         title: String,
+        @DrawableRes overrideChevronIconResId: Int?,
         onClick: () -> Unit
     ) {
         titleView.text = title
         updateStatusIcon(previousData?.severityLevel, nextData.severityLevel)
-        updateExpandCollapseButton(previousData?.isExpanded, nextData.isExpanded)
+        updateExpandCollapseButton(
+            previousData?.isExpanded,
+            nextData.isExpanded,
+            overrideChevronIconResId
+        )
         updateIssueCount(previousData?.hiddenIssueCount, nextData.hiddenIssueCount)
+        updateBackground(previousData?.isExpanded, nextData.isExpanded)
         setOnClickListener { onClick() }
 
         val expansionString =
@@ -83,11 +95,18 @@ constructor(
         expandCollapseLayout.isVisible = false
         setOnClickListener(null)
         isClickable = false
+        updateBackground(wasExpanded = null, isExpanded = true)
     }
 
-    private fun updateExpandCollapseButton(wasExpanded: Boolean?, isExpanded: Boolean) {
+    private fun updateExpandCollapseButton(
+        wasExpanded: Boolean?,
+        isExpanded: Boolean,
+        @DrawableRes overrideChevronIconResId: Int?
+    ) {
         expandCollapseLayout.isVisible = true
-        if (wasExpanded != null && wasExpanded != isExpanded) {
+        if (overrideChevronIconResId != null) {
+            expandCollapseIcon.setImageResource(overrideChevronIconResId)
+        } else if (wasExpanded != null && wasExpanded != isExpanded) {
             if (isExpanded) {
                 expandCollapseIcon.animate(
                     R.drawable.more_issues_expand_anim,
@@ -156,6 +175,59 @@ constructor(
         }
     }
 
+    private fun updateBackground(wasExpanded: Boolean?, isExpanded: Boolean) {
+        (background?.mutate() as? RippleDrawable)?.let { ripple ->
+            val topRadius = context.resources.getDimension(R.dimen.sc_card_corner_radius_medium)
+            val bottomRadiusStart =
+                if (wasExpanded ?: isExpanded) {
+                    context.resources.getDimension(R.dimen.sc_card_corner_radius_xsmall)
+                } else {
+                    topRadius
+                }
+            val bottomRadiusEnd =
+                if (isExpanded) {
+                    context.resources.getDimension(R.dimen.sc_card_corner_radius_xsmall)
+                } else {
+                    topRadius
+                }
+            val cornerRadii =
+                floatArrayOf(
+                    topRadius,
+                    topRadius,
+                    topRadius,
+                    topRadius,
+                    bottomRadiusStart,
+                    bottomRadiusStart,
+                    bottomRadiusStart,
+                    bottomRadiusStart
+                )
+            setCornerRadii(ripple, cornerRadii)
+            if (bottomRadiusEnd != bottomRadiusStart) {
+                cornerAnimator?.cancel()
+                val animator =
+                    ValueAnimator.ofFloat(bottomRadiusStart, bottomRadiusEnd)
+                        .setDuration(CORNER_RADII_ANIMATION_DURATION.toMillis())
+                if (isExpanded) {
+                    animator.startDelay = CORNER_RADII_ANIMATION_DELAY.toMillis()
+                }
+                animator.addUpdateListener {
+                    cornerRadii.fill(it.animatedValue as Float, fromIndex = 4, toIndex = 8)
+                    setCornerRadii(ripple, cornerRadii)
+                }
+                animator.start()
+                cornerAnimator = animator
+            }
+        }
+    }
+
+    private fun setCornerRadii(ripple: RippleDrawable, cornerRadii: FloatArray) {
+        for (index in 0 until ripple.numberOfLayers) {
+            (ripple.getDrawable(index).mutate() as? GradientDrawable)?.let {
+                it.cornerRadii = cornerRadii
+            }
+        }
+    }
+
     private fun ImageView.animate(@DrawableRes animationRes: Int, @DrawableRes imageRes: Int) {
         (drawable as? AnimatedVectorDrawable)?.clearAnimationCallbacks()
         setImageResource(animationRes)
@@ -173,5 +245,7 @@ constructor(
 
     companion object {
         val TAG: String = MoreIssuesHeaderView::class.java.simpleName
+        private val CORNER_RADII_ANIMATION_DELAY = Duration.ofMillis(250)
+        private val CORNER_RADII_ANIMATION_DURATION = Duration.ofMillis(120)
     }
 }

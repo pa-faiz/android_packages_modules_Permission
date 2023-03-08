@@ -35,6 +35,9 @@ java_library {
         "androidx.annotation_annotation",
         "framework-annotations-lib",
         "framework-permission-s",
+        "safety-center-annotations",
+    ],
+    static_libs: [
         "modules-utils-build",
     ],
     apex_available: [

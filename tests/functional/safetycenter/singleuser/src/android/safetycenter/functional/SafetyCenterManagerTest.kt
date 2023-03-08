@@ -62,6 +62,7 @@ import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import com.android.compatibility.common.preconditions.ScreenLockHelper
+import com.android.modules.utils.build.SdkLevel
 import com.android.safetycenter.internaldata.SafetyCenterIds
 import com.android.safetycenter.resources.SafetyCenterResourcesContext
 import com.android.safetycenter.testing.Coroutines.TIMEOUT_LONG
@@ -559,6 +560,22 @@ class SafetyCenterManagerTest {
             emptyList()
         )
 
+    private val safetyCenterDataOkReviewOneDismissedAlertInFlight =
+        SafetyCenterData(
+                safetyCenterStatusOkReview,
+                emptyList(),
+                listOf(safetyCenterEntryOrGroupCritical),
+                emptyList()
+            )
+            .withDismissedIssuesIfAtLeastU(
+                listOf(
+                    safetyCenterTestData.safetyCenterIssueCritical(
+                        SINGLE_SOURCE_ID,
+                        isActionInFlight = true
+                    )
+                )
+            )
+
     private val safetyCenterDataFromComplexConfig =
         SafetyCenterData(
             safetyCenterTestData.safetyCenterStatusUnknown,
@@ -949,6 +966,7 @@ class SafetyCenterManagerTest {
     fun getSafetyCenterData_attributionNotSetBySourceOnTiramisu_returnsNullAttributionTitle() {
         // TODO(b/258228790): Remove after U is no longer in pre-release
         assumeFalse(Build.VERSION.CODENAME == "UpsideDownCake")
+        assumeFalse(Build.VERSION.CODENAME == "VanillaIceCream")
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
         safetyCenterTestHelper.setData(SINGLE_SOURCE_ID, safetySourceTestData.informationWithIssue)
 
@@ -1886,6 +1904,7 @@ class SafetyCenterManagerTest {
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
     fun getSafetyCenterData_dupIssuesTopOneDismissedThenDisappears_bottomOneReemergesTimely() {
+        SafetyCenterFlags.tempHiddenIssueResurfaceDelay = Duration.ZERO
         SafetyCenterFlags.resurfaceIssueMaxCounts = mapOf(SEVERITY_LEVEL_CRITICAL_WARNING to 99L)
         SafetyCenterFlags.resurfaceIssueDelays =
             mapOf(SEVERITY_LEVEL_CRITICAL_WARNING to RESURFACE_DELAY)
@@ -1939,6 +1958,7 @@ class SafetyCenterManagerTest {
     @Test
     @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
     fun getSafetyCenterData_dupsOfDiffSeveritiesTopOneDismissedThenGone_bottomOneReemergesTimely() {
+        SafetyCenterFlags.tempHiddenIssueResurfaceDelay = Duration.ZERO
         SafetyCenterFlags.resurfaceIssueMaxCounts =
             mapOf(
                 SEVERITY_LEVEL_INFORMATION to 0L,
@@ -2116,6 +2136,50 @@ class SafetyCenterManagerTest {
                         safetyCenterTestData.safetyCenterIssueCritical(
                             SOURCE_ID_1,
                             groupId = MULTIPLE_SOURCES_GROUP_ID_1
+                        )
+                    )
+            hasResurfaced
+        }
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    fun getSafetyCenterData_dupIssuesTopOneResolved_bottomOneReemergesAfterTemporaryHiddenPeriod() {
+        SafetyCenterFlags.tempHiddenIssueResurfaceDelay = RESURFACE_DELAY
+        safetyCenterTestHelper.setConfig(
+            safetyCenterTestConfigs.multipleSourcesWithDeduplicationInfoConfig
+        )
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_1,
+            SafetySourceTestData.issuesOnly(
+                safetySourceTestData.criticalIssueWithDeduplicationId("same")
+            )
+        )
+        // Belongs to DEDUPLICATION_GROUP_1
+        safetyCenterTestHelper.setData(
+            SOURCE_ID_5,
+            SafetySourceTestData.issuesOnly(
+                safetySourceTestData.criticalIssueWithDeduplicationId("same")
+            )
+        )
+
+        val listener = safetyCenterTestHelper.addListener()
+        safetyCenterTestHelper.setData(SOURCE_ID_1, SafetySourceTestData.issuesOnly())
+
+        val apiSafetyCenterIssues = listener.receiveSafetyCenterData().issues
+
+        assertThat(apiSafetyCenterIssues).isEmpty()
+
+        waitForWithTimeout(timeout = RESURFACE_TIMEOUT, checkPeriod = RESURFACE_CHECK) {
+            val hasResurfaced =
+                safetyCenterManager
+                    .getSafetyCenterDataWithPermission()
+                    .issues
+                    .contains(
+                        safetyCenterTestData.safetyCenterIssueCritical(
+                            SOURCE_ID_5,
+                            groupId = MULTIPLE_SOURCES_GROUP_ID_2
                         )
                     )
             hasResurfaced
@@ -3198,6 +3262,44 @@ class SafetyCenterManagerTest {
         val safetyCenterDataFromListenerDuringResolveAction = listener.receiveSafetyCenterData()
         assertThat(safetyCenterDataFromListenerDuringResolveAction)
             .isEqualTo(safetyCenterDataCriticalOneAlertInFlight)
+        val safetyCenterDataFromListenerAfterResolveAction = listener.receiveSafetyCenterData()
+        assertThat(safetyCenterDataFromListenerAfterResolveAction).isEqualTo(safetyCenterDataOk)
+    }
+
+    @Test
+    fun executeSafetyCenterIssueAction_allowsDismissedIssuesToExecuteActions() {
+        safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
+        safetyCenterTestHelper.setData(
+            SINGLE_SOURCE_ID,
+            safetySourceTestData.criticalWithResolvingGeneralIssue
+        )
+        SafetySourceReceiver.setResponse(
+            Request.ResolveAction(SINGLE_SOURCE_ID),
+            Response.SetData(safetySourceTestData.information)
+        )
+        val issueId = SafetyCenterTestData.issueId(SINGLE_SOURCE_ID, CRITICAL_ISSUE_ID)
+        val listener = safetyCenterTestHelper.addListener()
+        safetyCenterManager.dismissSafetyCenterIssueWithPermission(issueId)
+        val safetyCenterDataAfterDismissal = listener.receiveSafetyCenterData()
+        checkState(safetyCenterDataAfterDismissal.status == safetyCenterStatusOkReview)
+
+        safetyCenterManager.executeSafetyCenterIssueActionWithPermissionAndWait(
+            issueId,
+            SafetyCenterTestData.issueActionId(
+                SINGLE_SOURCE_ID,
+                CRITICAL_ISSUE_ID,
+                CRITICAL_ISSUE_ACTION_ID
+            )
+        )
+
+        if (SdkLevel.isAtLeastU()) {
+            // On U+, the dismissed issue is marked as "in-flight" before resolving.
+            val safetyCenterDataFromListenerDuringResolveAction = listener.receiveSafetyCenterData()
+            assertThat(safetyCenterDataFromListenerDuringResolveAction)
+                .isEqualTo(safetyCenterDataOkReviewOneDismissedAlertInFlight)
+        }
+        // On T, the dismissed issue is never shown, so only the status will change after
+        // resolution.
         val safetyCenterDataFromListenerAfterResolveAction = listener.receiveSafetyCenterData()
         assertThat(safetyCenterDataFromListenerAfterResolveAction).isEqualTo(safetyCenterDataOk)
     }

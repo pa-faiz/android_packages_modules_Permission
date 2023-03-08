@@ -20,7 +20,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import static com.android.safetycenter.internaldata.SafetyCenterIds.toUserFriendlyString;
 
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
@@ -84,15 +83,15 @@ final class SafetyCenterIssueDismissalRepository {
 
     private final Handler mWriteHandler = BackgroundThread.getHandler();
 
-    @NonNull private final ApiLock mApiLock;
+    private final ApiLock mApiLock;
 
-    @NonNull private final SafetyCenterConfigReader mSafetyCenterConfigReader;
+    private final SafetyCenterConfigReader mSafetyCenterConfigReader;
 
     private final ArrayMap<SafetyCenterIssueKey, IssueData> mIssues = new ArrayMap<>();
     private boolean mWriteStateToFileScheduled = false;
 
     SafetyCenterIssueDismissalRepository(
-            @NonNull ApiLock apiLock, @NonNull SafetyCenterConfigReader safetyCenterConfigReader) {
+            ApiLock apiLock, SafetyCenterConfigReader safetyCenterConfigReader) {
         mApiLock = apiLock;
         mSafetyCenterConfigReader = safetyCenterConfigReader;
     }
@@ -107,7 +106,7 @@ final class SafetyCenterIssueDismissalRepository {
      * <p>If the given issue key is not found in the repository this method returns {@code false}.
      */
     boolean isIssueDismissed(
-            @NonNull SafetyCenterIssueKey safetyCenterIssueKey,
+            SafetyCenterIssueKey safetyCenterIssueKey,
             @SafetySourceData.SeverityLevel int safetySourceIssueSeverityLevel) {
         IssueData issueData = getOrWarn(safetyCenterIssueKey, "checking if dismissed");
         if (issueData == null) {
@@ -143,7 +142,7 @@ final class SafetyCenterIssueDismissalRepository {
      *
      * <p>That issue's notification (if any) is also marked as dismissed.
      */
-    void dismissIssue(@NonNull SafetyCenterIssueKey safetyCenterIssueKey) {
+    void dismissIssue(SafetyCenterIssueKey safetyCenterIssueKey) {
         IssueData issueData = getOrWarn(safetyCenterIssueKey, "dismissing");
         if (issueData == null) {
             return;
@@ -161,10 +160,9 @@ final class SafetyCenterIssueDismissalRepository {
      * <p>This will align dismissal state of these issues, unless issues are of different
      * severities, in which case they can potentially differ in resurface times.
      */
-    void copyDismissalData(
-            @NonNull SafetyCenterIssueKey keyFrom, @NonNull SafetyCenterIssueKey keyTo) {
-        IssueData dataFrom = getOrWarn(keyFrom, "copying dismissed data");
-        IssueData dataTo = getOrWarn(keyTo, "copying dismissed data");
+    void copyDismissalData(SafetyCenterIssueKey keyFrom, SafetyCenterIssueKey keyTo) {
+        IssueData dataFrom = getOrWarn(keyFrom, "copying dismissal data");
+        IssueData dataTo = getOrWarn(keyTo, "copying dismissal data");
         if (dataFrom == null || dataTo == null) {
             return;
         }
@@ -175,12 +173,28 @@ final class SafetyCenterIssueDismissalRepository {
     }
 
     /**
+     * Copy notification dismissal data from one issue to the other.
+     *
+     * <p>This will align notification dismissal state of these issues.
+     */
+    void copyNotificationDismissalData(SafetyCenterIssueKey keyFrom, SafetyCenterIssueKey keyTo) {
+        IssueData dataFrom = getOrWarn(keyFrom, "copying notification dismissal data");
+        IssueData dataTo = getOrWarn(keyTo, "copying notification dismissal data");
+        if (dataFrom == null || dataTo == null) {
+            return;
+        }
+
+        dataTo.setNotificationDismissedAt(dataFrom.getNotificationDismissedAt());
+        scheduleWriteStateToFile();
+    }
+
+    /**
      * Marks the notification (if any) of the issue with the given key as dismissed.
      *
      * <p>The issue itself is <strong>not</strong> marked as dismissed and its warning card can
      * still appear in the Safety Center UI.
      */
-    void dismissNotification(@NonNull SafetyCenterIssueKey safetyCenterIssueKey) {
+    void dismissNotification(SafetyCenterIssueKey safetyCenterIssueKey) {
         IssueData issueData = getOrWarn(safetyCenterIssueKey, "dismissing notification");
         if (issueData == null) {
             return;
@@ -194,7 +208,7 @@ final class SafetyCenterIssueDismissalRepository {
      * Center.
      */
     @Nullable
-    Instant getIssueFirstSeenAt(@NonNull SafetyCenterIssueKey safetyCenterIssueKey) {
+    Instant getIssueFirstSeenAt(SafetyCenterIssueKey safetyCenterIssueKey) {
         IssueData issueData = getOrWarn(safetyCenterIssueKey, "getting first seen");
         if (issueData == null) {
             return null;
@@ -202,13 +216,8 @@ final class SafetyCenterIssueDismissalRepository {
         return issueData.getFirstSeenAt();
     }
 
-    /**
-     * Returns the {@link Instant} when the notification for the issue with the given key was last
-     * dismissed.
-     */
-    // TODO(b/261429824): Handle mNotificationDismissedAt w.r.t. issue deduplication
     @Nullable
-    Instant getNotificationDismissedAt(@NonNull SafetyCenterIssueKey safetyCenterIssueKey) {
+    private Instant getNotificationDismissedAt(SafetyCenterIssueKey safetyCenterIssueKey) {
         IssueData issueData = getOrWarn(safetyCenterIssueKey, "getting notification dismissed");
         if (issueData == null) {
             return null;
@@ -216,14 +225,40 @@ final class SafetyCenterIssueDismissalRepository {
         return issueData.getNotificationDismissedAt();
     }
 
+    /** Returns {@code true} if an issue's notification is dismissed now. */
+    // TODO(b/259084807): Consider extracting notification dismissal logic to separate class
+    boolean isNotificationDismissedNow(
+            SafetyCenterIssueKey issueKey, @SafetySourceData.SeverityLevel int severityLevel) {
+        // The current code for dismissing an issue/warning card also dismisses any
+        // corresponding notification, but it is still necessary to check the issue dismissal
+        // status, in addition to the notification dismissal (below) because issues may have been
+        // dismissed by an earlier version of the code which lacked this functionality.
+        if (isIssueDismissed(issueKey, severityLevel)) {
+            return true;
+        }
+
+        Instant dismissedAt = getNotificationDismissedAt(issueKey);
+        if (dismissedAt == null) {
+            // Notification was never dismissed
+            return false;
+        }
+
+        Duration resurfaceDelay = SafetyCenterFlags.getNotificationResurfaceInterval();
+        if (resurfaceDelay == null) {
+            // Null resurface delay means notifications may never resurface
+            return true;
+        }
+
+        Instant canResurfaceAt = dismissedAt.plus(resurfaceDelay);
+        return Instant.now().isBefore(canResurfaceAt);
+    }
+
     /**
      * Updates the issue repository to contain exactly the given {@code safetySourceIssueIds} for
      * the supplied source and user.
      */
     void updateIssuesForSource(
-            @NonNull ArraySet<String> safetySourceIssueIds,
-            @NonNull String safetySourceId,
-            @UserIdInt int userId) {
+            ArraySet<String> safetySourceIssueIds, String safetySourceId, @UserIdInt int userId) {
         boolean someDataChanged = false;
 
         // Remove issues no longer reported by the source.
@@ -262,8 +297,63 @@ final class SafetyCenterIssueDismissalRepository {
         }
     }
 
+    /** Returns whether the issue is currently hidden. */
+    boolean isIssueHidden(SafetyCenterIssueKey safetyCenterIssueKey) {
+        IssueData issueData = getOrWarn(safetyCenterIssueKey, "checking if issue hidden");
+        if (issueData == null || !issueData.isHidden()) {
+            return false;
+        }
+
+        Instant timerStart = issueData.getResurfaceTimerStartTime();
+        if (timerStart == null) {
+            return true;
+        }
+
+        Duration delay = SafetyCenterFlags.getTemporarilyHiddenIssueResurfaceDelay();
+        Duration timeSinceTimerStarted = Duration.between(timerStart, Instant.now());
+        boolean isTimeToResurface = timeSinceTimerStarted.compareTo(delay) >= 0;
+
+        if (isTimeToResurface) {
+            issueData.setHidden(false);
+            issueData.setResurfaceTimerStartTime(null);
+            return false;
+        }
+        return true;
+    }
+
+    /** Hides the issue with the given {@link SafetyCenterIssueKey}. */
+    void hideIssue(SafetyCenterIssueKey safetyCenterIssueKey) {
+        IssueData issueData = getOrWarn(safetyCenterIssueKey, "hiding issue");
+        if (issueData != null) {
+            issueData.setHidden(true);
+            // to abide by the method was called last: hideIssue or resurfaceHiddenIssueAfterPeriod
+            issueData.setResurfaceTimerStartTime(null);
+        }
+    }
+
+    /**
+     * The issue with the given {@link SafetyCenterIssueKey} will be resurfaced (marked as not
+     * hidden) after a period of time defined by {@link
+     * SafetyCenterFlags#getTemporarilyHiddenIssueResurfaceDelay()}, such that {@link
+     * SafetyCenterIssueDismissalRepository#isIssueHidden} will start returning {@code false} for
+     * the given issue.
+     *
+     * <p>If this method is called multiple times in a row, the period will be set by the first call
+     * and all following calls won't have any effect.
+     */
+    void resurfaceHiddenIssueAfterPeriod(SafetyCenterIssueKey safetyCenterIssueKey) {
+        IssueData issueData = getOrWarn(safetyCenterIssueKey, "resurfaceIssueAfterPeriod");
+        if (issueData == null) {
+            return;
+        }
+
+        // if timer already started, we don't want to restart
+        if (issueData.getResurfaceTimerStartTime() == null) {
+            issueData.setResurfaceTimerStartTime(Instant.now());
+        }
+    }
+
     /** Takes a snapshot of the contents of the repository to be written to persistent storage. */
-    @NonNull
     private List<PersistedSafetyCenterIssue> snapshot() {
         List<PersistedSafetyCenterIssue> persistedIssues = new ArrayList<>();
         for (int i = 0; i < mIssues.size(); i++) {
@@ -277,7 +367,7 @@ final class SafetyCenterIssueDismissalRepository {
     /**
      * Replaces the contents of the repository with the given issues read from persistent storage.
      */
-    private void load(@NonNull List<PersistedSafetyCenterIssue> persistedSafetyCenterIssues) {
+    private void load(List<PersistedSafetyCenterIssue> persistedSafetyCenterIssues) {
         boolean someDataChanged = false;
         mIssues.clear();
         for (int i = 0; i < persistedSafetyCenterIssues.size(); i++) {
@@ -323,7 +413,7 @@ final class SafetyCenterIssueDismissalRepository {
     }
 
     /** Dumps state for debugging purposes. */
-    void dump(@NonNull FileDescriptor fd, @NonNull PrintWriter fout) {
+    void dump(FileDescriptor fd, PrintWriter fout) {
         int issueRepositoryCount = mIssues.size();
         fout.println(
                 "ISSUE DISMISSAL REPOSITORY ("
@@ -354,7 +444,7 @@ final class SafetyCenterIssueDismissalRepository {
     }
 
     @Nullable
-    private IssueData getOrWarn(@NonNull SafetyCenterIssueKey issueKey, @NonNull String reason) {
+    private IssueData getOrWarn(SafetyCenterIssueKey issueKey, String reason) {
         IssueData issueData = mIssues.get(issueKey);
         if (issueData == null) {
             Log.w(
@@ -408,7 +498,6 @@ final class SafetyCenterIssueDismissalRepository {
         scheduleWriteStateToFile();
     }
 
-    @NonNull
     private static File getIssueDismissalRepositoryFile() {
         ApexEnvironment apexEnvironment = ApexEnvironment.getApexEnvironment(APEX_MODULE_NAME);
         File dataDirectory = apexEnvironment.getDeviceProtectedDataDir();
@@ -422,9 +511,7 @@ final class SafetyCenterIssueDismissalRepository {
      */
     private static final class IssueData {
 
-        @NonNull
-        private static IssueData fromPersistedIssue(
-                @NonNull PersistedSafetyCenterIssue persistedIssue) {
+        private static IssueData fromPersistedIssue(PersistedSafetyCenterIssue persistedIssue) {
             IssueData issueData = new IssueData(persistedIssue.getFirstSeenAt());
             issueData.setDismissedAt(persistedIssue.getDismissedAt());
             issueData.setDismissCount(persistedIssue.getDismissCount());
@@ -432,18 +519,22 @@ final class SafetyCenterIssueDismissalRepository {
             return issueData;
         }
 
-        @NonNull private final Instant mFirstSeenAt;
+        private final Instant mFirstSeenAt;
 
         @Nullable private Instant mDismissedAt;
         private int mDismissCount;
 
         @Nullable private Instant mNotificationDismissedAt;
 
-        private IssueData(@NonNull Instant firstSeenAt) {
+        // TODO(b/270015734): maybe persist those as well
+        private boolean mHidden = false;
+        // Moment when a theoretical timer starts - when it ends the issue gets unmarked as hidden.
+        @Nullable private Instant mResurfaceTimerStartTime;
+
+        private IssueData(Instant firstSeenAt) {
             mFirstSeenAt = firstSeenAt;
         }
 
-        @NonNull
         private Instant getFirstSeenAt() {
             return mFirstSeenAt;
         }
@@ -474,7 +565,23 @@ final class SafetyCenterIssueDismissalRepository {
             mNotificationDismissedAt = notificationDismissedAt;
         }
 
-        @NonNull
+        private boolean isHidden() {
+            return mHidden;
+        }
+
+        private void setHidden(boolean hidden) {
+            mHidden = hidden;
+        }
+
+        @Nullable
+        private Instant getResurfaceTimerStartTime() {
+            return mResurfaceTimerStartTime;
+        }
+
+        private void setResurfaceTimerStartTime(@Nullable Instant resurfaceTimerStartTime) {
+            this.mResurfaceTimerStartTime = resurfaceTimerStartTime;
+        }
+
         private PersistedSafetyCenterIssue.Builder toPersistedIssueBuilder() {
             return new PersistedSafetyCenterIssue.Builder()
                     .setFirstSeenAt(mFirstSeenAt)

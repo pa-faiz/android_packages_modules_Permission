@@ -51,7 +51,7 @@ class PrivacySubpageFragment : SafetyCenterFragment() {
         subpageIssueGroup = getPreferenceScreen().findPreference(ISSUE_GROUP_KEY)!!
         subpageGenericEntryGroup = getPreferenceScreen().findPreference(GENERIC_ENTRY_GROUP_KEY)!!
         subpageDataEntryGroup = getPreferenceScreen().findPreference(DATA_ENTRY_GROUP_KEY)!!
-        subpageBrandChip.setupListener(requireActivity(), requireContext())
+        subpageBrandChip.setupListener(requireActivity())
 
         val factory = PrivacyControlsViewModelFactory(requireActivity().getApplication())
         privacyControlsViewModel =
@@ -83,10 +83,8 @@ class PrivacySubpageFragment : SafetyCenterFragment() {
 
     private fun updateSafetyCenterIssues(uiData: SafetyCenterUiData?) {
         subpageIssueGroup.removeAll()
-        val subpageIssues =
-            uiData?.safetyCenterData?.issues?.filter { it.groupId == SOURCE_GROUP_ID }
-        val subpageDismissedIssues =
-            uiData?.safetyCenterData?.dismissedIssues?.filter { it.groupId == SOURCE_GROUP_ID }
+        val subpageIssues = uiData?.getMatchingIssues(SOURCE_GROUP_ID)
+        val subpageDismissedIssues = uiData?.getMatchingDismissedIssues(SOURCE_GROUP_ID)
         if (subpageIssues.isNullOrEmpty() && subpageDismissedIssues.isNullOrEmpty()) {
             Log.w(TAG, "$SOURCE_GROUP_ID doesn't have any matching SafetyCenterIssues")
             return
@@ -108,6 +106,7 @@ class PrivacySubpageFragment : SafetyCenterFragment() {
         Log.d(TAG, "updateSafetyCenterEntries called with $entryGroup")
         subpageGenericEntryGroup.removeAll()
         subpageDataEntryGroup.removeAll()
+        var atLeastOneDataEntryVisible = false
 
         for (entry in entryGroup.entries) {
             val entryId = entry.id
@@ -128,7 +127,8 @@ class PrivacySubpageFragment : SafetyCenterFragment() {
                 "AndroidPermissionUsage",
                 "AndroidPermissionManager",
                 "AndroidAdsPrivacy",
-                "AndroidHealthConnect" -> {
+                "AndroidHealthConnect",
+                "AndroidPrivacyAppDataSharingUpdates" -> {
                     subpageGenericEntryGroup.addPreference(subpageEntry)
                 }
                 "AndroidPrivacyControls" -> {
@@ -137,9 +137,16 @@ class PrivacySubpageFragment : SafetyCenterFragment() {
                 }
                 else -> {
                     subpageDataEntryGroup.addPreference(subpageEntry)
+                    atLeastOneDataEntryVisible =
+                        atLeastOneDataEntryVisible || subpageEntry.isVisible()
                 }
             }
         }
+
+        /* The data entry group currently consists of only two sources which have an initial
+         * display state hidden. So if they are not visible, we should hide the entire category
+         * including the header */
+        subpageDataEntryGroup.setVisible(atLeastOneDataEntryVisible)
     }
 
     private fun renderPrivacyControls(prefStates: Map<Pref, PrefState>) {

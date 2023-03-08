@@ -27,8 +27,8 @@
                 title="@com.android.safetycenter.resources:string/lock_screen_title"
                 summary="@com.android.safetycenter.resources:string/lock_screen_summary_disabled"
                 searchTerms="@com.android.safetycenter.resources:string/lock_screen_search_terms"
-                notificationsAllowed="true"
-                initialDisplayState="disabled"/>
+                initialDisplayState="disabled"
+                notificationsAllowed="true"/>
             <dynamic-safety-source
                 id="AndroidBiometrics"
                 packageName="com.android.settings"
@@ -64,20 +64,14 @@
                 title="@com.android.safetycenter.resources:string/ads_privacy_title"
                 summary="@com.android.safetycenter.resources:string/ads_privacy_summary"
                 searchTerms="@com.android.safetycenter.resources:string/ads_privacy_search_terms"/>
-            <static-safety-source
+            <dynamic-safety-source
                 id="AndroidHealthConnect"
                 profile="primary_profile_only"
-                intentAction="android.health.connect.action.HEALTH_HOME_SETTINGS"
+                packageName="com.android.permissioncontroller"
+                initialDisplayState="hidden"
+                refreshOnPageOpenAllowed="true"
                 title="@com.android.safetycenter.resources:string/health_connect_title"
-                summary="@com.android.safetycenter.resources:string/health_connect_summary"
                 searchTerms="@com.android.safetycenter.resources:string/health_connect_search_terms"/>
-            <static-safety-source
-                id="AndroidPrivacyControls"
-                profile="primary_profile_only"
-                intentAction="android.settings.PRIVACY_CONTROLS"
-                title="@com.android.safetycenter.resources:string/privacy_controls_title"
-                summary="@com.android.safetycenter.resources:string/privacy_controls_summary"
-                searchTerms="@com.android.safetycenter.resources:string/privacy_controls_search_terms"/>
             <dynamic-safety-source
                 id="AndroidPrivacyAppDataSharingUpdates"
                 packageName="com.android.permissioncontroller"
@@ -86,6 +80,13 @@
                 refreshOnPageOpenAllowed="true"
                 title="@com.android.safetycenter.resources:string/app_data_sharing_updates_title"
                 searchTerms="@com.android.safetycenter.resources:string/app_data_sharing_updates_search_terms"/>
+            <static-safety-source
+                id="AndroidPrivacyControls"
+                profile="primary_profile_only"
+                intentAction="android.settings.PRIVACY_CONTROLS"
+                title="@com.android.safetycenter.resources:string/privacy_controls_title"
+                summary="@com.android.safetycenter.resources:string/privacy_controls_summary"
+                searchTerms="@com.android.safetycenter.resources:string/privacy_controls_search_terms"/>
             <issue-only-safety-source
                 id="AndroidAccessibility"
                 packageName="com.android.permissioncontroller"
@@ -121,7 +122,7 @@
                 initialDisplayState="hidden"
                 refreshOnPageOpenAllowed="true"/>
             <static-safety-source
-                id="AndroidAdvancedSecurity"
+                id="AndroidMoreSettings"
                 profile="primary_profile_only"
                 intentAction="com.android.settings.MORE_SECURITY_PRIVACY_SETTINGS"
                 title="@com.android.safetycenter.resources:string/more_settings_title"

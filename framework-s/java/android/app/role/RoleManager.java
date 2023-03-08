@@ -25,6 +25,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.UserHandleAware;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.Intent;
@@ -182,6 +183,15 @@ public final class RoleManager {
     @SystemApi
     public static final String ROLE_FINANCED_DEVICE_KIOSK =
             "android.app.role.FINANCED_DEVICE_KIOSK";
+
+    /**
+     * The name of the system call streaming role.
+     *
+     * @hide
+     */
+    @SystemApi
+    public static final String ROLE_SYSTEM_CALL_STREAMING =
+            "android.app.role.SYSTEM_CALL_STREAMING";
 
     /**
      * @hide
@@ -459,6 +469,71 @@ public final class RoleManager {
         try {
             mService.clearRoleHoldersAsUser(roleName, flags, user.getIdentifier(),
                     createRemoteCallback(executor, callback));
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Get package names of the applications holding the role for a default application.
+     * <p>
+     * <strong>Note:</strong> Using this API requires holding
+     * {@code android.permission.MANAGE_DEFAULT_APPLICATIONS}.
+     *
+     * @param roleName the name of the default application role to get
+     *
+     * @return a package name of the role holder or {@code null} if not set.
+     *
+     * @see #setDefaultApplication(String, String, int, Executor, Consumer)
+     *
+     * @hide
+     */
+    @Nullable
+    @RequiresPermission(Manifest.permission.MANAGE_DEFAULT_APPLICATIONS)
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    @UserHandleAware
+    @SystemApi
+    public String getDefaultApplication(@NonNull String roleName) {
+        Preconditions.checkStringNotEmpty(roleName, "roleName cannot be null or empty");
+        try {
+            return mService.getDefaultApplicationAsUser(
+                    roleName, mContext.getUser().getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Set a specific application as the default application.
+     * <p>
+     * <strong>Note:</strong> Using this API requires holding
+     * {@code android.permission.MANAGE_DEFAULT_APPLICATIONS}.
+     *
+     * @param roleName the name of the default application role to set the role holder for
+     * @param packageName the package name of the application to set as the default application,
+     *                    or {@code null} to unset.
+     * @param flags optional behavior flags
+     * @param executor the {@code Executor} to run the callback on.
+     * @param callback the callback for whether this call is successful
+     *
+     * @see #getDefaultApplication(String)
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MANAGE_DEFAULT_APPLICATIONS)
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    @UserHandleAware
+    @SystemApi
+    public void setDefaultApplication(@NonNull String roleName, @Nullable String packageName,
+            @ManageHoldersFlags int flags, @CallbackExecutor @NonNull Executor executor,
+            @NonNull Consumer<Boolean> callback) {
+        Preconditions.checkStringNotEmpty(roleName, "roleName cannot be null or empty");
+        Preconditions.checkStringNotEmpty(packageName, "packageName cannot be null or empty");
+        Objects.requireNonNull(executor, "executor cannot be null");
+        Objects.requireNonNull(callback, "callback cannot be null");
+        try {
+            mService.setDefaultApplicationAsUser(roleName, packageName, flags,
+                    mContext.getUser().getIdentifier(), createRemoteCallback(executor, callback));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

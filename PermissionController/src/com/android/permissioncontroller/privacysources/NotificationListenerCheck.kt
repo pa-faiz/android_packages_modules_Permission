@@ -90,7 +90,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 private val TAG = "NotificationListenerCheck"
-private const val DEBUG = true
+private const val DEBUG = false
 const val SC_NLS_SOURCE_ID = "AndroidNotificationListener"
 @VisibleForTesting const val SC_NLS_DISABLE_ACTION_ID = "disable_nls_component"
 
@@ -550,7 +550,7 @@ internal class NotificationListenerCheckInternal(
                 .setDeleteIntent(deletePendingIntent)
                 .setContentIntent(clickPendingIntent)
 
-        if (appLabel != null && appLabel.isNotEmpty()) {
+        if (appLabel.isNotEmpty()) {
             val appNameExtras = Bundle()
             appNameExtras.putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, appLabel.toString())
             b.addExtras(appNameExtras)

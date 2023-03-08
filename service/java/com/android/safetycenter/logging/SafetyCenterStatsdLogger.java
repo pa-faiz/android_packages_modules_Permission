@@ -32,6 +32,7 @@ import static com.android.permission.PermissionStatsLog.SAFETY_CENTER_SYSTEM_EVE
 import static com.android.permission.PermissionStatsLog.SAFETY_CENTER_SYSTEM_EVENT_REPORTED__SAFETY_SOURCE_PROFILE_TYPE__PROFILE_TYPE_PERSONAL;
 import static com.android.permission.PermissionStatsLog.SAFETY_CENTER_SYSTEM_EVENT_REPORTED__SAFETY_SOURCE_PROFILE_TYPE__PROFILE_TYPE_UNKNOWN;
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED;
+import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__COLLECTION_TYPE__AUTOMATIC;
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SAFETY_SOURCE_PROFILE_TYPE__PROFILE_TYPE_MANAGED;
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SAFETY_SOURCE_PROFILE_TYPE__PROFILE_TYPE_PERSONAL;
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SEVERITY_LEVEL__SAFETY_SEVERITY_CRITICAL_WARNING;
@@ -39,6 +40,8 @@ import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLL
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SEVERITY_LEVEL__SAFETY_SEVERITY_OK;
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SEVERITY_LEVEL__SAFETY_SEVERITY_RECOMMENDATION;
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SEVERITY_LEVEL__SAFETY_SEVERITY_UNSPECIFIED;
+import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SOURCE_STATE__SOURCE_STATE_UNKNOWN;
+import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__UPDATE_TYPE__UPDATE_TYPE_UNKNOWN;
 import static com.android.permission.PermissionStatsLog.SAFETY_STATE;
 import static com.android.permission.PermissionStatsLog.SAFETY_STATE__OVERALL_SEVERITY_LEVEL__SAFETY_SEVERITY_CRITICAL_WARNING;
 import static com.android.permission.PermissionStatsLog.SAFETY_STATE__OVERALL_SEVERITY_LEVEL__SAFETY_SEVERITY_LEVEL_UNKNOWN;
@@ -46,7 +49,6 @@ import static com.android.permission.PermissionStatsLog.SAFETY_STATE__OVERALL_SE
 import static com.android.permission.PermissionStatsLog.SAFETY_STATE__OVERALL_SEVERITY_LEVEL__SAFETY_SEVERITY_RECOMMENDATION;
 
 import android.annotation.IntDef;
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.Context;
@@ -103,11 +105,11 @@ public final class SafetyCenterStatsdLogger {
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemEventResult {}
 
-    @NonNull private final Context mContext;
-    @NonNull private final SafetyCenterConfigReader mSafetyCenterConfigReader;
+    private final Context mContext;
+    private final SafetyCenterConfigReader mSafetyCenterConfigReader;
 
     public SafetyCenterStatsdLogger(
-            @NonNull Context context, @NonNull SafetyCenterConfigReader safetyCenterConfigReader) {
+            Context context, SafetyCenterConfigReader safetyCenterConfigReader) {
         mContext = context;
         mSafetyCenterConfigReader = safetyCenterConfigReader;
     }
@@ -116,7 +118,6 @@ public final class SafetyCenterStatsdLogger {
      * Creates a {@link PermissionStatsLog#SAFETY_STATE} {@link StatsEvent} with the given
      * parameters.
      */
-    @NonNull
     StatsEvent createSafetyStateEvent(
             @SafetyCenterStatus.OverallSeverityLevel int severityLevel,
             long openIssueCount,
@@ -135,11 +136,12 @@ public final class SafetyCenterStatsdLogger {
      *     source, or {@code null} if none/unknown severity should be recorded.
      */
     void writeSafetySourceStateCollected(
-            @NonNull String sourceId,
+            String sourceId,
             boolean isManagedProfile,
             @Nullable @SafetySourceData.SeverityLevel Integer sourceSeverityLevel,
             long openIssuesCount,
-            long dismissedIssuesCount) {
+            long dismissedIssuesCount,
+            long duplicateFilteredOutIssuesCount) {
         if (!mSafetyCenterConfigReader.allowsStatsdLogging()) {
             return;
         }
@@ -153,7 +155,19 @@ public final class SafetyCenterStatsdLogger {
                 profileType,
                 toSafetySourceStateCollectedSeverityLevel(sourceSeverityLevel),
                 openIssuesCount,
-                dismissedIssuesCount);
+                dismissedIssuesCount,
+                duplicateFilteredOutIssuesCount,
+                // TODO(b/268309177): Implement source state logging
+                SAFETY_SOURCE_STATE_COLLECTED__SOURCE_STATE__SOURCE_STATE_UNKNOWN,
+                // TODO(b/268309211): Record this event when sources provide data
+                SAFETY_SOURCE_STATE_COLLECTED__COLLECTION_TYPE__AUTOMATIC,
+                // TODO(b/268309213): Log updateType, refreshReason, and dataChanged when sources
+                // update their data.
+                SAFETY_SOURCE_STATE_COLLECTED__UPDATE_TYPE__UPDATE_TYPE_UNKNOWN,
+                /* refreshReason= */ 0L,
+                /* dataChanged= */ false,
+                // TODO(b/268311158): Implement last updated time logging
+                /* lastUpdatedElapsedTimeMillis= */ 0L);
     }
 
     /**
@@ -162,9 +176,9 @@ public final class SafetyCenterStatsdLogger {
      */
     public void writeSourceRefreshSystemEvent(
             @RefreshRequestType int refreshType,
-            @NonNull String sourceId,
+            String sourceId,
             @UserIdInt int userId,
-            @NonNull Duration duration,
+            Duration duration,
             @SystemEventResult int result) {
         if (!mSafetyCenterConfigReader.allowsStatsdLogging()) {
             return;
@@ -176,7 +190,10 @@ public final class SafetyCenterStatsdLogger {
                 toSystemEventProfileType(userId),
                 UNSET_ISSUE_TYPE_ID,
                 duration.toMillis(),
-                result);
+                result,
+                // TODO(b/268328334): Track refreshReason and dataChanged for system events
+                /* refreshReason= */ 0L,
+                /* dataChanged= */ false);
     }
 
     /**
@@ -184,9 +201,7 @@ public final class SafetyCenterStatsdLogger {
      * COMPLETE_RESCAN} or {@code COMPLETE_GET_DATA}.
      */
     public void writeWholeRefreshSystemEvent(
-            @RefreshRequestType int refreshType,
-            @NonNull Duration duration,
-            @SystemEventResult int result) {
+            @RefreshRequestType int refreshType, Duration duration, @SystemEventResult int result) {
         if (!mSafetyCenterConfigReader.allowsStatsdLogging()) {
             return;
         }
@@ -197,7 +212,10 @@ public final class SafetyCenterStatsdLogger {
                 SAFETY_CENTER_SYSTEM_EVENT_REPORTED__SAFETY_SOURCE_PROFILE_TYPE__PROFILE_TYPE_UNKNOWN,
                 UNSET_ISSUE_TYPE_ID,
                 duration.toMillis(),
-                result);
+                result,
+                // TODO(b/268328334): Track refreshReason and dataChanged for system events
+                /* refreshReason= */ 0L,
+                /* dataChanged= */ false);
     }
 
     /**
@@ -205,10 +223,10 @@ public final class SafetyCenterStatsdLogger {
      * INLINE_ACTION}.
      */
     public void writeInlineActionSystemEvent(
-            @NonNull String sourceId,
+            String sourceId,
             @UserIdInt int userId,
             @Nullable String issueTypeId,
-            @NonNull Duration duration,
+            Duration duration,
             @SystemEventResult int result) {
         if (!mSafetyCenterConfigReader.allowsStatsdLogging()) {
             return;
@@ -220,7 +238,11 @@ public final class SafetyCenterStatsdLogger {
                 toSystemEventProfileType(userId),
                 issueTypeId == null ? UNSET_ISSUE_TYPE_ID : idStringToLong(issueTypeId),
                 duration.toMillis(),
-                result);
+                result,
+                // These fields aren't relevant for inline action events, but must be written anyway
+                // due to the statsd APIs:
+                /* refreshReason= */ 0L,
+                /* dataChanged= */ false);
     }
 
     /**
@@ -266,7 +288,7 @@ public final class SafetyCenterStatsdLogger {
      * Converts a {@link String} ID (e.g. a Safety Source ID) to a {@code long} suitable for logging
      * to statsd.
      */
-    private static long idStringToLong(@NonNull String id) {
+    private static long idStringToLong(String id) {
         MessageDigest messageDigest;
         try {
             messageDigest = MessageDigest.getInstance("MD5");
