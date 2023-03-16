@@ -24,15 +24,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.safetycenter.SafetySourceIssue;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.permission.util.UserUtils;
 import com.android.safetycenter.data.SafetyCenterDataManager;
 import com.android.safetycenter.internaldata.SafetyCenterIds;
 import com.android.safetycenter.internaldata.SafetyCenterIssueActionId;
 import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
+import com.android.safetycenter.logging.SafetyCenterStatsdLogger;
 
 /**
  * A Context-registered {@link BroadcastReceiver} that handles intents sent via Safety Center
@@ -173,7 +176,7 @@ final class SafetyCenterNotificationReceiver extends BroadcastReceiver {
                 onNotificationDismissed(context, intent);
                 break;
             case ACTION_NOTIFICATION_ACTION_CLICKED:
-                onNotificationActionClicked(intent);
+                onNotificationActionClicked(context, intent);
                 break;
             default:
                 Log.w(TAG, "Received broadcast with unrecognized action: " + action);
@@ -186,19 +189,59 @@ final class SafetyCenterNotificationReceiver extends BroadcastReceiver {
         if (issueKey == null) {
             return;
         }
+
         int userId = issueKey.getUserId();
         UserProfileGroup userProfileGroup = UserProfileGroup.from(context, userId);
+        SafetySourceIssue dismissedIssue;
+
         synchronized (mApiLock) {
+            dismissedIssue = mSafetyCenterDataManager.getSafetySourceIssue(issueKey);
             mSafetyCenterDataManager.dismissNotification(issueKey);
             mSafetyCenterDataChangeNotifier.updateDataConsumers(userProfileGroup, userId);
         }
+
+        if (dismissedIssue != null) {
+            SafetyCenterStatsdLogger.writeNotificationDismissedEvent(
+                    issueKey.getSafetySourceId(),
+                    UserUtils.isManagedProfile(userId, context),
+                    dismissedIssue.getIssueTypeId(),
+                    dismissedIssue.getSeverityLevel());
+        }
     }
 
-    private void onNotificationActionClicked(Intent intent) {
+    private void onNotificationActionClicked(Context context, Intent intent) {
         SafetyCenterIssueActionId issueActionId = getIssueActionIdExtra(intent);
         if (issueActionId == null) {
             return;
         }
+
         mService.executeIssueActionInternal(issueActionId);
+        logNotificationActionClicked(context, issueActionId);
+    }
+
+    private void logNotificationActionClicked(
+            Context context, SafetyCenterIssueActionId issueActionId) {
+        SafetyCenterIssueKey issueKey = issueActionId.getSafetyCenterIssueKey();
+        SafetySourceIssue issue;
+        synchronized (mApiLock) {
+            issue = mSafetyCenterDataManager.getSafetySourceIssue(issueKey);
+        }
+        if (issue != null) {
+            SafetyCenterStatsdLogger.writeNotificationActionClickedEvent(
+                    issueKey.getSafetySourceId(),
+                    UserUtils.isManagedProfile(issueKey.getUserId(), context),
+                    issue.getIssueTypeId(),
+                    issue.getSeverityLevel(),
+                    isPrimaryAction(issue, issueActionId));
+        }
+    }
+
+    /** Returns {@code true} if {@code actionId} is the first action of {@code issue}. */
+    private boolean isPrimaryAction(SafetySourceIssue issue, SafetyCenterIssueActionId actionId) {
+        return !issue.getActions().isEmpty()
+                && issue.getActions()
+                        .get(0)
+                        .getId()
+                        .equals(actionId.getSafetySourceIssueActionId());
     }
 }

@@ -14,13 +14,5 @@
  * limitations under the License.
  */
 
-package android.safetycenter.cts.testing
-
-import android.app.NotificationChannel
-import android.service.notification.StatusBarNotification
-
-/** Tuple of [StatusBarNotification] and the [NotificationChannel] it was posted to. */
-data class StatusBarNotificationWithChannel(
-    val statusBarNotification: StatusBarNotification,
-    val channel: NotificationChannel
-)
+@androidx.annotation.RequiresApi(android.os.Build.VERSION_CODES.S)
+package com.android.permissioncontroller.permission.data.v31;

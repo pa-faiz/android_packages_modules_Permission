@@ -19,9 +19,14 @@ package com.android.permissioncontroller.permission.ui.model.v31
 
 import android.Manifest
 import android.app.AppOpsManager
+import android.app.AppOpsManager.OPSTR_PHONE_CALL_CAMERA
+import android.app.AppOpsManager.OPSTR_PHONE_CALL_MICROPHONE
 import android.app.Application
 import android.app.role.RoleManager
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
@@ -31,16 +36,18 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
+import com.android.modules.utils.build.SdkLevel
 import com.android.permissioncontroller.PermissionControllerApplication
 import com.android.permissioncontroller.R
+import com.android.permissioncontroller.permission.compat.IntentCompat
 import com.android.permissioncontroller.permission.data.AppPermGroupUiInfoLiveData
 import com.android.permissioncontroller.permission.data.LightPackageInfoLiveData
 import com.android.permissioncontroller.permission.data.SmartUpdateMediatorLiveData
 import com.android.permissioncontroller.permission.data.v31.AllLightHistoricalPackageOpsLiveData
 import com.android.permissioncontroller.permission.model.livedatatypes.LightPackageInfo
+import com.android.permissioncontroller.permission.model.livedatatypes.v31.AppPermissionId
 import com.android.permissioncontroller.permission.model.livedatatypes.v31.LightHistoricalPackageOps
 import com.android.permissioncontroller.permission.model.livedatatypes.v31.LightHistoricalPackageOps.AppPermissionDiscreteAccesses
-import com.android.permissioncontroller.permission.model.livedatatypes.v31.LightHistoricalPackageOps.AppPermissionId
 import com.android.permissioncontroller.permission.model.livedatatypes.v31.LightHistoricalPackageOps.AttributedAppPermissionDiscreteAccesses
 import com.android.permissioncontroller.permission.model.livedatatypes.v31.LightHistoricalPackageOps.DiscreteAccess
 import com.android.permissioncontroller.permission.ui.handheld.v31.getDurationUsedStr
@@ -51,6 +58,7 @@ import com.android.permissioncontroller.permission.utils.PermissionMapping
 import com.android.permissioncontroller.permission.utils.SubattributionUtils
 import com.android.permissioncontroller.permission.utils.Utils
 import java.time.Instant
+import java.util.Objects
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.DAYS
 
@@ -75,16 +83,16 @@ class PermissionUsageDetailsViewModel(
         Utils.getSystemServiceSafe(application.applicationContext, RoleManager::class.java)
 
     /** Updates whether system app permissions usage should be displayed in the UI. */
-    fun updateShowSystem(showSystem: Boolean) {
-        if (showSystem != state[PermissionUsageViewModel.SHOULD_SHOW_SYSTEM_KEY]) {
-            state[PermissionUsageViewModel.SHOULD_SHOW_SYSTEM_KEY] = showSystem
+    fun updateShowSystemAppsToggle(showSystem: Boolean) {
+        if (showSystem != state[SHOULD_SHOW_SYSTEM_KEY]) {
+            state[SHOULD_SHOW_SYSTEM_KEY] = showSystem
         }
     }
 
     /** Updates whether 7 days usage or 1 day usage should be displayed in the UI. */
-    fun updateShow7Days(show7Days: Boolean) {
-        if (show7Days != state[PermissionUsageViewModel.SHOULD_SHOW_7_DAYS_KEY]) {
-            state[PermissionUsageViewModel.SHOULD_SHOW_7_DAYS_KEY] = show7Days
+    fun updateShow7DaysToggle(show7Days: Boolean) {
+        if (show7Days != state[SHOULD_SHOW_7_DAYS_KEY]) {
+            state[SHOULD_SHOW_7_DAYS_KEY] = show7Days
         }
     }
 
@@ -103,17 +111,18 @@ class PermissionUsageDetailsViewModel(
                 Instant.EPOCH.toEpochMilli())
 
         return PermissionUsageDetailsUiInfo(
+            show7Days,
+            showSystem,
             buildAppPermissionAccessUiInfoList(
                 allLightHistoricalPackageOpsLiveData, startTime, showSystem),
-            shouldDisplayShowSystemToggle(allLightHistoricalPackageOpsLiveData, startTime),
-            show7Days)
+            containsSystemAppUsages(allLightHistoricalPackageOpsLiveData, startTime))
     }
 
     /**
      * Returns whether the "show/hide system" toggle should be displayed in the UI for the provided
      * [AllLightHistoricalPackageOpsLiveData].
      */
-    private fun shouldDisplayShowSystemToggle(
+    private fun containsSystemAppUsages(
         allLightHistoricalPackageOpsLiveData: AllLightHistoricalPackageOpsLiveData,
         startTime: Long
     ): Boolean {
@@ -141,8 +150,8 @@ class PermissionUsageDetailsViewModel(
         // use these permissions and they are considered system app permissions, so we return true
         // even if the AppPermGroupUiInfo is unavailable.
         if (appPermissionId.packageName == TELECOM_PACKAGE &&
-            (appPermissionId.permGroup == Manifest.permission_group.CAMERA ||
-                appPermissionId.permGroup == Manifest.permission_group.MICROPHONE)) {
+            (appPermissionId.permissionGroup == Manifest.permission_group.CAMERA ||
+                appPermissionId.permissionGroup == Manifest.permission_group.MICROPHONE)) {
             return true
         }
         return false
@@ -232,7 +241,7 @@ class PermissionUsageDetailsViewModel(
         return this.filter {
                 !Utils.getExemptedPackages(roleManager).contains(it.appPermissionId.packageName)
             }
-            .filter { it.appPermissionId.permGroup == permissionGroup }
+            .filter { it.appPermissionId.permissionGroup == permissionGroup }
             .filter { showSystem || !isAppPermissionSystem(it.appPermissionId) }
     }
 
@@ -410,11 +419,10 @@ class PermissionUsageDetailsViewModel(
         if (accessTimeList.isEmpty()) {
             return null
         }
-
+        // Since Location accesses are atomic, we manually calculate the access duration by
+        // comparing the first and last access within the cluster.
         val durationMs: Long =
-        // Since Location accesses are atomic, we manually calculate the access duration
-        // by comparing the first and last access within the cluster.
-        if (permissionGroup == Manifest.permission_group.LOCATION) {
+            if (permissionGroup == Manifest.permission_group.LOCATION) {
                 accessTimeList[0] - accessTimeList[accessTimeList.size - 1]
             } else {
                 accessCluster.discreteAccesses
@@ -482,12 +490,24 @@ class PermissionUsageDetailsViewModel(
      * render UI.
      */
     data class PermissionUsageDetailsUiInfo(
+        /**
+         * Whether to show data over the last 7 days.
+         *
+         * While this information is available from the [SHOULD_SHOW_7_DAYS_KEY] state, we include
+         * it in the UI info so that it triggers a UI update when changed.
+         */
+        private val show7Days: Boolean,
+        /**
+         * Whether to show system apps' data.
+         *
+         * While this information is available from the [SHOULD_SHOW_SYSTEM_KEY] state, we include
+         * it in the UI info so that it triggers a UI update when changed.
+         */
+        private val showSystem: Boolean,
         /** List of [AppPermissionAccessUiInfo]s to be displayed in the UI. */
         val appPermissionAccessUiInfoList: List<AppPermissionAccessUiInfo>,
         /** Whether to show the "show/hide system" toggle. */
-        val shouldDisplayShowSystemToggle: Boolean,
-        /** Whether to show data over the last 7 days. */
-        val show7Days: Boolean
+        val containsSystemAppAccesses: Boolean,
     )
 
     /**
@@ -515,13 +535,11 @@ class PermissionUsageDetailsViewModel(
     /** [LiveData] object for [PermissionUsageDetailsUiInfo]. */
     val permissionUsagesDetailsInfoUiLiveData =
         object : SmartUpdateMediatorLiveData<@JvmSuppressWildcards PermissionUsageDetailsUiInfo>() {
-
-            private var appPermGroupListPopulated: Boolean = false
             private val getAppPermGroupUiInfoLiveData = { appPermissionId: AppPermissionId ->
                 AppPermGroupUiInfoLiveData[
                     Triple(
                         appPermissionId.packageName,
-                        appPermissionId.permGroup,
+                        appPermissionId.permissionGroup,
                         appPermissionId.userHandle,
                     )]
             }
@@ -541,36 +559,31 @@ class PermissionUsageDetailsViewModel(
                     return
                 }
 
-                if (appPermGroupUiInfoLiveDataList.isEmpty()) {
-                    val appPermissionIds = mutableSetOf<AppPermissionId>()
-                    val allPackages: Set<Pair<String, UserHandle>> =
-                        allLightHistoricalPackageOpsLiveData.value?.keys ?: setOf()
-                    for (packageWithUserHandle: Pair<String, UserHandle> in allPackages) {
-                        val appPermGroupIds =
-                            allLightHistoricalPackageOpsLiveData.value
-                                ?.get(packageWithUserHandle)
-                                ?.appPermissionDiscreteAccesses
-                                ?.map { it.appPermissionId }
-                                ?.toSet()
-                                ?: setOf()
+                val appPermissionIds = mutableSetOf<AppPermissionId>()
+                val allPackages: Set<Pair<String, UserHandle>> =
+                    allLightHistoricalPackageOpsLiveData.value?.keys ?: setOf()
+                for (packageWithUserHandle: Pair<String, UserHandle> in allPackages) {
+                    val appPermGroupIds =
+                        allLightHistoricalPackageOpsLiveData.value
+                            ?.get(packageWithUserHandle)
+                            ?.appPermissionDiscreteAccesses
+                            ?.map { it.appPermissionId }
+                            ?.toSet()
+                            ?: setOf()
 
-                        appPermissionIds.addAll(appPermGroupIds)
-                    }
-
-                    setSourcesToDifference(
-                        appPermissionIds,
-                        appPermGroupUiInfoLiveDataList,
-                        getAppPermGroupUiInfoLiveData) {
-                            update()
-                        }
-                    setSourcesToDifference(
-                        allPackages, lightPackageInfoLiveDataMap, getLightPackageInfoLiveData) {
-                            update()
-                        }
-                    appPermGroupListPopulated = true
-
-                    return
+                    appPermissionIds.addAll(appPermGroupIds)
                 }
+
+                setSourcesToDifference(
+                    appPermissionIds,
+                    appPermGroupUiInfoLiveDataList,
+                    getAppPermGroupUiInfoLiveData) {
+                        update()
+                    }
+                setSourcesToDifference(
+                    allPackages, lightPackageInfoLiveDataMap, getLightPackageInfoLiveData) {
+                        update()
+                    }
 
                 if (appPermGroupUiInfoLiveDataList.any { !it.value.isInitialized }) {
                     return
@@ -592,7 +605,7 @@ class PermissionUsageDetailsViewModel(
             }
         }
 
-    /** Companion object for [PermissionUsageViewModel]. */
+    /** Companion object for [PermissionUsageDetailsViewModel]. */
     companion object {
         private const val ONE_HOUR_MS = 3_600_000
         private const val ONE_MINUTE_MS = 60_000
@@ -611,10 +624,89 @@ class PermissionUsageDetailsViewModel(
                     Manifest.permission_group.MICROPHONE)
                 .flatMap { group -> PermissionMapping.getPlatformPermissionNamesOfGroup(group) }
                 .mapNotNull { permName -> AppOpsManager.permissionToOp(permName) }
-                .toSet()
+                .toMutableSet()
+                .apply {
+                    add(OPSTR_PHONE_CALL_MICROPHONE)
+                    add(OPSTR_PHONE_CALL_CAMERA)
+                    if (SdkLevel.isAtLeastT()) {
+                        add(AppOpsManager.OPSTR_RECEIVE_AMBIENT_TRIGGER_AUDIO)
+                    }
+                }
+
+        /** Creates the [Intent] for the click action of a privacy dashboard app usage event. */
+        fun createHistoryPreferenceClickIntent(
+            context: Context,
+            userHandle: UserHandle,
+            packageName: String,
+            permissionGroup: String,
+            accessStartTime: Long,
+            accessEndTime: Long,
+            showingAttribution: Boolean,
+            attributionTags: List<String>
+        ): Intent {
+            return getManagePermissionUsageIntent(
+                context,
+                packageName,
+                permissionGroup,
+                accessStartTime,
+                accessEndTime,
+                showingAttribution,
+                attributionTags)
+                ?: getDefaultManageAppPermissionsIntent(packageName, userHandle)
+        }
+
+        /**
+         * Gets an [Intent.ACTION_MANAGE_PERMISSION_USAGE] intent, or null if attribution shouldn't
+         * be shown or the intent can't be handled.
+         */
+        private fun getManagePermissionUsageIntent(
+            context: Context,
+            packageName: String,
+            permissionGroup: String,
+            accessStartTime: Long,
+            accessEndTime: Long,
+            showingAttribution: Boolean,
+            attributionTags: List<String>
+        ): Intent? {
+            // TODO(b/255992934) only location provider apps should be able to provide this intent
+            if (!showingAttribution || !SdkLevel.isAtLeastT()) {
+                return null
+            }
+            val intent =
+                Intent(Intent.ACTION_MANAGE_PERMISSION_USAGE).apply {
+                    setPackage(packageName)
+                    putExtra(Intent.EXTRA_PERMISSION_GROUP_NAME, permissionGroup)
+                    putExtra(Intent.EXTRA_ATTRIBUTION_TAGS, attributionTags.toTypedArray())
+                    putExtra(Intent.EXTRA_START_TIME, accessStartTime)
+                    putExtra(Intent.EXTRA_END_TIME, accessEndTime)
+                    putExtra(IntentCompat.EXTRA_SHOWING_ATTRIBUTION, showingAttribution)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            val resolveInfo =
+                context.packageManager.resolveActivity(
+                    intent, PackageManager.ResolveInfoFlags.of(0))
+            if (resolveInfo?.activityInfo == null ||
+                !Objects.equals(
+                    resolveInfo.activityInfo.permission,
+                    Manifest.permission.START_VIEW_PERMISSION_USAGE)) {
+                return null
+            }
+            intent.component = ComponentName(packageName, resolveInfo.activityInfo.name)
+            return intent
+        }
+
+        private fun getDefaultManageAppPermissionsIntent(
+            packageName: String,
+            userHandle: UserHandle
+        ): Intent {
+            return Intent(Intent.ACTION_MANAGE_APP_PERMISSIONS).apply {
+                putExtra(Intent.EXTRA_USER, userHandle)
+                putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+            }
+        }
     }
 
-    /** Factory for [PermissionUsageViewModel]. */
+    /** Factory for [PermissionUsageDetailsViewModel]. */
     @RequiresApi(Build.VERSION_CODES.S)
     class PermissionUsageDetailsViewModelFactory(
         val app: Application,

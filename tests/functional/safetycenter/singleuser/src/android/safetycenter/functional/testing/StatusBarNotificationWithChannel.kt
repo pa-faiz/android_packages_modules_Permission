@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.permissioncontroller.permission.model.livedatatypes
+package android.safetycenter.functional.testing
 
-/**
- * A lighter version of the system's InstallSourceInfo class, containing select information about
- * the install source.
- *
- * @param initiatingPackageName The package name of the install source (usually the app store)
- */
-data class LightInstallSourceInfo(
-    val initiatingPackageName: String?,
-) {
+import android.app.NotificationChannel
+import android.service.notification.StatusBarNotification
 
-    companion object {
-        val UNKNOWN_INSTALL_SOURCE = LightInstallSourceInfo(null)
-    }
-}
+/** Tuple of [StatusBarNotification] and the [NotificationChannel] it was posted to. */
+data class StatusBarNotificationWithChannel(
+    val statusBarNotification: StatusBarNotification,
+    val channel: NotificationChannel
+)

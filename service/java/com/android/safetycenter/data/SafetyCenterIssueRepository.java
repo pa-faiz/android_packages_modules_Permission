@@ -18,9 +18,12 @@ package com.android.safetycenter.data;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
-import static java.util.Collections.emptyList;
+import static com.android.safetycenter.data.SafetyCenterIssueDeduplicator.DeduplicationInfo;
 
-import android.annotation.Nullable;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
+
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.safetycenter.SafetySourceData;
@@ -38,11 +41,13 @@ import com.android.safetycenter.SafetySourceIssueInfo;
 import com.android.safetycenter.SafetySourceKey;
 import com.android.safetycenter.SafetySources;
 import com.android.safetycenter.UserProfileGroup;
+import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -59,30 +64,23 @@ final class SafetyCenterIssueRepository {
             SAFETY_SOURCE_ISSUES_INFO_BY_SEVERITY_DESCENDING =
                     new SafetySourceIssuesInfoBySeverityDescending();
 
+    private static final DeduplicationInfo EMPTY_DEDUP_INFO =
+            new DeduplicationInfo(emptyList(), emptyList(), emptyMap());
+
     private final Context mContext;
     private final SafetySourceDataRepository mSafetySourceDataRepository;
     private final SafetyCenterConfigReader mSafetyCenterConfigReader;
     private final SafetyCenterIssueDismissalRepository mSafetyCenterIssueDismissalRepository;
+    private final SafetyCenterIssueDeduplicator mSafetyCenterIssueDeduplicator;
 
-    // Only available on Android U+.
-    @Nullable private final SafetyCenterIssueDeduplicator mSafetyCenterIssueDeduplicator;
-
-    // userId -> sorted and deduplicated list of issues
-    // can contain temporarily hidden issues
-    private final SparseArray<List<SafetySourceIssueInfo>> mUserIdToIssuesInfo =
-            new SparseArray<>();
-
-    // userId -> issues filtered out from the rest due to being duplicates of other issues, in the
-    // last relevant call to SafetyCenterIssueDeduplicator#deduplicateIssues
-    private final SparseArray<List<SafetySourceIssueInfo>> mUserIdToFilteredOutIssues =
-            new SparseArray<>();
+    private final SparseArray<DeduplicationInfo> mUserIdToDedupInfo = new SparseArray<>();
 
     SafetyCenterIssueRepository(
             Context context,
             SafetySourceDataRepository safetySourceDataRepository,
             SafetyCenterConfigReader safetyCenterConfigReader,
             SafetyCenterIssueDismissalRepository safetyCenterIssueDismissalRepository,
-            @Nullable SafetyCenterIssueDeduplicator safetyCenterIssueDeduplicator) {
+            SafetyCenterIssueDeduplicator safetyCenterIssueDeduplicator) {
         mContext = context;
         mSafetySourceDataRepository = safetySourceDataRepository;
         mSafetyCenterConfigReader = safetyCenterConfigReader;
@@ -114,8 +112,17 @@ final class SafetyCenterIssueRepository {
     private void updateIssues(@UserIdInt int userId, boolean isManagedProfile) {
         List<SafetySourceIssueInfo> issues =
                 getAllStoredIssuesFromRawSourceData(userId, isManagedProfile);
-        processIssues(userId, issues);
-        mUserIdToIssuesInfo.put(userId, issues);
+
+        issues.sort(SAFETY_SOURCE_ISSUES_INFO_BY_SEVERITY_DESCENDING);
+
+        mUserIdToDedupInfo.put(userId, produceDedupInfo(issues));
+    }
+
+    private DeduplicationInfo produceDedupInfo(List<SafetySourceIssueInfo> issues) {
+        if (SdkLevel.isAtLeastU()) {
+            return mSafetyCenterIssueDeduplicator.deduplicateIssues(issues);
+        }
+        return new DeduplicationInfo(issues, emptyList(), emptyMap());
     }
 
     /**
@@ -154,7 +161,19 @@ final class SafetyCenterIssueRepository {
 
     /** Gets a list of all issues for the given {@code userId}. */
     List<SafetySourceIssueInfo> getIssuesForUser(@UserIdInt int userId) {
-        return filterOutHiddenIssues(mUserIdToIssuesInfo.get(userId, new ArrayList<>()));
+        return filterOutHiddenIssues(
+                mUserIdToDedupInfo.get(userId, EMPTY_DEDUP_INFO).getDeduplicatedIssues());
+    }
+
+    /**
+     * Returns a set of {@link SafetySourcesGroup} IDs that the given {@link SafetyCenterIssueKey}
+     * is mapped to.
+     */
+    Set<String> getGroupMappingFor(SafetyCenterIssueKey issueKey) {
+        return mUserIdToDedupInfo
+                .get(issueKey.getUserId(), EMPTY_DEDUP_INFO)
+                .getIssueToGroupMapping()
+                .getOrDefault(issueKey, emptySet());
     }
 
     /**
@@ -166,7 +185,7 @@ final class SafetyCenterIssueRepository {
      * SafetyCenterIssueDeduplicator#deduplicateIssues} then an empty list is returned.
      */
     List<SafetySourceIssueInfo> getMostRecentFilteredOutDuplicateIssues(@UserIdInt int userId) {
-        return mUserIdToFilteredOutIssues.get(userId, emptyList());
+        return mUserIdToDedupInfo.get(userId, EMPTY_DEDUP_INFO).getFilteredOutDuplicateIssues();
     }
 
     private List<SafetySourceIssueInfo> filterOutHiddenIssues(List<SafetySourceIssueInfo> issues) {
@@ -179,17 +198,6 @@ final class SafetyCenterIssueRepository {
             }
         }
         return result;
-    }
-
-    private void processIssues(@UserIdInt int userId, List<SafetySourceIssueInfo> issuesInfo) {
-        issuesInfo.sort(SAFETY_SOURCE_ISSUES_INFO_BY_SEVERITY_DESCENDING);
-
-        if (SdkLevel.isAtLeastU() && mSafetyCenterIssueDeduplicator != null) {
-            mSafetyCenterIssueDeduplicator.deduplicateIssues(issuesInfo);
-            mUserIdToFilteredOutIssues.put(
-                    userId,
-                    mSafetyCenterIssueDeduplicator.getMostRecentFilteredOutDuplicateIssues());
-        }
     }
 
     private List<SafetySourceIssueInfo> getAllStoredIssuesFromRawSourceData(
@@ -283,23 +291,21 @@ final class SafetyCenterIssueRepository {
     /** Dumps state for debugging purposes. */
     void dump(PrintWriter fout) {
         fout.println("ISSUE REPOSITORY");
-        for (int i = 0; i < mUserIdToIssuesInfo.size(); i++) {
-            List<SafetySourceIssueInfo> issues = mUserIdToIssuesInfo.valueAt(i);
-            fout.println("\tUSER ID: " + mUserIdToIssuesInfo.keyAt(i));
-            for (int j = 0; j < issues.size(); j++) {
-                fout.println("\t\tSafetySourceIssueInfo = " + issues.get(j));
-            }
+        for (int i = 0; i < mUserIdToDedupInfo.size(); i++) {
+            fout.println();
+            fout.println("\tUSER ID=" + mUserIdToDedupInfo.keyAt(i));
+            fout.println("\tDEDUPLICATION INFO=" + mUserIdToDedupInfo.valueAt(i));
         }
         fout.println();
     }
 
     /** Clears all the data from the repository. */
     void clear() {
-        mUserIdToIssuesInfo.clear();
+        mUserIdToDedupInfo.clear();
     }
 
     /** Clears all data related to the given {@code userId}. */
     void clearForUser(@UserIdInt int userId) {
-        mUserIdToIssuesInfo.delete(userId);
+        mUserIdToDedupInfo.delete(userId);
     }
 }

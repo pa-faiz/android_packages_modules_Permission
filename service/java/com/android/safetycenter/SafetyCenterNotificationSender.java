@@ -37,9 +37,11 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.android.modules.utils.build.SdkLevel;
+import com.android.permission.util.UserUtils;
 import com.android.safetycenter.data.SafetyCenterDataManager;
 import com.android.safetycenter.internaldata.SafetyCenterIds;
 import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
+import com.android.safetycenter.logging.SafetyCenterStatsdLogger;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -267,22 +269,24 @@ final class SafetyCenterNotificationSender {
 
     private boolean postNotificationForIssue(
             NotificationManager notificationManager,
-            SafetySourceIssue safetySourceIssue,
+            SafetySourceIssue issue,
             SafetyCenterIssueKey key) {
         Notification notification =
-                mNotificationFactory.newNotificationForIssue(
-                        notificationManager, safetySourceIssue, key);
+                mNotificationFactory.newNotificationForIssue(notificationManager, issue, key);
         if (notification == null) {
             return false;
         }
         String tag = getNotificationTag(key);
         boolean wasPosted = notifyFromSystem(notificationManager, tag, notification);
         if (wasPosted) {
-            mNotifiedIssues.put(key, safetySourceIssue);
-            return true;
-        } else {
-            return false;
+            mNotifiedIssues.put(key, issue);
+            SafetyCenterStatsdLogger.writeNotificationPostedEvent(
+                    key.getSafetySourceId(),
+                    UserUtils.isManagedProfile(key.getUserId(), mContext),
+                    issue.getIssueTypeId(),
+                    issue.getSeverityLevel());
         }
+        return wasPosted;
     }
 
     private void cancelStaleNotifications(

@@ -27,10 +27,10 @@ import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
 import android.safetycenter.SafetySourceIssue;
 import android.safetycenter.config.SafetyCenterConfig;
+import android.safetycenter.config.SafetySourcesGroup;
 
 import androidx.annotation.RequiresApi;
 
-import com.android.modules.utils.build.SdkLevel;
 import com.android.safetycenter.ApiLock;
 import com.android.safetycenter.SafetyCenterConfigReader;
 import com.android.safetycenter.SafetyCenterRefreshTracker;
@@ -45,6 +45,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -71,10 +72,9 @@ public final class SafetyCenterDataManager {
             Context context,
             SafetyCenterConfigReader safetyCenterConfigReader,
             SafetyCenterRefreshTracker safetyCenterRefreshTracker,
-            SafetyCenterStatsdLogger safetyCenterStatsdLogger,
             ApiLock apiLock) {
         mSafetyCenterInFlightIssueActionRepository =
-                new SafetyCenterInFlightIssueActionRepository(safetyCenterStatsdLogger);
+                new SafetyCenterInFlightIssueActionRepository(context);
         mSafetyCenterIssueDismissalRepository =
                 new SafetyCenterIssueDismissalRepository(apiLock, safetyCenterConfigReader);
         mSafetySourceDataRepository =
@@ -90,10 +90,7 @@ public final class SafetyCenterDataManager {
                         mSafetySourceDataRepository,
                         safetyCenterConfigReader,
                         mSafetyCenterIssueDismissalRepository,
-                        SdkLevel.isAtLeastU()
-                                ? new SafetyCenterIssueDeduplicator(
-                                        mSafetyCenterIssueDismissalRepository)
-                                : null);
+                        new SafetyCenterIssueDeduplicator(mSafetyCenterIssueDismissalRepository));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -334,6 +331,16 @@ public final class SafetyCenterDataManager {
     public List<SafetySourceIssueInfo> getMostRecentFilteredOutDuplicateIssues(
             @UserIdInt int userId) {
         return mSafetyCenterIssueRepository.getMostRecentFilteredOutDuplicateIssues(userId);
+    }
+
+    /**
+     * Returns a set of {@link SafetySourcesGroup} IDs that the given {@link SafetyCenterIssueKey}
+     * is mapped to.
+     *
+     * <p>Issue being mapped to a group means that this issue is relevant to that group.
+     */
+    public Set<String> getGroupMappingFor(SafetyCenterIssueKey issueKey) {
+        return mSafetyCenterIssueRepository.getGroupMappingFor(issueKey);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
