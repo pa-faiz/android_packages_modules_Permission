@@ -355,7 +355,7 @@ final class SafetySourceDataRepository {
             String packageName,
             @UserIdInt int userId) {
         SafetyCenterConfigReader.ExternalSafetySource externalSafetySource =
-                mSafetyCenterConfigReader.getExternalSafetySource(safetySourceId);
+                mSafetyCenterConfigReader.getExternalSafetySource(safetySourceId, packageName);
         if (externalSafetySource == null) {
             throw new IllegalArgumentException("Unexpected safety source: " + safetySourceId);
         }
@@ -371,7 +371,8 @@ final class SafetySourceDataRepository {
 
         boolean retrievingOrClearingData = safetySourceData == null;
         if (retrievingOrClearingData) {
-            return mSafetyCenterConfigReader.isExternalSafetySourceActive(safetySourceId);
+            return mSafetyCenterConfigReader.isExternalSafetySourceActive(
+                    safetySourceId, packageName);
         }
 
         SafetySourceStatus safetySourceStatus = safetySourceData.getStatus();
@@ -437,7 +438,7 @@ final class SafetySourceDataRepository {
             }
         }
 
-        return mSafetyCenterConfigReader.isExternalSafetySourceActive(safetySourceId);
+        return mSafetyCenterConfigReader.isExternalSafetySourceActive(safetySourceId, packageName);
     }
 
     private void validateCallingPackage(

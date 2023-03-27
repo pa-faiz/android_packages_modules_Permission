@@ -51,11 +51,11 @@ import androidx.preference.PreferenceViewHolder;
 import com.android.modules.utils.build.SdkLevel;
 import com.android.permissioncontroller.R;
 import com.android.permissioncontroller.safetycenter.ui.model.SafetyCenterViewModel;
-import com.android.safetycenter.internaldata.SafetyCenterIds;
-import com.android.safetycenter.internaldata.SafetyCenterIssueId;
-import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.shape.AbsoluteCornerSize;
+import com.google.android.material.shape.CornerSize;
+import com.google.android.material.shape.ShapeAppearanceModel;
 
 import java.util.Objects;
 
@@ -70,7 +70,6 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
     private final SafetyCenterViewModel mSafetyCenterViewModel;
     private final SafetyCenterIssue mIssue;
     private final FragmentManager mDialogFragmentManager;
-    private final SafetyCenterIssueId mDecodedIssueId;
     @Nullable private String mResolvedIssueActionId;
     @Nullable private final Integer mTaskId;
     private final boolean mIsDismissed;
@@ -91,7 +90,6 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         mSafetyCenterViewModel = requireNonNull(safetyCenterViewModel);
         mIssue = requireNonNull(issue);
         mDialogFragmentManager = dialogFragmentManager;
-        mDecodedIssueId = SafetyCenterIds.issueIdFromString(mIssue.getId());
         mResolvedIssueActionId = resolvedIssueActionId;
         mTaskId = launchTaskId;
         mIsDismissed = isDismissed;
@@ -103,7 +101,7 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         super.onBindViewHolder(holder);
 
         holder.itemView.setBackgroundResource(mPositionInCardList.getBackgroundDrawableResId());
-        int topMargin = mPositionInCardList.getTopMargin(getContext());
+        int topMargin = getTopMargin(mPositionInCardList, getContext());
         MarginLayoutParams layoutParams = (MarginLayoutParams) holder.itemView.getLayoutParams();
         if (layoutParams.topMargin != topMargin) {
             layoutParams.topMargin = topMargin;
@@ -156,34 +154,42 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         holder.itemView.setContentDescription(contentDescription);
         holder.itemView.setClickable(false);
 
-        LinearLayout buttonList =
-                ((LinearLayout) holder.findViewById(R.id.issue_card_action_button_list));
-        buttonList.removeAllViews(); // This view may be recycled from another issue
-        boolean isFirstButton = true;
-        for (SafetyCenterIssue.Action action : mIssue.getActions()) {
-            ActionButtonBuilder builder =
-                    new ActionButtonBuilder(action, holder.itemView.getContext());
-            builder.isLargeScreen(buttonList instanceof EqualWidthContainer);
-            if (isFirstButton) {
-                builder.setAsPrimaryButton();
-                if (!mIsDismissed) {
-                    builder.setAsFilledButton();
-                }
-                isFirstButton = false;
-            }
-            builder.buildAndAddToView(buttonList);
-
-            if (mResolvedIssueActionId != null && mResolvedIssueActionId.equals(action.getId())) {
-                mIssueCardAnimator.transitionToIssueResolvedThenMarkComplete(
-                        getContext(), holder, action);
-            }
-        }
-
+        configureButtonList(holder);
         configureSafetyProtectionView(holder);
+        maybeStartResolutionAnimation(holder);
 
         mSafetyCenterViewModel
                 .getInteractionLogger()
                 .recordForIssue(Action.SAFETY_ISSUE_VIEWED, mIssue, mIsDismissed);
+    }
+
+    private void configureButtonList(PreferenceViewHolder holder) {
+        LinearLayout buttonList =
+                ((LinearLayout) holder.findViewById(R.id.issue_card_action_button_list));
+        buttonList.removeAllViews(); // This view may be recycled from another issue
+
+        for (int i = 0; i < mIssue.getActions().size(); i++) {
+            SafetyCenterIssue.Action action = mIssue.getActions().get(i);
+            ActionButtonBuilder builder =
+                    new ActionButtonBuilder(action, holder.itemView.getContext())
+                            .setIndex(i)
+                            .setActionButtonListSize(mIssue.getActions().size())
+                            .setIsDismissed(mIsDismissed)
+                            .setIsLargeScreen(buttonList instanceof EqualWidthContainer);
+            builder.buildAndAddToView(buttonList);
+        }
+    }
+
+    private int getTopMargin(PositionInCardList position, Context context) {
+        switch (position) {
+            case LIST_START_END:
+            case LIST_START_CARD_END:
+                return context.getResources()
+                        .getDimensionPixelSize(
+                                mIsDismissed ? R.dimen.sc_card_margin : R.dimen.sc_spacing_large);
+            default:
+                return position.getTopMargin(context);
+        }
     }
 
     private void configureSafetyProtectionView(PreferenceViewHolder holder) {
@@ -206,13 +212,21 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         }
     }
 
-    public int getSeverityLevel() {
-        return mIssue.getSeverityLevel();
+    private void maybeStartResolutionAnimation(PreferenceViewHolder holder) {
+        if (mResolvedIssueActionId == null) {
+            return;
+        }
+
+        for (SafetyCenterIssue.Action action : mIssue.getActions()) {
+            if (action.getId().equals(mResolvedIssueActionId)) {
+                mIssueCardAnimator.transitionToIssueResolvedThenMarkComplete(
+                        getContext(), holder, action);
+            }
+        }
     }
 
-    /** Returns the {@link SafetyCenterIssueKey} associated with this {@link IssueCardPreference} */
-    public SafetyCenterIssueKey getIssueKey() {
-        return mDecodedIssueId.getSafetyCenterIssueKey();
+    public int getSeverityLevel() {
+        return mIssue.getSeverityLevel();
     }
 
     private void configureDismissButton(View dismissButton) {
@@ -394,8 +408,9 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         private final SafetyCenterIssue.Action mAction;
         private final Context mContext;
         private final ContextThemeWrapper mContextThemeWrapper;
-        private boolean mIsPrimaryButton = false;
-        private boolean mIsFilled = false;
+        private int mIndex;
+        private int mActionButtonListSize;
+        private boolean mIsDismissed = false;
         private boolean mIsLargeScreen = false;
 
         ActionButtonBuilder(SafetyCenterIssue.Action action, Context context) {
@@ -405,23 +420,43 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
                     new ContextThemeWrapper(context, R.style.Theme_MaterialComponents_DayNight);
         }
 
-        public ActionButtonBuilder setAsPrimaryButton() {
-            mIsPrimaryButton = true;
+        public ActionButtonBuilder setIndex(int index) {
+            mIndex = index;
             return this;
         }
 
-        public ActionButtonBuilder setAsFilledButton() {
-            mIsFilled = true;
+        public ActionButtonBuilder setActionButtonListSize(int actionButtonListSize) {
+            mActionButtonListSize = actionButtonListSize;
             return this;
         }
 
-        public ActionButtonBuilder isLargeScreen(boolean isLargeScreen) {
+        public ActionButtonBuilder setIsDismissed(boolean isDismissed) {
+            mIsDismissed = isDismissed;
+            return this;
+        }
+
+        public ActionButtonBuilder setIsLargeScreen(boolean isLargeScreen) {
             mIsLargeScreen = isLargeScreen;
             return this;
         }
 
+        private boolean isPrimaryButton() {
+            return mIndex == 0;
+        }
+
+        private boolean isLastButton() {
+            return mIndex == (mActionButtonListSize - 1);
+        }
+
+        private boolean isFilled() {
+            return isPrimaryButton() && !mIsDismissed;
+        }
+
         public void buildAndAddToView(LinearLayout buttonList) {
             MaterialButton button = new MaterialButton(mContextThemeWrapper, null, getStyle());
+            if (SdkLevel.isAtLeastU()) {
+                configureGroupStyleCorners(button);
+            }
             setButtonColors(button);
             setButtonLayout(button);
             button.setText(mAction.getLabel());
@@ -434,7 +469,7 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
                                             mIssue,
                                             mAction,
                                             mTaskId,
-                                            mIsPrimaryButton,
+                                            isPrimaryButton(),
                                             mIsDismissed)
                                     .showNow(mDialogFragmentManager, /* tag= */ null);
                         } else {
@@ -452,7 +487,7 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
                             mSafetyCenterViewModel
                                     .getInteractionLogger()
                                     .recordForIssue(
-                                            mIsPrimaryButton
+                                            isPrimaryButton()
                                                     ? Action.ISSUE_PRIMARY_ACTION_CLICKED
                                                     : Action.ISSUE_SECONDARY_ACTION_CLICKED,
                                             mIssue,
@@ -464,8 +499,36 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
             buttonList.addView(button);
         }
 
+        /**
+         * Configures "group-style" corners for this button, where the first button in the list has
+         * large corners on top and the last button in the list has large corners on bottom.
+         */
+        @RequiresApi(UPSIDE_DOWN_CAKE)
+        private void configureGroupStyleCorners(MaterialButton button) {
+            button.setCornerRadiusResource(R.dimen.sc_button_corner_radius_small);
+            ShapeAppearanceModel.Builder shapeAppearanceModelBuilder =
+                    button.getShapeAppearanceModel().toBuilder();
+
+            CornerSize largeCornerSize =
+                    new AbsoluteCornerSize(
+                            mContext.getResources()
+                                    .getDimensionPixelSize(R.dimen.sc_button_corner_radius));
+            if (isPrimaryButton()) {
+                shapeAppearanceModelBuilder
+                        .setTopLeftCornerSize(largeCornerSize)
+                        .setTopRightCornerSize(largeCornerSize);
+            }
+            if (isLastButton()) {
+                shapeAppearanceModelBuilder
+                        .setBottomLeftCornerSize(largeCornerSize)
+                        .setBottomRightCornerSize(largeCornerSize);
+            }
+
+            button.setShapeAppearanceModel(shapeAppearanceModelBuilder.build());
+        }
+
         private void maybeAddSpaceToView(LinearLayout buttonList) {
-            if (mIsPrimaryButton) {
+            if (isPrimaryButton()) {
                 return;
             }
 
@@ -478,11 +541,11 @@ public class IssueCardPreference extends Preference implements ComparablePrefere
         }
 
         private int getStyle() {
-            return mIsFilled ? R.attr.scActionButtonStyle : R.attr.scSecondaryActionButtonStyle;
+            return isFilled() ? R.attr.scActionButtonStyle : R.attr.scSecondaryActionButtonStyle;
         }
 
         private void setButtonColors(MaterialButton button) {
-            if (mIsFilled) {
+            if (isFilled()) {
                 button.setBackgroundTintList(
                         ContextCompat.getColorStateList(
                                 mContext,

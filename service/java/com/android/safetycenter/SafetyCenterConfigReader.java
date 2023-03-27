@@ -121,31 +121,86 @@ public final class SafetyCenterConfigReader {
     }
 
     /**
-     * Returns the external {@link SafetySource} associated with the {@code safetySourceId}, if any.
+     * Returns the {@link ExternalSafetySource} associated with the {@code safetySourceId}, if any.
      *
      * <p>The returned {@link SafetySource} can either be associated with the XML or overridden
-     * {@link SafetyCenterConfig}; {@link #isExternalSafetySourceActive(String)} can be used to
-     * check if it is associated with the current {@link SafetyCenterConfig}. This is to continue
+     * {@link SafetyCenterConfig}; {@link #isExternalSafetySourceActive(String, String)} can be used
+     * to check if it is associated with the current {@link SafetyCenterConfig}. This is to continue
      * allowing sources from the XML config to interact with SafetCenter during tests (but their
      * calls will be no-oped).
+     *
+     * <p>The {@code callingPackageName} can help break the tie when the source is available in both
+     * the overridden config and the "real" config. Otherwise, the test config is preferred. This is
+     * to support overriding "real" sources in tests while ensuring package checks continue to pass
+     * for "real" sources that interact with our APIs.
      */
     @Nullable
-    public ExternalSafetySource getExternalSafetySource(String safetySourceId) {
-        ExternalSafetySource externalSafetySourceInCurrentConfig =
-                getCurrentConfigInternal().getExternalSafetySources().get(safetySourceId);
-        if (externalSafetySourceInCurrentConfig != null) {
-            return externalSafetySourceInCurrentConfig;
+    public ExternalSafetySource getExternalSafetySource(
+            String safetySourceId, String callingPackageName) {
+        SafetyCenterConfigInternal currentConfig = getCurrentConfigInternal();
+        if (currentConfig == mConfigInternalFromXml) {
+            // No override, access source directly.
+            return currentConfig.getExternalSafetySources().get(safetySourceId);
         }
 
-        return mConfigInternalFromXml.getExternalSafetySources().get(safetySourceId);
+        ExternalSafetySource externalSafetySourceInTestConfig =
+                currentConfig.getExternalSafetySources().get(safetySourceId);
+        ExternalSafetySource externalSafetySourceInRealConfig =
+                mConfigInternalFromXml.getExternalSafetySources().get(safetySourceId);
+
+        if (externalSafetySourceInTestConfig != null
+                && Objects.equals(
+                        externalSafetySourceInTestConfig.getSafetySource().getPackageName(),
+                        callingPackageName)) {
+            return externalSafetySourceInTestConfig;
+        }
+
+        if (externalSafetySourceInRealConfig != null
+                && Objects.equals(
+                        externalSafetySourceInRealConfig.getSafetySource().getPackageName(),
+                        callingPackageName)) {
+            return externalSafetySourceInRealConfig;
+        }
+
+        if (externalSafetySourceInTestConfig != null) {
+            return externalSafetySourceInTestConfig;
+        }
+
+        return externalSafetySourceInRealConfig;
     }
 
     /**
-     * Returns whether the {@code safetySourceId} is associated with an external {@link
-     * SafetySource} that is currently active.
+     * Returns whether the {@code safetySourceId} is associated with an {@link ExternalSafetySource}
+     * that is currently active.
+     *
+     * <p>The source may either be "active" or "inactive". An active source is a source that is
+     * currently expected to interact with our API and may affect Safety Center status. An inactive
+     * source is expected to interact with Safety Center, but is currently being silenced / no-ops
+     * while an override for tests is in place.
+     *
+     * <p>The {@code callingPackageName} is used to differentiate a real source being overridden. It
+     * could be that a test is overriding a real source and as such the real source should not be
+     * able to provide data while its override is in place.
      */
-    public boolean isExternalSafetySourceActive(String safetySourceId) {
-        return getCurrentConfigInternal().getExternalSafetySources().containsKey(safetySourceId);
+    public boolean isExternalSafetySourceActive(String safetySourceId, String callingPackageName) {
+        ExternalSafetySource externalSafetySourceInCurrentConfig =
+                getCurrentConfigInternal().getExternalSafetySources().get(safetySourceId);
+        if (externalSafetySourceInCurrentConfig == null) {
+            return false;
+        }
+        return Objects.equals(
+                externalSafetySourceInCurrentConfig.getSafetySource().getPackageName(),
+                callingPackageName);
+    }
+
+    /**
+     * Returns whether the {@code safetySourceId} is associated with an {@link ExternalSafetySource}
+     * that is in the real config XML file (i.e. not being overridden).
+     */
+    public boolean isExternalSafetySourceFromRealConfig(String safetySourceId) {
+        return requireNonNull(mConfigInternalFromXml)
+                .getExternalSafetySources()
+                .containsKey(safetySourceId);
     }
 
     /**
