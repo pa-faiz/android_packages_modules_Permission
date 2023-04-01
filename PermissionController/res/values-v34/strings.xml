@@ -25,10 +25,13 @@
 
     <!-- Title shown for Health Connect [CHAR LIMIT=50] -->
     <string name="health_connect_title" description="Health connect title">Health&#160;Connect</string>
-    <string name="health_connect_summary" description="Health connect summary, which describes what user can do when they click Health Connect">App permissions and data management</string>
+    <string name="health_connect_summary" description="Health connect summary, which describes what user can do when they click Health Connect">Manage app access to health data</string>
 
     <!-- Title for the link to location settings [CHAR LIMIT=30] -->
     <string name="location_settings">Location access</string>
+
+    <!-- Describes what is affected by the mic toggle [CHAR LIMIT=NONE] -->
+    <string name="mic_toggle_description">For apps and services. If this setting is off, microphone data may still be shared when you call an emergency number</string>
     <!-- Subtitle for the link to location settings [CHAR LIMIT=NONE] -->
     <string name="location_settings_subtitle">For apps and services</string>
 </resources>
