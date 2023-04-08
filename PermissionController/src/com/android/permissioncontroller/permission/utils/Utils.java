@@ -73,6 +73,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorPrivacyManager;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Parcelable;
 import android.os.Process;
@@ -109,6 +110,8 @@ import com.android.permissioncontroller.permission.model.AppPermissionGroup;
 import com.android.permissioncontroller.permission.model.livedatatypes.LightAppPermGroup;
 import com.android.permissioncontroller.permission.model.livedatatypes.LightPackageInfo;
 
+import kotlin.Triple;
+
 import java.lang.annotation.Retention;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -119,8 +122,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
-
-import kotlin.Triple;
 
 public final class Utils {
 
@@ -252,6 +253,12 @@ public final class Utils {
     private static final String SYSTEM_VISUAL_INTELLIGENCE =
             "android.app.role.SYSTEM_VISUAL_INTELLIGENCE";
 
+    public static final String BODY_SENSORS_WRIST_TEMPERATURE =
+            "android.permission.BODY_SENSORS_WRIST_TEMPERATURE";
+
+    public static final String BODY_SENSORS_WRIST_TEMPERATURE_BACKGROUND =
+            "android.permission.BODY_SENSORS_WRIST_TEMPERATURE_BACKGROUND";
+
     // TODO: theianchen Using hardcoded values here as a WIP solution for now.
     private static final String[] EXEMPTED_ROLES = {
             SYSTEM_AMBIENT_AUDIO_INTELLIGENCE,
@@ -360,12 +367,8 @@ public final class Utils {
      */
     public static @NonNull Context getUserContext(Context context, UserHandle user) {
         if (!sUserContexts.containsKey(user)) {
-            try {
-                sUserContexts.put(user, context.getApplicationContext()
-                        .createPackageContextAsUser(context.getPackageName(), 0, user));
-            } catch (PackageManager.NameNotFoundException neverHappens) {
-                throw new RuntimeException(neverHappens);
-            }
+            sUserContexts.put(user, context.getApplicationContext()
+                    .createContextAsUser(user, 0));
         }
         return Preconditions.checkNotNull(sUserContexts.get(user));
     }
@@ -940,8 +943,14 @@ public final class Utils {
      */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, codename = "UpsideDownCake")
     public static boolean isHealthPermissionUiEnabled() {
-        return SdkLevel.isAtLeastU() && DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_PRIVACY,
-                PROPERTY_HEALTH_PERMISSION_UI_ENABLED, true);
+        final long token = Binder.clearCallingIdentity();
+        try {
+            return SdkLevel.isAtLeastU()
+                    && DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_PRIVACY,
+                    PROPERTY_HEALTH_PERMISSION_UI_ENABLED, true);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
     }
 
     /**
@@ -1366,12 +1375,11 @@ public final class Utils {
      *
      * @param context The current Context
      * @param applicationInfo The {@link ApplicationInfo} of the application to get the label of.
-     * @return Returns a {@link CharSequence} containing the label associated with this application,
-     * or its name the  item does not have a label.
+     * @return the label associated with this application, or its name if there is no label.
      */
     @NonNull
-    public static CharSequence getApplicationLabel(@NonNull Context context,
+    public static String getApplicationLabel(@NonNull Context context,
             @NonNull ApplicationInfo applicationInfo) {
-        return context.getPackageManager().getApplicationLabel(applicationInfo);
+        return context.getPackageManager().getApplicationLabel(applicationInfo).toString();
     }
 }

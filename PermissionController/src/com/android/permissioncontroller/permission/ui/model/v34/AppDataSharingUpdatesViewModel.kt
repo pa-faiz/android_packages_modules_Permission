@@ -20,6 +20,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.Application
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_MANAGE_APP_PERMISSION
 import android.content.Intent.EXTRA_PACKAGE_NAME
@@ -31,6 +32,7 @@ import android.os.UserHandle
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.android.permission.safetylabel.DataCategoryConstants.CATEGORY_LOCATION
+import com.android.permissioncontroller.Constants.EXTRA_SESSION_ID
 import com.android.permissioncontroller.R
 import com.android.permissioncontroller.permission.data.SinglePermGroupPackagesUiInfoLiveData
 import com.android.permissioncontroller.permission.data.SmartAsyncMediatorLiveData
@@ -50,11 +52,21 @@ class AppDataSharingUpdatesViewModel(app: Application) {
     private val locationPermGroupPackagesUiInfoLiveData =
         SinglePermGroupPackagesUiInfoLiveData[Manifest.permission_group.LOCATION]
 
+    /** Returns whether UI can provide link to help center */
+    fun canLinkToHelpCenter(context: Context): Boolean {
+        return !getHelpCenterUrlString(context).isNullOrEmpty()
+    }
+
     /** Opens the Safety Label Help Center web page. */
     fun openSafetyLabelsHelpCenterPage(activity: Activity) {
-        val helpUrlString = activity.getString(R.string.data_sharing_help_center_link)
+        if (!canLinkToHelpCenter(activity)) {
+            Log.w(LOG_TAG, "Unable to open help center, no url provided.")
+            return
+        }
+
         // Add in some extra locale query parameters
-        val fullUri = HelpUtils.uriWithAddedParameters(activity, Uri.parse(helpUrlString))
+        val fullUri =
+            HelpUtils.uriWithAddedParameters(activity, Uri.parse(getHelpCenterUrlString(activity)))
         val intent =
             Intent(Intent.ACTION_VIEW, fullUri).apply {
                 setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
@@ -73,15 +85,18 @@ class AppDataSharingUpdatesViewModel(app: Application) {
      */
     fun startAppLocationPermissionPage(
         activity: Activity,
+        sessionId: Long,
         packageName: String,
         userHandle: UserHandle
     ) {
         activity.startActivity(
             Intent(ACTION_MANAGE_APP_PERMISSION).apply {
+                putExtra(EXTRA_SESSION_ID, sessionId)
                 putExtra(EXTRA_PERMISSION_GROUP_NAME, Manifest.permission_group.LOCATION)
                 putExtra(EXTRA_PACKAGE_NAME, packageName)
                 putExtra(EXTRA_USER, userHandle)
-            })
+            }
+        )
     }
 
     /**
@@ -102,15 +117,23 @@ class AppDataSharingUpdatesViewModel(app: Application) {
                 } else {
                     val users =
                         locationPermGroupPackagesUiInfoLiveData.getUsersWithPermGrantedForApp(
-                            appDataSharingUpdate.packageName)
+                            appDataSharingUpdate.packageName
+                        )
                     users.map { user ->
                         // For each user profile under the current user, display one entry.
                         AppLocationDataSharingUpdateUiInfo(
-                            appDataSharingUpdate.packageName, user, locationDataSharingUpdate)
+                            appDataSharingUpdate.packageName,
+                            user,
+                            locationDataSharingUpdate
+                        )
                     }
                 }
             }
             .flatten()
+    }
+
+    private fun getHelpCenterUrlString(context: Context): String? {
+        return context.getString(R.string.data_sharing_help_center_link)
     }
 
     private fun SinglePermGroupPackagesUiInfoLiveData.getUsersWithPermGrantedForApp(

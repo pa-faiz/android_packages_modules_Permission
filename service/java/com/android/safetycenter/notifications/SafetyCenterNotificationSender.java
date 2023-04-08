@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.safetycenter;
+package com.android.safetycenter.notifications;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.safetycenter.SafetyEvent.SAFETY_EVENT_TYPE_RESOLVING_ACTION_SUCCEEDED;
 
 import static com.android.safetycenter.internaldata.SafetyCenterIds.toUserFriendlyString;
 
@@ -28,6 +29,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Binder;
 import android.os.UserHandle;
+import android.safetycenter.SafetyEvent;
 import android.safetycenter.SafetySourceIssue;
 import android.safetycenter.config.SafetySource;
 import android.util.ArrayMap;
@@ -38,10 +40,14 @@ import androidx.annotation.RequiresApi;
 
 import com.android.modules.utils.build.SdkLevel;
 import com.android.permission.util.UserUtils;
+import com.android.safetycenter.SafetyCenterFlags;
+import com.android.safetycenter.SafetySourceIssueInfo;
+import com.android.safetycenter.UserProfileGroup;
 import com.android.safetycenter.data.SafetyCenterDataManager;
 import com.android.safetycenter.internaldata.SafetyCenterIds;
 import com.android.safetycenter.internaldata.SafetyCenterIssueKey;
 import com.android.safetycenter.logging.SafetyCenterStatsdLogger;
+import com.android.safetycenter.resources.SafetyCenterResourcesContext;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -57,10 +63,12 @@ import javax.annotation.concurrent.NotThreadSafe;
  * Safety Center's issues change.
  *
  * <p>This class isn't thread safe. Thread safety must be handled by the caller.
+ *
+ * @hide
  */
 @RequiresApi(TIRAMISU)
 @NotThreadSafe
-final class SafetyCenterNotificationSender {
+public final class SafetyCenterNotificationSender {
 
     private static final String TAG = "SafetyCenterNS";
 
@@ -101,7 +109,7 @@ final class SafetyCenterNotificationSender {
     private final ArrayMap<SafetyCenterIssueKey, SafetySourceIssue> mNotifiedIssues =
             new ArrayMap<>();
 
-    SafetyCenterNotificationSender(
+    private SafetyCenterNotificationSender(
             Context context,
             SafetyCenterNotificationFactory notificationFactory,
             SafetyCenterDataManager safetyCenterDataManager) {
@@ -110,8 +118,99 @@ final class SafetyCenterNotificationSender {
         mSafetyCenterDataManager = safetyCenterDataManager;
     }
 
+    public static SafetyCenterNotificationSender newInstance(
+            Context context,
+            SafetyCenterResourcesContext resourcesContext,
+            SafetyCenterNotificationChannels notificationChannels,
+            SafetyCenterDataManager dataManager) {
+        return new SafetyCenterNotificationSender(
+                context,
+                new SafetyCenterNotificationFactory(
+                        context, notificationChannels, resourcesContext),
+                dataManager);
+    }
+
+    /**
+     * Replaces an issue's notification with one displaying the success message of the {@link
+     * SafetySourceIssue.Action} that resolved that issue.
+     *
+     * <p>The given {@link SafetyEvent} have type {@link
+     * SafetyEvent#SAFETY_EVENT_TYPE_RESOLVING_ACTION_SUCCEEDED} and include issue and action IDs
+     * that correspond to a {@link SafetySourceIssue} for which a notification is currently
+     * displayed. Otherwise this method has no effect.
+     *
+     * @param sourceId of the source which reported the issue
+     * @param safetyEvent the source provided upon successful action resolution
+     * @param userId to which the source, issue and notification belong
+     */
+    public void notifyActionSuccess(
+            String sourceId, SafetyEvent safetyEvent, @UserIdInt int userId) {
+        if (safetyEvent.getType() != SAFETY_EVENT_TYPE_RESOLVING_ACTION_SUCCEEDED) {
+            Log.w(TAG, "Received safety event of wrong type");
+            return;
+        }
+
+        String sourceIssueId = safetyEvent.getSafetySourceIssueId();
+        if (sourceIssueId == null) {
+            Log.w(TAG, "Received safety event without a safety source issue id");
+            return;
+        }
+
+        String sourceIssueActionId = safetyEvent.getSafetySourceIssueActionId();
+        if (sourceIssueActionId == null) {
+            Log.w(TAG, "Received safety event without a safety source issue action id");
+            return;
+        }
+
+        SafetyCenterIssueKey issueKey =
+                SafetyCenterIssueKey.newBuilder()
+                        .setSafetySourceId(sourceId)
+                        .setSafetySourceIssueId(sourceIssueId)
+                        .setUserId(userId)
+                        .build();
+        SafetySourceIssue notifiedIssue = mNotifiedIssues.get(issueKey);
+        if (notifiedIssue == null) {
+            Log.w(TAG, "No notification for this issue");
+            return;
+        }
+
+        SafetySourceIssue.Action successfulAction = null;
+        for (int i = 0; i < notifiedIssue.getActions().size(); i++) {
+            if (notifiedIssue.getActions().get(i).getId().equals(sourceIssueActionId)) {
+                successfulAction = notifiedIssue.getActions().get(i);
+            }
+        }
+        if (successfulAction == null) {
+            Log.w(TAG, "Successful action not found");
+            return;
+        }
+
+        NotificationManager notificationManager = getNotificationManagerForUser(userId);
+
+        if (notificationManager == null) {
+            Log.w(TAG, "Could not retrieve NotificationManager for user " + userId);
+            return;
+        }
+
+        Notification notification =
+                mNotificationFactory.newNotificationForSuccessfulAction(
+                        notificationManager, notifiedIssue, successfulAction);
+        if (notification == null) {
+            Log.w(TAG, "Could not create successful action notification");
+            return;
+        }
+        String tag = getNotificationTag(issueKey);
+        boolean wasPosted = notifyFromSystem(notificationManager, tag, notification);
+        if (wasPosted) {
+            // If the original issue notification was successfully replaced the key removed from
+            // mNotifiedIssues to prevent the success notification from being removed by
+            // cancelStaleNotifications below.
+            mNotifiedIssues.remove(issueKey);
+        }
+    }
+
     /** Updates Safety Center notifications for the given {@link UserProfileGroup}. */
-    void updateNotifications(UserProfileGroup userProfileGroup) {
+    public void updateNotifications(UserProfileGroup userProfileGroup) {
         updateNotifications(userProfileGroup.getProfileParentUserId());
 
         int[] managedProfileUserIds = userProfileGroup.getManagedProfilesUserIds();
@@ -124,10 +223,7 @@ final class SafetyCenterNotificationSender {
      * Updates Safety Center notifications, usually in response to a change in the issues for the
      * given userId.
      */
-    // TODO(b/266819195): Make sure to do the right thing if this method is called for a userId
-    //   which is not running. We might want to update data related to it, but not send
-    //   the notification...
-    void updateNotifications(@UserIdInt int userId) {
+    public void updateNotifications(@UserIdInt int userId) {
         if (!SafetyCenterFlags.getNotificationsEnabled()) {
             return;
         }
@@ -166,7 +262,7 @@ final class SafetyCenterNotificationSender {
     }
 
     /** Cancels all notifications previously posted by this class */
-    void cancelAllNotifications() {
+    public void cancelAllNotifications() {
         // Loop in reverse index order to be able to remove entries while iterating
         for (int i = mNotifiedIssues.size() - 1; i >= 0; i--) {
             SafetyCenterIssueKey issueKey = mNotifiedIssues.keyAt(i);
@@ -178,7 +274,7 @@ final class SafetyCenterNotificationSender {
     }
 
     /** Dumps state for debugging purposes. */
-    void dump(PrintWriter fout) {
+    public void dump(PrintWriter fout) {
         int notifiedIssuesCount = mNotifiedIssues.size();
         fout.println("NOTIFICATION SENDER (" + notifiedIssuesCount + " notified issues)");
         for (int i = 0; i < notifiedIssuesCount; i++) {

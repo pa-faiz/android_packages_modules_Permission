@@ -494,20 +494,15 @@ public final class SafetyCenterDataFactory {
             case SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNSPECIFIED:
                 return getDefaultGroupSummary(safetySourcesGroup, entries);
             case SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNKNOWN:
-                int errorEntries = 0;
                 for (int i = 0; i < entries.size(); i++) {
-                    SafetyCenterEntry entry = entries.get(i);
-
-                    SafetySourceKey key = toSafetySourceKey(entry.getId());
+                    SafetySourceKey key = toSafetySourceKey(entries.get(i).getId());
                     if (mSafetyCenterDataManager.sourceHasError(key)) {
-                        errorEntries++;
+                        // We always use the singular form of the error string for groups because
+                        // they appear as single entries in the UI and this ensures consistency,
+                        // especially when subpages are enabled.
+                        return getRefreshErrorString(1);
                     }
                 }
-
-                if (errorEntries > 0) {
-                    return getRefreshErrorString(errorEntries);
-                }
-
                 return mSafetyCenterResourcesContext.getStringByName("group_unknown_summary");
         }
 
@@ -585,10 +580,10 @@ public final class SafetyCenterDataFactory {
                 SafetySourceStatus safetySourceStatus =
                         getSafetySourceStatus(
                                 mSafetyCenterDataManager.getSafetySourceDataInternal(key));
-                boolean defaultEntryDueToQuietMode = isUserManaged && !isManagedUserRunning;
-                if (safetySourceStatus == null || defaultEntryDueToQuietMode) {
+                boolean inQuietMode = isUserManaged && !isManagedUserRunning;
+                if (safetySourceStatus == null) {
                     int severityLevel =
-                            defaultEntryDueToQuietMode
+                            inQuietMode
                                     ? SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNSPECIFIED
                                     : SafetyCenterEntry.ENTRY_SEVERITY_LEVEL_UNKNOWN;
                     return toDefaultSafetyCenterEntry(
@@ -601,7 +596,7 @@ public final class SafetyCenterDataFactory {
                             isManagedUserRunning);
                 }
                 PendingIntent entryPendingIntent = safetySourceStatus.getPendingIntent();
-                boolean enabled = safetySourceStatus.isEnabled();
+                boolean enabled = safetySourceStatus.isEnabled() && !inQuietMode;
                 if (entryPendingIntent == null) {
                     entryPendingIntent =
                             mPendingIntentFactory.getPendingIntent(
@@ -609,7 +604,7 @@ public final class SafetyCenterDataFactory {
                                     safetySource.getIntentAction(),
                                     safetySource.getPackageName(),
                                     userId,
-                                    false);
+                                    inQuietMode);
                     enabled = enabled && entryPendingIntent != null;
                 }
                 SafetyCenterEntryId safetyCenterEntryId =
@@ -629,7 +624,11 @@ public final class SafetyCenterDataFactory {
                                         SafetyCenterIds.encodeToString(safetyCenterEntryId),
                                         safetySourceStatus.getTitle())
                                 .setSeverityLevel(severityLevel)
-                                .setSummary(safetySourceStatus.getSummary())
+                                .setSummary(
+                                        inQuietMode
+                                                ? DevicePolicyResources.getWorkProfilePausedString(
+                                                        mSafetyCenterResourcesContext)
+                                                : safetySourceStatus.getSummary())
                                 .setEnabled(enabled)
                                 .setSeverityUnspecifiedIconType(severityUnspecifiedIconType)
                                 .setPendingIntent(entryPendingIntent);
@@ -808,8 +807,8 @@ public final class SafetyCenterDataFactory {
                 SafetySourceStatus safetySourceStatus =
                         getSafetySourceStatus(
                                 mSafetyCenterDataManager.getSafetySourceDataInternal(key));
-                boolean defaultEntryDueToQuietMode = isUserManaged && !isManagedUserRunning;
-                if (safetySourceStatus != null && !defaultEntryDueToQuietMode) {
+                boolean inQuietMode = isUserManaged && !isManagedUserRunning;
+                if (safetySourceStatus != null) {
                     PendingIntent pendingIntent = safetySourceStatus.getPendingIntent();
                     if (pendingIntent == null) {
                         // TODO(b/222838784): Decide strategy for static entries when the intent is
@@ -817,7 +816,11 @@ public final class SafetyCenterDataFactory {
                         return null;
                     }
                     return new SafetyCenterStaticEntry.Builder(safetySourceStatus.getTitle())
-                            .setSummary(safetySourceStatus.getSummary())
+                            .setSummary(
+                                    inQuietMode
+                                            ? DevicePolicyResources.getWorkProfilePausedString(
+                                                    mSafetyCenterResourcesContext)
+                                            : safetySourceStatus.getSummary())
                             .setPendingIntent(pendingIntent)
                             .build();
                 }
