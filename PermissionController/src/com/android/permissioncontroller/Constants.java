@@ -135,6 +135,23 @@ public class Constants {
     public static final int SAFETY_LABEL_CHANGES_NOTIFICATION_ID = 5;
 
     /**
+     * ID for notification of auto-granted permissions shown by
+     * {@link com.android.permissioncontroller.permission.ui.AutoGrantPermissionsNotifier}.
+     */
+    public static final int PERMISSION_GRANTED_BY_ADMIN_NOTIFICATION_ID = 6;
+
+    /**
+     * Summary notification ID for the group of admin auto-granted permission notifications
+     */
+    public static final int ADMIN_AUTO_GRANTED_PERMISSIONS_NOTIFICATION_SUMMARY_ID = 7;
+
+    /**
+     * Group ID for all admin auto-granted permission notifications
+     */
+    public static final String ADMIN_AUTO_GRANTED_PERMISSIONS_NOTIFICATION_GROUP_ID =
+            "auto granted permission group id";
+
+    /**
      * String action for navigating to the auto revoke screen.
      */
     public static final String ACTION_MANAGE_AUTO_REVOKE = "manageAutoRevoke";
@@ -282,11 +299,6 @@ public class Constants {
      */
     public static final String ADMIN_AUTO_GRANTED_PERMISSIONS_ALERTING_NOTIFICATION_CHANNEL_ID =
             "alerting auto granted permissions";
-    /**
-     * ID for notification of auto-granted permissions shown by
-     * {@link com.android.permissioncontroller.permission.ui.AutoGrantPermissionsNotifier}.
-     */
-    public static final int PERMISSION_GRANTED_BY_ADMIN_NOTIFICATION_ID = 1;
 
     /**
      * Package name of the Android platform.
@@ -312,4 +324,19 @@ public class Constants {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     public static final String OPSTR_RECEIVE_AMBIENT_TRIGGER_AUDIO =
             "android:receive_ambient_trigger_audio";
+
+    /**
+     * Extra used by Settings to indicate an Intent should be treated as if opened directly by
+     * Settings app itself.
+     */
+    public static final String EXTRA_FROM_SETTINGS = "is_from_settings_homepage";
+
+    /**
+     * Extra used by Settings to indicate an Intent should be treated as if opened by a slice
+     * within Settings.
+     *
+     * <p>Slices are opened within settings by firing a PendingIntent, so we can use this extra to
+     * allow the same UX path to be taken as for slices.
+     */
+    public static final String EXTRA_IS_FROM_SLICE = "is_from_slice";
 }

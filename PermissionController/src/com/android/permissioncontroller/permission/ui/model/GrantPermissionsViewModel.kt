@@ -130,6 +130,7 @@ import com.android.permissioncontroller.permission.utils.PermissionMapping
 import com.android.permissioncontroller.permission.utils.PermissionMapping.getPartialStorageGrantPermissionsForGroup
 import com.android.permissioncontroller.permission.utils.SafetyNetLogger
 import com.android.permissioncontroller.permission.utils.Utils
+import com.android.permissioncontroller.permission.utils.v34.SafetyLabelUtils
 
 /**
  * ViewModel for the GrantPermissionsActivity. Tracks all permission groups that are affected by
@@ -437,8 +438,17 @@ class GrantPermissionsViewModel(
                             }
                         } else if (needBgPermissions) {
                             // Case: sdk >= R, BG/FG permission requesting BG only
-                            requestInfos.add(RequestInfo(
-                                groupInfo, sendToSettingsImmediately = true))
+                            if (storedState != null && storedState.containsKey(getInstanceStateKey(
+                                    groupInfo.name, groupState.isBackground))) {
+                                // If we're restoring state, and we had this groupInfo in our
+                                // previous state, that means that we likely sent the user to
+                                // settings already. Don't send the user back.
+                                permGroupsToSkip.add(groupInfo.name)
+                                groupState.state = STATE_SKIPPED
+                            } else {
+                                requestInfos.add(RequestInfo(
+                                    groupInfo, sendToSettingsImmediately = true))
+                            }
                             continue
                         } else {
                             // Not reached as the permissions should be auto-granted
@@ -626,7 +636,7 @@ class GrantPermissionsViewModel(
             return false
         }
 
-        val purposes = PermissionMapping.getSafetyLabelSharingPurposesForGroup(safetyLabel,
+        val purposes = SafetyLabelUtils.getSafetyLabelSharingPurposesForGroup(safetyLabel,
             permissionGroupName)
         return purposes.isNotEmpty()
     }
