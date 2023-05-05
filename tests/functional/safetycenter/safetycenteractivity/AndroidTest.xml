@@ -25,9 +25,8 @@
             value="not_instant_app"/>
     <option name="config-descriptor:metadata" key="parameter"
             value="not_multi_abi"/>
-    <!-- Multi-user code is tested separately using Bedstead. See SafetyCenterMultiUsersTest. -->
     <option name="config-descriptor:metadata" key="parameter"
-            value="not_secondary_user"/>
+            value="secondary_user"/>
     <option name="config-descriptor:metadata" key="mainline-param" value="com.google.android.permission.apex" />
     <option name="config-descriptor:metadata" key="parameter" value="all_foldable_states" />
 
@@ -48,6 +47,11 @@
         <option name="run-command" value="device_config set_sync_disabled_for_tests persistent" />
         <option name="teardown-command" value="device_config set_sync_disabled_for_tests none" />
     </target_preparer>
+
+    <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">
+        <option name="directory-keys" value="/data/user/0/android.safetycenter.functional.ui.safetycenteractivity/files" />
+        <option name="collect-on-run-ended-only" value="true" />
+    </metrics_collector>
 
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
         <option name="package" value="android.safetycenter.functional.ui.safetycenteractivity"/>

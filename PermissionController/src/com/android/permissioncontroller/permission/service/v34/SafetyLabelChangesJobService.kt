@@ -41,6 +41,7 @@ import android.provider.DeviceConfig
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.IconCompat
 import com.android.permission.safetylabel.DataCategoryConstants.CATEGORY_LOCATION
 import com.android.permission.safetylabel.SafetyLabel as AppMetadataSafetyLabel
 import com.android.permissioncontroller.Constants.EXTRA_SESSION_ID
@@ -55,7 +56,7 @@ import com.android.permissioncontroller.PermissionControllerStatsLog.APP_DATA_SH
 import com.android.permissioncontroller.PermissionControllerStatsLog.APP_DATA_SHARING_UPDATES_NOTIFICATION_INTERACTION__ACTION__DISMISSED
 import com.android.permissioncontroller.PermissionControllerStatsLog.APP_DATA_SHARING_UPDATES_NOTIFICATION_INTERACTION__ACTION__NOTIFICATION_SHOWN
 import com.android.permissioncontroller.R
-import com.android.permissioncontroller.permission.data.LightInstallSourceInfoLiveData
+import com.android.permissioncontroller.permission.data.v34.LightInstallSourceInfoLiveData
 import com.android.permissioncontroller.permission.data.LightPackageInfoLiveData
 import com.android.permissioncontroller.permission.data.SinglePermGroupPackagesUiInfoLiveData
 import com.android.permissioncontroller.permission.data.v34.AppDataSharingUpdatesLiveData
@@ -64,7 +65,6 @@ import com.android.permissioncontroller.permission.model.livedatatypes.AppPermGr
 import com.android.permissioncontroller.permission.model.livedatatypes.AppPermGroupUiInfo.PermGrantState.PERMS_ALLOWED_FOREGROUND_ONLY
 import com.android.permissioncontroller.permission.model.v34.AppDataSharingUpdate
 import com.android.permissioncontroller.permission.utils.KotlinUtils
-import com.android.permissioncontroller.permission.utils.Utils
 import com.android.permissioncontroller.permission.utils.Utils.getSystemServiceSafe
 import com.android.permissioncontroller.safetylabel.AppsSafetyLabelHistory
 import com.android.permissioncontroller.safetylabel.AppsSafetyLabelHistory.AppInfo
@@ -249,11 +249,11 @@ class SafetyLabelChangesJobService : JobService() {
         val historyFile = AppsSafetyLabelHistoryPersistence.getSafetyLabelHistoryFile(context)
         val safetyLabelsLastUpdatedTimes: Map<AppInfo, Instant> =
             AppsSafetyLabelHistoryPersistence.getSafetyLabelsLastUpdatedTimes(historyFile)
-        // Retrieve all installed packages that are not pre-installed on the system and
+        // Retrieve all installed packages that are store installed on the system and
         // that request the location permission; these are the packages that we care about for the
         // safety labels feature. The variable name does not specify all these filters for brevity.
         val packagesRequestingLocation: Set<Pair<String, UserHandle>> =
-            getAllNonPreinstalledPackagesRequestingLocation()
+            getAllStoreInstalledPackagesRequestingLocation()
 
         val safetyLabelsToRecord = mutableSetOf<SafetyLabelForPersistence>()
         val packageNamesWithPersistedSafetyLabels =
@@ -385,11 +385,11 @@ class SafetyLabelChangesJobService : JobService() {
         val historyFile = AppsSafetyLabelHistoryPersistence.getSafetyLabelHistoryFile(context)
         val safetyLabelsLastUpdatedTimes: Map<AppInfo, Instant> =
             AppsSafetyLabelHistoryPersistence.getSafetyLabelsLastUpdatedTimes(historyFile)
-        // Retrieve all installed packages that are not pre-installed on the system and
+        // Retrieve all installed packages that are store installed on the system and
         // that request the location permission; these are the packages that we care about for the
         // safety labels feature. The variable name does not specify all these filters for brevity.
         val packagesRequestingLocation: Set<Pair<String, UserHandle>> =
-            getAllNonPreinstalledPackagesRequestingLocation()
+            getAllStoreInstalledPackagesRequestingLocation()
 
         val packageNamesWithPersistedSafetyLabels: List<String> =
             safetyLabelsLastUpdatedTimes.keys.map { appInfo -> appInfo.packageName }
@@ -417,9 +417,11 @@ class SafetyLabelChangesJobService : JobService() {
 
     // TODO(b/261607291): Modify this logic when we enable safety label change notifications for
     //  preinstalled apps.
-    private suspend fun getAllNonPreinstalledPackagesRequestingLocation():
+    private suspend fun getAllStoreInstalledPackagesRequestingLocation():
         Set<Pair<String, UserHandle>> =
-        getAllPackagesRequestingLocation().filter { !isPreinstalledPackage(it) }.toSet()
+        getAllPackagesRequestingLocation()
+            .filter { isStoreInstalledPackage(it) }
+            .toSet()
 
     private suspend fun getAllPackagesRequestingLocation(): Set<Pair<String, UserHandle>> =
         SinglePermGroupPackagesUiInfoLiveData[Manifest.permission_group.LOCATION]
@@ -435,8 +437,13 @@ class SafetyLabelChangesJobService : JobService() {
     private fun AppPermGroupUiInfo.isPermissionGranted() =
         permGrantState in setOf(PERMS_ALLOWED_ALWAYS, PERMS_ALLOWED_FOREGROUND_ONLY)
 
-    private suspend fun isPreinstalledPackage(pkg: Pair<String, UserHandle>): Boolean =
-        LightInstallSourceInfoLiveData[pkg].getInitializedValue().initiatingPackageName == null
+    private suspend fun isStoreInstalledPackage(
+        pkg: Pair<String, UserHandle>
+    ): Boolean {
+        val lightInstallSourceInfo =
+            LightInstallSourceInfoLiveData[pkg].getInitializedValue()
+        return lightInstallSourceInfo.isStoreInstalled()
+    }
 
     private suspend fun postSafetyLabelChangedNotification() {
         val numberOfAppUpdates = getNumberOfAppsWithDataSharingChanged()
@@ -525,11 +532,15 @@ class SafetyLabelChangesJobService : JobService() {
         val notificationManager = getSystemServiceSafe(context, NotificationManager::class.java)
         createNotificationChannel(context, notificationManager)
 
+        val (appLabel, smallIcon, color) = KotlinUtils.getSafetyCenterNotificationResources(this)
+        val smallIconCompat = IconCompat.createFromIcon(smallIcon)
+            ?: IconCompat.createWithResource(this, R.drawable.ic_info)
         val title = context.getString(R.string.safety_label_changes_notification_title)
         val text = context.getString(R.string.safety_label_changes_notification_desc)
         var notificationBuilder =
             NotificationCompat.Builder(context, PERMISSION_REMINDER_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_info)
+                .setColor(color)
+                .setSmallIcon(smallIconCompat)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -544,22 +555,9 @@ class SafetyLabelChangesJobService : JobService() {
                         numberOfAppUpdates
                     )
                 )
-
-        val settingsAppLabel =
-            Utils.getSettingsLabelForNotifications(applicationContext.packageManager)
-        if (settingsAppLabel != null) {
-            notificationBuilder =
-                notificationBuilder
-                    .setSmallIcon(R.drawable.ic_settings_24dp)
-                    .addExtras(
-                        Bundle().apply {
-                            putString(
-                                Notification.EXTRA_SUBSTITUTE_APP_NAME,
-                                settingsAppLabel.toString()
-                            )
-                        }
-                    )
-        }
+        notificationBuilder.addExtras(
+            Bundle().apply { putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, appLabel) }
+        )
 
         notificationManager.notify(
             SAFETY_LABEL_CHANGES_NOTIFICATION_ID,
