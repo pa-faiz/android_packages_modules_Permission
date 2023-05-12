@@ -18,7 +18,7 @@ package com.android.safetycenter.data;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
-import android.annotation.Nullable;
+import android.annotation.ElapsedRealtimeLong;
 import android.content.Context;
 import android.safetycenter.SafetyCenterManager;
 import android.safetycenter.SafetyEvent;
@@ -26,6 +26,7 @@ import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceIssue;
 import android.safetycenter.SafetySourceStatus;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.permission.util.UserUtils;
@@ -105,7 +106,7 @@ final class SafetySourceStateCollectedLogger {
             boolean sourceDataDiffers,
             boolean isManagedProfile,
             @Nullable SafetyEvent safetyEvent,
-            @Nullable Long lastUpdatedElapsedTimeMillis) {
+            @Nullable @ElapsedRealtimeLong Long lastUpdatedElapsedTimeMillis) {
         SafetySourceStatus sourceStatus = sourceData == null ? null : sourceData.getStatus();
         List<SafetySourceIssue> sourceIssues =
                 sourceData == null ? Collections.emptyList() : sourceData.getIssues();

@@ -20,7 +20,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import static com.android.safetycenter.logging.SafetyCenterStatsdLogger.toSystemEventResult;
 
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.safetycenter.SafetyCenterData;
@@ -32,6 +31,7 @@ import android.safetycenter.config.SafetyCenterConfig;
 import android.safetycenter.config.SafetySourcesGroup;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.safetycenter.ApiLock;
@@ -89,7 +89,6 @@ public final class SafetyCenterDataManager {
         mSafetySourceDataRepository =
                 new SafetySourceDataRepository(
                         context,
-                        safetyCenterRefreshTracker,
                         mSafetyCenterInFlightIssueActionRepository,
                         mSafetyCenterIssueDismissalRepository);
         mSafetyCenterIssueRepository =
@@ -255,15 +254,6 @@ public final class SafetyCenterDataManager {
         if (dataUpdated) {
             mSafetyCenterIssueRepository.updateIssues(safetySourceKey.getUserId());
         }
-    }
-
-    /**
-     * Clears all safety source errors received so far for the given {@link UserProfileGroup}, this
-     * is useful e.g. when starting a new broadcast.
-     */
-    public void clearSafetySourceErrors(UserProfileGroup userProfileGroup) {
-        mSafetySourceDataRepository.clearSafetySourceErrors(userProfileGroup);
-        mSafetyCenterIssueRepository.updateIssues(userProfileGroup);
     }
 
     /** Marks the given {@link SafetyCenterIssueActionId} as in-flight. */
