@@ -108,7 +108,7 @@
     <!-- no translation found for background_access_chooser_dialog_choices:1 (9127301153688725448) -->
     <!-- no translation found for background_access_chooser_dialog_choices:2 (4305536986042401191) -->
     <string name="permission_access_always" msgid="1474641821883823446">"Разрешить в любом режиме"</string>
-    <string name="permission_access_only_foreground" msgid="7801170728159326195">"Только во время использования"</string>
+    <string name="permission_access_only_foreground" msgid="7801170728159326195">"Разрешить только во время использования приложения"</string>
     <string name="permission_access_never" msgid="4647014230217936900">"Запретить"</string>
     <string name="loading" msgid="4789365003890741082">"Загрузка…"</string>
     <string name="all_permissions" msgid="6911125611996872522">"Все разрешения"</string>
@@ -589,7 +589,7 @@
     <string name="permission_rationale_message_location" msgid="2153841534298068414">"Это приложение может передавать третьим лицам данные о местоположении."</string>
     <string name="permission_rationale_location_title" msgid="2404797182678793506">"Передача данных и местоположение"</string>
     <string name="permission_rationale_data_sharing_source_title" msgid="6874604543125814316">"Источник сведений о передаче данных"</string>
-    <string name="permission_rationale_data_sharing_device_manufacturer_message" msgid="7569261218145653185">"Разработчик предоставил производителю устройства информацию о том, как приложение передает данные. Со временем она может обновляться."</string>
+    <string name="permission_rationale_data_sharing_device_manufacturer_message" msgid="7569261218145653185">"Разработчик предоставил производителю устройства информацию о том, как приложение передает данные. Со временем он может ее обновить."</string>
     <string name="permission_rationale_data_sharing_source_message" msgid="8330794595417986883">"Разработчик предоставил "<annotation id="link"><annotation id="install_source" example="App Store">"%1$s"</annotation></annotation>" информацию о том, как приложение передает данные. Со временем она может обновляться."</string>
     <string name="permission_rationale_location_purpose_title" msgid="5115877143670012618">"Цели передачи данных о местоположении:"</string>
     <string name="permission_rationale_permission_data_sharing_varies_title" msgid="9103718980919908316">"Варианты передачи данных"</string>
