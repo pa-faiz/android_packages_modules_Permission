@@ -75,7 +75,9 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.modules.utils.BackgroundThread;
 import com.android.permission.util.ForegroundThread;
 import com.android.permission.util.UserUtils;
+import com.android.safetycenter.data.AndroidLockScreenFix;
 import com.android.safetycenter.data.SafetyCenterDataManager;
+import com.android.safetycenter.data.SafetyEventFix;
 import com.android.safetycenter.internaldata.SafetyCenterIds;
 import com.android.safetycenter.internaldata.SafetyCenterIssueActionId;
 import com.android.safetycenter.internaldata.SafetyCenterIssueId;
@@ -278,6 +280,16 @@ public final class SafetyCenterService extends SystemService {
 
             UserProfileGroup userProfileGroup = UserProfileGroup.fromUser(getContext(), userId);
             synchronized (mApiLock) {
+                safetySourceData =
+                        AndroidLockScreenFix.maybeOverrideSafetySourceData(
+                                getContext(), safetySourceId, safetySourceData);
+                safetyEvent =
+                        SafetyEventFix.maybeOverrideSafetyEvent(
+                                mSafetyCenterDataManager,
+                                safetySourceId,
+                                safetySourceData,
+                                safetyEvent,
+                                userId);
                 boolean hasUpdate =
                         mSafetyCenterDataManager.setSafetySourceData(
                                 safetySourceData, safetySourceId, safetyEvent, packageName, userId);
