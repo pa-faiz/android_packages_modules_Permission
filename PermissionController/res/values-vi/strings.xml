@@ -575,7 +575,7 @@
     <string name="safety_center_background_location_access_reminder_title" msgid="5477847038103863843">"Xem lại ứng dụng có quyền truy cập thông tin vị trí ở chế độ nền"</string>
     <string name="safety_center_background_location_access_reminder_summary" msgid="7431657777510537658">"Ứng dụng này luôn truy cập được vào thông tin vị trí của bạn, kể cả khi đang đóng.\n\nMột số ứng dụng khẩn cấp và an toàn cần truy cập vào thông tin vị trí của bạn ở chế độ nền để hoạt động như mong đợi."</string>
     <string name="safety_center_background_location_access_revoked" msgid="6972274943343442213">"Đã thay đổi quyền truy cập"</string>
-    <string name="safety_center_view_recent_location_access" msgid="3524391299490678243">"Xem thông tin gần đây về việc sử dụng thông tin vị trí"</string>
+    <string name="safety_center_view_recent_location_access" msgid="3524391299490678243">"Xem thông tin về hoạt động sử dụng thông tin vị trí gần đây"</string>
     <string name="privacy_controls_title" msgid="7605929972256835199">"Chế độ kiểm soát quyền riêng tư"</string>
     <string name="camera_toggle_title" msgid="1251201397431837666">"Quyền truy cập máy ảnh"</string>
     <string name="mic_toggle_title" msgid="2649991093496110162">"Quyền truy cập micrô"</string>
@@ -612,7 +612,7 @@
     <string name="data_sharing_updates_title" msgid="7996933386875213859">"Nội dung cập nhật về cách thức chia sẻ dữ liệu vị trí"</string>
     <string name="data_sharing_updates_summary" msgid="764113985772233889">"Xem xét những ứng dụng đã thay đổi cách thức có thể được dùng để chia sẻ dữ liệu vị trí của bạn"</string>
     <string name="data_sharing_updates_subtitle" msgid="6311537708950632329">"Những ứng dụng này đã thay đổi cách thức có thể được dùng để chia sẻ dữ liệu vị trí của bạn. Có thể những ứng dụng này trước đây chưa từng chia sẻ dữ liệu vị trí, nhưng bây giờ mới chia sẻ dữ liệu đó nhằm mục đích quảng cáo hoặc tiếp thị."</string>
-    <string name="data_sharing_updates_footer_message" msgid="1582711655172892107">"Nhà phát triển của những ứng dụng này đã cung cấp thông tin cho cửa hàng ứng dụng về cách thức ứng dụng của họ chia sẻ dữ liệu. Họ có thể cập nhật thông tin này theo thời gian.\n\nCách thức chia sẻ dữ liệu có thể thay đổi tuỳ theo phiên bản ứng dụng, cách sử dụng, khu vực và độ tuổi của bạn."</string>
+    <string name="data_sharing_updates_footer_message" msgid="1582711655172892107">"Nhà phát triển của những ứng dụng này đã cung cấp thông tin cho một cửa hàng ứng dụng về cách thức ứng dụng của họ chia sẻ dữ liệu. Họ có thể cập nhật thông tin này theo thời gian.\n\nCách thức chia sẻ dữ liệu có thể thay đổi tuỳ theo phiên bản ứng dụng, cách sử dụng, khu vực và độ tuổi của bạn."</string>
     <string name="learn_about_data_sharing" msgid="4200480587079488045">"Tìm hiểu về chế độ chia sẻ dữ liệu"</string>
     <string name="shares_location_with_third_parties" msgid="2278051743742057767">"Dữ liệu vị trí của bạn nay được chia sẻ với bên thứ ba"</string>
     <string name="shares_location_with_third_parties_for_advertising" msgid="1918588064014480513">"Dữ liệu vị trí của bạn giờ đây được chia sẻ với các bên thứ ba để quảng cáo hoặc tiếp thị"</string>

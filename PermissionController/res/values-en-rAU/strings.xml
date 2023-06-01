@@ -475,7 +475,7 @@
     <string name="permgrouprequest_storage_pre_q" msgid="168130651144569428">"Allow &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; to access &lt;b&gt;photos, videos, music, audio and other files&lt;/b&gt; on this device?"</string>
     <string name="permgrouprequest_read_media_aural" msgid="2593365397347577812">"Allow &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; to access music and audio on this device?"</string>
     <string name="permgrouprequest_read_media_visual" msgid="5548780620779729975">"Allow &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; to access photos and videos on this device?"</string>
-    <string name="permgrouprequest_more_photos" msgid="128933814654231321">"Allow &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; to access photos and videos on this device?"</string>
+    <string name="permgrouprequest_more_photos" msgid="128933814654231321">"Allow &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; to access more photos and videos on this device?"</string>
     <string name="permgrouprequest_microphone" msgid="2825208549114811299">"Allow &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; to record audio?"</string>
     <string name="permgrouprequestdetail_microphone" msgid="8510456971528228861">"The app will only be able to record audio while you’re using the app"</string>
     <string name="permgroupbackgroundrequest_microphone" msgid="8874462606796368183">"Allow &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; to record audio?"</string>
@@ -520,7 +520,7 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"For apps and services"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Microphone data may still be shared when you call an emergency number."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Change"</string>
-    <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Security &amp; privacy"</string>
+    <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Security and privacy"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Scan device"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Dismiss"</string>
     <string name="safety_center_issue_card_dismiss_confirmation_title" msgid="2734809473425036382">"Dismiss this alert?"</string>
