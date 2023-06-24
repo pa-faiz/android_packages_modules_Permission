@@ -32,8 +32,6 @@ import static android.safetycenter.SafetyCenterManager.REFRESH_REASON_SAFETY_CEN
 
 import static java.util.Collections.unmodifiableList;
 
-import android.annotation.Nullable;
-import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.BroadcastOptions;
 import android.content.Context;
@@ -48,6 +46,7 @@ import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.permission.util.PackageUtils;
@@ -198,7 +197,11 @@ final class SafetyCenterBroadcastDispatcher {
         }
 
         Intent implicitIntent = createImplicitEnabledChangedIntent();
-        sendBroadcast(implicitIntent, UserHandle.SYSTEM, READ_SAFETY_CENTER_STATUS, null);
+        sendBroadcast(
+                implicitIntent,
+                UserHandle.SYSTEM,
+                READ_SAFETY_CENTER_STATUS,
+                /* broadcastOptions= */ null);
     }
 
     private void sendEnabledChangedBroadcast(
@@ -206,15 +209,17 @@ final class SafetyCenterBroadcastDispatcher {
             BroadcastOptions broadcastOptions,
             List<UserProfileGroup> userProfileGroups) {
         Intent intent = createExplicitEnabledChangedIntent(broadcast.getPackageName());
-        // The same ENABLED reason is used here for both enable and disable events. It is not sent
-        // externally and is only used internally to filter safety sources in the methods of the
-        // Broadcast class.
-        int refreshReason = REFRESH_REASON_SAFETY_CENTER_ENABLED;
 
         for (int i = 0; i < userProfileGroups.size(); i++) {
             UserProfileGroup userProfileGroup = userProfileGroups.get(i);
             SparseArray<List<String>> userIdsToSourceIds =
-                    getUserIdsToSourceIds(broadcast, userProfileGroup, refreshReason);
+                    getUserIdsToSourceIds(
+                            broadcast,
+                            userProfileGroup,
+                            // The same ENABLED reason is used here for both enable and disable
+                            // events. It is not sent externally and is only used internally to
+                            // filter safety sources in the methods of the Broadcast class.
+                            REFRESH_REASON_SAFETY_CENTER_ENABLED);
 
             for (int j = 0; j < userIdsToSourceIds.size(); j++) {
                 int userId = userIdsToSourceIds.keyAt(j);
@@ -229,24 +234,22 @@ final class SafetyCenterBroadcastDispatcher {
         if (!doesBroadcastResolve(intent, userHandle)) {
             Log.w(
                     TAG,
-                    "No receiver for intent targeting "
+                    "No receiver for intent targeting: "
                             + intent.getPackage()
-                            + " and user "
-                            + userHandle);
+                            + ", and user id: "
+                            + userHandle.getIdentifier());
             return false;
         }
         Log.v(
                 TAG,
-                "Found receiver for intent targeting "
+                "Found receiver for intent targeting: "
                         + intent.getPackage()
-                        + " and user "
-                        + userHandle);
+                        + ", and user id: "
+                        + userHandle.getIdentifier());
         sendBroadcast(intent, userHandle, SEND_SAFETY_CENTER_UPDATE, broadcastOptions);
         return true;
     }
 
-    // TODO(b/193460475): Remove when tooling supports SystemApi to public API.
-    @SuppressLint("NewApi")
     private void sendBroadcast(
             Intent intent,
             UserHandle userHandle,
@@ -267,7 +270,7 @@ final class SafetyCenterBroadcastDispatcher {
 
     private boolean doesBroadcastResolve(Intent broadcastIntent, UserHandle userHandle) {
         return !PackageUtils.queryUnfilteredBroadcastReceiversAsUser(
-                        broadcastIntent, 0, userHandle.getIdentifier(), mContext)
+                        broadcastIntent, /* flags= */ 0, userHandle.getIdentifier(), mContext)
                 .isEmpty();
     }
 
@@ -296,8 +299,6 @@ final class SafetyCenterBroadcastDispatcher {
         return new Intent(intentAction).setFlags(FLAG_RECEIVER_FOREGROUND);
     }
 
-    // TODO(b/193460475): Remove when tooling supports SystemApi to public API.
-    @SuppressLint("NewApi")
     private static BroadcastOptions createBroadcastOptions() {
         BroadcastOptions broadcastOptions = BroadcastOptions.makeBasic();
         Duration allowListDuration = SafetyCenterFlags.getFgsAllowlistDuration();

@@ -21,7 +21,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.Nullable;
 import android.content.res.Resources;
 import android.safetycenter.config.SafetyCenterConfig;
 import android.safetycenter.config.SafetySource;
@@ -29,6 +28,7 @@ import android.safetycenter.config.SafetySourcesGroup;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.safetycenter.config.ParseException;
@@ -114,7 +114,7 @@ public final class SafetyCenterConfigReader {
 
     /**
      * Returns the groups of {@link SafetySource}, filtering out any sources where {@link
-     * SafetySources#isLoggable(SafetySource)} is false (and any resultingly empty groups).
+     * SafetySources#isLoggable(SafetySource)} is {@code false} (and any resulting empty groups).
      */
     public List<SafetySourcesGroup> getLoggableSafetySourcesGroups() {
         return getCurrentConfigInternal().getLoggableSourcesGroups();
@@ -228,23 +228,23 @@ public final class SafetyCenterConfigReader {
     private SafetyCenterConfig readSafetyCenterConfig() {
         InputStream in = mSafetyCenterResourcesContext.getSafetyCenterConfig();
         if (in == null) {
-            Log.e(TAG, "Cannot get safety center config file, safety center will be disabled.");
+            Log.e(TAG, "Cannot get safety center config file, Safety Center will be disabled");
             return null;
         }
 
         Resources resources = mSafetyCenterResourcesContext.getResources();
         if (resources == null) {
-            Log.e(TAG, "Cannot get safety center resources, safety center will be disabled.");
+            Log.e(TAG, "Cannot get safety center resources, Safety Center will be disabled");
             return null;
         }
 
         try {
             SafetyCenterConfig safetyCenterConfig =
                     SafetyCenterConfigParser.parseXmlResource(in, resources);
-            Log.i(TAG, "SafetyCenterConfig read successfully");
+            Log.d(TAG, "SafetyCenterConfig read successfully");
             return safetyCenterConfig;
         } catch (ParseException e) {
-            Log.e(TAG, "Cannot read SafetyCenterConfig, safety center will be disabled.", e);
+            Log.e(TAG, "Cannot read SafetyCenterConfig, Safety Center will be disabled", e);
             return null;
         }
     }

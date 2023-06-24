@@ -31,7 +31,7 @@ import static com.android.permissioncontroller.PermissionControllerStatsLog.PERM
 import static com.android.permissioncontroller.PermissionControllerStatsLog.PERMISSION_USAGE_FRAGMENT_INTERACTION__ACTION__OPEN;
 
 import android.Manifest;
-import android.app.ActionBar;
+import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -138,11 +138,12 @@ public final class ManagePermissionsActivity extends SettingsActivity {
      */
     private static final int PROXY_ACTIVITY_REQUEST_CODE = 5;
 
+    @TargetApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private static final String LAUNCH_PERMISSION_SETTINGS =
-            "android.permission.LAUNCH_PERMISSION_SETTINGS";
+            Manifest.permission.LAUNCH_PERMISSION_SETTINGS;
 
-    private static final String APP_PERMISSIONS_SETTINGS =
-            "android.settings.APP_PERMISSIONS_SETTINGS";
+    @TargetApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    private static final String APP_PERMISSIONS_SETTINGS = Settings.ACTION_APP_PERMISSIONS_SETTINGS;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -305,7 +306,8 @@ public final class ManagePermissionsActivity extends SettingsActivity {
 
             case Intent.ACTION_MANAGE_APP_PERMISSIONS:
             case APP_PERMISSIONS_SETTINGS: {
-                if (Objects.equals(action, APP_PERMISSIONS_SETTINGS)) {
+                if (!SdkLevel.isAtLeastV()
+                        && Objects.equals(action, APP_PERMISSIONS_SETTINGS)) {
                     PermissionInfo permissionInfo;
                     try {
                         permissionInfo = getPackageManager()
@@ -546,15 +548,6 @@ public final class ManagePermissionsActivity extends SettingsActivity {
         NavGraph graph = inflater.inflate(R.navigation.nav_graph);
         graph.setStartDestination(startDestination);
         navHost.getNavController().setGraph(graph, args);
-    }
-
-    @Override
-    public ActionBar getActionBar() {
-        ActionBar ab = super.getActionBar();
-        if (ab != null) {
-            ab.setHomeActionContentDescription(R.string.back);
-        }
-        return ab;
     }
 
     @Override

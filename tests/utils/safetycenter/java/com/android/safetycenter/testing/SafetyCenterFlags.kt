@@ -20,9 +20,7 @@ import android.Manifest.permission.READ_DEVICE_CONFIG
 import android.Manifest.permission.WRITE_DEVICE_CONFIG
 import android.annotation.TargetApi
 import android.app.job.JobInfo
-import android.content.Context
 import android.content.pm.PackageManager
-import android.content.res.Resources
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.provider.DeviceConfig
 import android.provider.DeviceConfig.NAMESPACE_PRIVACY
@@ -322,12 +320,6 @@ object SafetyCenterFlags {
             backgroundRefreshIsEnabledFlag,
             periodicBackgroundRefreshIntervalFlag,
             backgroundRefreshRequiresChargingFlag
-        )
-
-    /** Returns whether the device supports Safety Center. */
-    fun Context.deviceSupportsSafetyCenter() =
-        resources.getBoolean(
-            Resources.getSystem().getIdentifier("config_enableSafetyCenter", "bool", "android")
         )
 
     /** A property that allows getting and setting the [isEnabledFlag]. */

@@ -20,7 +20,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.Nullable;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
@@ -31,6 +30,7 @@ import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceIssue;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.permission.util.UserUtils;
@@ -70,18 +70,25 @@ public final class SafetyCenterNotificationChannels {
                         ? contextAsUser.getSystemService(NotificationManager.class)
                         : null;
         if (notificationManager == null) {
-            Log.w(TAG, "Could not retrieve NotificationManager for user " + userHandle);
+            Log.w(
+                    TAG,
+                    "Could not retrieve NotificationManager for user id: "
+                            + userHandle.getIdentifier());
         }
         return notificationManager;
     }
 
     @Nullable
-    private static Context getContextAsUser(Context baseContext, UserHandle userHandle) {
+    static Context getContextAsUser(Context baseContext, UserHandle userHandle) {
+        // This call requires the INTERACT_ACROSS_USERS permission.
+        final long callingId = Binder.clearCallingIdentity();
         try {
-            return baseContext.createContextAsUser(userHandle, 0);
+            return baseContext.createContextAsUser(userHandle, /* flags= */ 0);
         } catch (RuntimeException e) {
-            Log.w(TAG, "Could not create Context as user " + userHandle, e);
+            Log.w(TAG, "Could not create Context as user id: " + userHandle.getIdentifier(), e);
             return null;
+        } finally {
+            Binder.restoreCallingIdentity(callingId);
         }
     }
 
@@ -123,23 +130,35 @@ public final class SafetyCenterNotificationChannels {
                     requireNonNull(getNotificationManagerForUser(context, user));
             createAllChannelsWithoutCallingIdentity(notificationManager);
         } catch (RuntimeException e) {
-            Log.w(TAG, "Error creating notification channels for user " + user.getIdentifier(), e);
+            Log.w(
+                    TAG,
+                    "Error creating notification channels for user id: " + user.getIdentifier(),
+                    e);
         }
     }
 
     @Nullable
     private String getChannelIdForIssue(SafetySourceIssue issue) {
-        switch (issue.getSeverityLevel()) {
+        int issueSeverityLevel = issue.getSeverityLevel();
+        switch (issueSeverityLevel) {
             case SafetySourceData.SEVERITY_LEVEL_INFORMATION:
                 return CHANNEL_ID_INFORMATION;
             case SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION:
                 return CHANNEL_ID_RECOMMENDATION;
             case SafetySourceData.SEVERITY_LEVEL_CRITICAL_WARNING:
                 return CHANNEL_ID_CRITICAL_WARNING;
-            default:
-                Log.w(TAG, "No applicable notification channel for issue " + issue);
+            case SafetySourceData.SEVERITY_LEVEL_UNSPECIFIED:
+                Log.w(TAG, "SafetySourceData.SeverityLevel is unspecified for issue: " + issue);
                 return null;
         }
+
+        Log.w(
+                TAG,
+                "Unexpected SafetySourceData.SeverityLevel: "
+                        + issueSeverityLevel
+                        + ", for issue: "
+                        + issue);
+        return null;
     }
 
     /**

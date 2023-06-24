@@ -33,6 +33,8 @@ import android.safetycenter.SafetyCenterEntryOrGroup
 import android.safetycenter.SafetyCenterManager
 import android.safetycenter.SafetyCenterStaticEntry
 import android.safetycenter.SafetyCenterStaticEntryGroup
+import android.safetycenter.SafetyCenterStatus.REFRESH_STATUS_DATA_FETCH_IN_PROGRESS
+import android.safetycenter.SafetyCenterStatus.REFRESH_STATUS_NONE
 import android.safetycenter.SafetyEvent
 import android.safetycenter.SafetySourceData
 import androidx.test.core.app.ApplicationProvider
@@ -44,16 +46,19 @@ import com.android.bedstead.harrier.annotations.EnsureHasNoWorkProfile
 import com.android.bedstead.harrier.annotations.EnsureHasWorkProfile
 import com.android.bedstead.harrier.annotations.Postsubmit
 import com.android.bedstead.harrier.annotations.enterprise.EnsureHasDeviceOwner
+import com.android.bedstead.harrier.annotations.enterprise.EnsureHasNoDeviceOwner
 import com.android.bedstead.nene.TestApis
 import com.android.bedstead.nene.types.OptionalBoolean.TRUE
 import com.android.compatibility.common.util.DisableAnimationRule
 import com.android.compatibility.common.util.FreezeRotationRule
 import com.android.safetycenter.resources.SafetyCenterResourcesContext
+import com.android.safetycenter.testing.Coroutines.TIMEOUT_SHORT
+import com.android.safetycenter.testing.NotificationCharacteristics
 import com.android.safetycenter.testing.SafetyCenterActivityLauncher.launchSafetyCenterActivity
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.getSafetyCenterDataWithPermission
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.getSafetySourceDataWithPermission
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.setSafetySourceDataWithPermission
-import com.android.safetycenter.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
+import com.android.safetycenter.testing.SafetyCenterFlags
 import com.android.safetycenter.testing.SafetyCenterTestConfigs
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.ACTION_TEST_ACTIVITY
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.DYNAMIC_BAREBONE_ID
@@ -78,24 +83,25 @@ import com.android.safetycenter.testing.SafetyCenterTestData.Companion.withoutEx
 import com.android.safetycenter.testing.SafetyCenterTestHelper
 import com.android.safetycenter.testing.SafetySourceTestData
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.EVENT_SOURCE_STATE_CHANGED
+import com.android.safetycenter.testing.SafetySourceTestData.Companion.ISSUE_TYPE_ID
 import com.android.safetycenter.testing.ShellPermissions.callWithShellPermissionIdentity
+import com.android.safetycenter.testing.SupportsSafetyCenterRule
+import com.android.safetycenter.testing.TestNotificationListener
 import com.android.safetycenter.testing.UiTestHelper.waitAllTextDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitAllTextNotDisplayed
 import com.google.common.base.Preconditions.checkState
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.After
-import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.ClassRule
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
  * Functional tests for our APIs and UI on a device with multiple users. e.g. with a managed or
- * secondary user(s).
+ * additional user(s).
  */
 @RunWith(BedsteadJUnit4::class)
 class SafetyCenterMultiUsersTest {
@@ -103,10 +109,6 @@ class SafetyCenterMultiUsersTest {
     companion object {
         @JvmField @ClassRule @Rule val deviceState: DeviceState = DeviceState()
     }
-
-    @get:Rule val disableAnimationRule = DisableAnimationRule()
-
-    @get:Rule val freezeRotationRule = FreezeRotationRule()
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val safetyCenterResourcesContext = SafetyCenterResourcesContext.forTests(context)
@@ -116,9 +118,6 @@ class SafetyCenterMultiUsersTest {
     private val safetyCenterTestConfigs = SafetyCenterTestConfigs(context)
     private val safetyCenterManager = context.getSystemService(SafetyCenterManager::class.java)!!
 
-    // JUnit's Assume is not supported in @BeforeClass by the CTS tests runner, so this is used to
-    // manually skip the setup and teardown methods.
-    private val shouldRunTests = context.deviceSupportsSafetyCenter()
     private var inQuietMode = false
 
     private val primaryProfileOnlyIssues =
@@ -181,12 +180,22 @@ class SafetyCenterMultiUsersTest {
     private val dynamicDisabledForWorkDefault
         get() = dynamicDisabledForWorkDefaultBuilder.build()
 
-    private val dynamicDisabledForWorkPaused
+    private val dynamicDisabledForWorkPausedUpdated
         get() =
-            dynamicDisabledForWorkDefaultBuilder
+            safetyCenterTestData
+                .safetyCenterEntryDefaultBuilder(
+                    DYNAMIC_DISABLED_ID,
+                    deviceState.workProfile().id(),
+                    title = "Ok title for Work",
+                    pendingIntent = null
+                )
                 // TODO(b/233188021): This needs to use the Enterprise API to override the "work"
-                //  keyword.
-                .setSummary(safetyCenterResourcesContext.getStringByName("work_profile_paused"))
+                // keyword.
+                .setSummary(
+                    safetyCenterResourcesContext.getStringByName("work_profile_paused"),
+                )
+                .setSeverityLevel(ENTRY_SEVERITY_LEVEL_UNSPECIFIED)
+                .setEnabled(false)
                 .build()
 
     private val dynamicDisabledForWorkUpdated
@@ -197,6 +206,24 @@ class SafetyCenterMultiUsersTest {
 
     private val dynamicHiddenForWorkUpdated
         get() = safetyCenterEntryOkForWork(DYNAMIC_HIDDEN_ID, deviceState.workProfile().id())
+
+    private val dynamicHiddenForWorkPausedUpdated
+        get() =
+            safetyCenterTestData
+                .safetyCenterEntryDefaultBuilder(
+                    DYNAMIC_HIDDEN_ID,
+                    deviceState.workProfile().id(),
+                    title = "Ok title for Work",
+                    pendingIntent = null
+                )
+                // TODO(b/233188021): This needs to use the Enterprise API to override the "work"
+                // keyword.
+                .setSummary(
+                    safetyCenterResourcesContext.getStringByName("work_profile_paused"),
+                )
+                .setSeverityLevel(ENTRY_SEVERITY_LEVEL_UNSPECIFIED)
+                .setEnabled(false)
+                .build()
 
     private val staticGroupBuilder =
         SafetyCenterEntryGroup.Builder(STATIC_GROUP_ID, "OK")
@@ -213,26 +240,26 @@ class SafetyCenterMultiUsersTest {
     private val staticAllOptional =
         safetyCenterTestData.safetyCenterEntryDefaultStaticBuilder(STATIC_ALL_OPTIONAL_ID).build()
 
-    private val staticAllOptionalForWorkBuilder
-        get() =
-            safetyCenterTestData
-                .safetyCenterEntryDefaultStaticBuilder(
-                    STATIC_ALL_OPTIONAL_ID,
-                    userId = deviceState.workProfile().id(),
-                    title = "Paste"
+    private fun staticAllOptionalForWorkBuilder(inQuietMode: Boolean = false) =
+        safetyCenterTestData
+            .safetyCenterEntryDefaultStaticBuilder(
+                STATIC_ALL_OPTIONAL_ID,
+                userId = deviceState.workProfile().id(),
+                title = "Paste"
+            )
+            .setPendingIntent(
+                createTestActivityRedirectPendingIntentForUser(
+                    deviceState.workProfile().userHandle(),
+                    inQuietMode
                 )
-                .setPendingIntent(
-                    createTestActivityRedirectPendingIntentForUser(
-                        deviceState.workProfile().userHandle()
-                    )
-                )
+            )
 
     private val staticAllOptionalForWork
-        get() = staticAllOptionalForWorkBuilder.build()
+        get() = staticAllOptionalForWorkBuilder().build()
 
     private val staticAllOptionalForWorkPaused
         get() =
-            staticAllOptionalForWorkBuilder
+            staticAllOptionalForWorkBuilder(inQuietMode = true)
                 // TODO(b/233188021): This needs to use the Enterprise API to override the "work"
                 //  keyword.
                 .setSummary(safetyCenterResourcesContext.getStringByName("work_profile_paused"))
@@ -251,22 +278,33 @@ class SafetyCenterMultiUsersTest {
             .setPendingIntent(safetySourceTestData.testActivityRedirectPendingIntent)
             .build()
 
-    private val staticEntryForWorkBuilder
-        get() =
-            SafetyCenterStaticEntry.Builder("Paste")
-                .setSummary("OK")
-                .setPendingIntent(
-                    createTestActivityRedirectPendingIntentForUser(
-                        deviceState.workProfile().userHandle()
-                    )
+    private fun staticEntryForWorkBuilder(
+        title: CharSequence = "Paste",
+        inQuietMode: Boolean = false
+    ) =
+        SafetyCenterStaticEntry.Builder(title)
+            .setSummary("OK")
+            .setPendingIntent(
+                createTestActivityRedirectPendingIntentForUser(
+                    deviceState.workProfile().userHandle(),
+                    inQuietMode
                 )
+            )
 
     private val staticEntryForWork
-        get() = staticEntryForWorkBuilder.build()
+        get() = staticEntryForWorkBuilder().build()
 
     private val staticEntryForWorkPaused
         get() =
-            staticEntryForWorkBuilder
+            staticEntryForWorkBuilder(inQuietMode = true)
+                // TODO(b/233188021): This needs to use the Enterprise API to override the "work"
+                //  keyword.
+                .setSummary(safetyCenterResourcesContext.getStringByName("work_profile_paused"))
+                .build()
+
+    private val staticEntryForWorkPausedUpdated
+        get() =
+            staticEntryForWorkBuilder(title = "Unspecified title for Work", inQuietMode = true)
                 // TODO(b/233188021): This needs to use the Enterprise API to override the "work"
                 //  keyword.
                 .setSummary(safetyCenterResourcesContext.getStringByName("work_profile_paused"))
@@ -298,67 +336,73 @@ class SafetyCenterMultiUsersTest {
                 emptyList()
             )
 
-    @Before
-    fun assumeDeviceSupportsSafetyCenterToRunTests() {
-        assumeTrue(shouldRunTests)
-    }
+    @get:Rule(order = 1) val supportsSafetyCenterRule = SupportsSafetyCenterRule(context)
+    @get:Rule(order = 3) val disableAnimationRule = DisableAnimationRule()
+    @get:Rule(order = 4) val freezeRotationRule = FreezeRotationRule()
 
     @Before
-    fun enableSafetyCenterBeforeTest() {
-        if (!shouldRunTests) {
-            return
-        }
+    fun setTimeoutsBeforeTest() {
+        // TODO(b/283745908): Make TestNotificationListener compatible with SafetyCenterTestRule
         safetyCenterTestHelper.setup()
+        TestNotificationListener.setup(context)
+        SafetyCenterFlags.setAllRefreshTimeoutsTo(TIMEOUT_SHORT)
     }
 
     @After
-    fun clearDataAfterTest() {
-        if (!shouldRunTests) {
-            return
-        }
+    fun resetQuietModeAfterTest() {
+        setQuietMode(false)
+        // It is important to reset the notification listener last because it waits/ensures that
+        // all notifications have been removed before returning.
+        // TODO(b/283745908): Make TestNotificationListener compatible with SafetyCenterTestRule
         safetyCenterTestHelper.reset()
-        resetQuietMode()
+        TestNotificationListener.reset(context)
     }
 
     @Test
+    @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasWorkProfile
-    @Ignore
-    // Tests that check the UI takes a lot of time and they might get timeout in the postsubmits.
-    // TODO(b/242999951): Write this test using the APIs instead of checking the UI.
-    fun launchActivity_withProfileOwner_displaysWorkPolicyInfo() {
+    // TODO(b/242999951): Write these tests using the getSafetyCenterData() method instead.
+    fun getSafetyCenterData_withProfileOwner_hasWorkPolicyInfo() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.workPolicyInfoConfig)
 
         findWorkPolicyInfo()
     }
 
     @Test
+    @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasDeviceOwner
-    @Ignore
-    // Tests that check the UI takes a lot of time and they might get timeout in the postsubmits.
-    // TODO(b/242999951): Write this test using the APIs instead of checking the UI.
-    fun launchActivity_withDeviceOwner_displaysWorkPolicyInfo() {
+    // TODO(b/242999951): Write these tests using the getSafetyCenterData() method instead.
+    fun getSafetyCenterData_withDeviceOwner_hasWorkPolicyInfo() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.workPolicyInfoConfig)
 
         findWorkPolicyInfo()
     }
 
     @Test
+    @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasWorkProfile
-    @Ignore
-    // Tests that check the UI takes a lot of time and they might get timeout in the postsubmits.
-    // TODO(b/242999951): Write this test using the APIs instead of checking the UI.
-    fun launchActivity_withQuietModeEnabled_shouldNotDisplayWorkPolicyInfo() {
+    // TODO(b/242999951): Write these tests using the getSafetyCenterData() method instead.
+    fun launchActivity_withQuietModeEnabled_hasWorkPolicyInfo() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.workPolicyInfoConfig)
 
-        findWorkPolicyInfo()
         setQuietMode(true)
+
+        findWorkPolicyInfo()
+    }
+
+    @Test
+    @Postsubmit(reason = "Test takes too much time to setup")
+    @EnsureHasNoWorkProfile
+    @EnsureHasNoDeviceOwner
+    // TODO(b/242999951): Write these tests using the getSafetyCenterData() method instead.
+    fun launchActivity_withoutWorkProfileOrDeviceOwner_doesntHaveWorkPolicyInfo() {
+        safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.workPolicyInfoConfig)
+
         context.launchSafetyCenterActivity { waitAllTextNotDisplayed("Your work policy info") }
     }
 
     @Test
-    @Ignore
-    // Test involving toggling of quiet mode are flaky.
-    // TODO(b/237365018): Re-enable them back once we figure out a way to make them stable.
+    @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
     fun getSafetySourceData_withQuietModeEnabled_dataIsNotCleared() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceAllProfileConfig)
@@ -380,8 +424,8 @@ class SafetyCenterMultiUsersTest {
     }
 
     @Test
-    @EnsureHasAdditionalUser(installInstrumentedApp = TRUE)
     @Postsubmit(reason = "Test takes too much time to setup")
+    @EnsureHasAdditionalUser(installInstrumentedApp = TRUE)
     fun getSafetySourceData_afterAdditionalUserRemoved_returnsNull() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceAllProfileConfig)
         val additionalUserSafetyCenterManager =
@@ -468,8 +512,6 @@ class SafetyCenterMultiUsersTest {
     @Test
     @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
-    @Ignore
-    // Test involving toggling of quiet mode are flaky.
     fun getSafetySourceData_withProfileInQuietMode_shouldReturnData() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceAllProfileConfig)
         val managedSafetyCenterManager =
@@ -743,16 +785,14 @@ class SafetyCenterMultiUsersTest {
     }
 
     @Test
+    @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
-    @Ignore
-    // Test involving toggling of quiet mode are flaky.
-    // TODO(b/237365018): Re-enable them back once we figure out a way to make them stable.
     fun getSafetyCenterData_withQuietMode_shouldHaveWorkProfilePausedSummaryAndNoWorkIssues() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.complexAllProfileConfig)
         updatePrimaryProfileSources()
         updateWorkProfileSources()
-
         setQuietMode(true)
+
         val apiSafetyCenterData = safetyCenterManager.getSafetyCenterDataWithPermission()
 
         val safetyCenterDataFromComplexConfig =
@@ -768,8 +808,9 @@ class SafetyCenterMultiUsersTest {
                                 listOf(
                                     dynamicBareboneUpdated,
                                     dynamicDisabledUpdated,
-                                    dynamicDisabledForWorkPaused,
-                                    dynamicHiddenUpdated
+                                    dynamicDisabledForWorkPausedUpdated,
+                                    dynamicHiddenUpdated,
+                                    dynamicHiddenForWorkPausedUpdated,
                                 )
                             )
                             .setSeverityUnspecifiedIconType(
@@ -794,7 +835,7 @@ class SafetyCenterMultiUsersTest {
                         "OK",
                         listOf(
                             staticEntryUpdated,
-                            staticEntryForWorkPaused,
+                            staticEntryForWorkPausedUpdated,
                             staticEntry,
                             staticEntryForWorkPaused
                         )
@@ -805,9 +846,9 @@ class SafetyCenterMultiUsersTest {
     }
 
     @Test
+    @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasAdditionalUser(installInstrumentedApp = TRUE)
     @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
-    @Postsubmit(reason = "Test takes too much time to setup")
     fun getSafetyCenterData_withDataForDifferentUserProfileGroup_shouldBeUnaffected() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceAllProfileConfig)
         val dataForPrimaryUser = safetySourceTestData.information
@@ -830,7 +871,7 @@ class SafetyCenterMultiUsersTest {
     }
 
     @Test
-    @Ignore // Removing a managed profile causes a refresh, which makes some tests flaky.
+    @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
     fun getSafetyCenterData_afterManagedProfileRemoved_returnsDefaultData() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceAllProfileConfig)
@@ -904,8 +945,8 @@ class SafetyCenterMultiUsersTest {
     }
 
     @Test
-    @EnsureHasAdditionalUser(installInstrumentedApp = TRUE)
     @Postsubmit(reason = "Test takes too much time to setup")
+    @EnsureHasAdditionalUser(installInstrumentedApp = TRUE)
     fun getSafetyCenterData_afterAdditionalUserRemoved_returnsDefaultData() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceAllProfileConfig)
         val additionalUserSafetyCenterManager =
@@ -1029,8 +1070,6 @@ class SafetyCenterMultiUsersTest {
     @Test
     @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
-    @Ignore
-    // Test involving toggling of quiet mode are flaky.
     fun setSafetySourceData_withProfileInQuietMode_shouldSetData() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceAllProfileConfig)
         val dataForWork = safetySourceTestData.informationWithIssueForWork
@@ -1123,6 +1162,33 @@ class SafetyCenterMultiUsersTest {
 
     @Test
     @Postsubmit(reason = "Test takes too much time to setup")
+    @EnsureHasWorkProfile(installInstrumentedApp = TRUE)
+    fun setSafetySourceData_notificationsAllowed_workProfile_sendsNotification() {
+        safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceAllProfileConfig)
+        SafetyCenterFlags.notificationsEnabled = true
+        SafetyCenterFlags.notificationsAllowedSources = setOf(SINGLE_SOURCE_ALL_PROFILE_ID)
+        SafetyCenterFlags.immediateNotificationBehaviorIssues =
+            setOf("$SINGLE_SOURCE_ALL_PROFILE_ID/$ISSUE_TYPE_ID")
+        val dataForWork = safetySourceTestData.informationWithIssueForWork
+        val managedSafetyCenterManager =
+            getSafetyCenterManagerForUser(deviceState.workProfile().userHandle())
+
+        managedSafetyCenterManager.setSafetySourceDataWithInteractAcrossUsersPermission(
+            SINGLE_SOURCE_ALL_PROFILE_ID,
+            dataForWork
+        )
+
+        TestNotificationListener.waitForNotificationsMatching(
+            NotificationCharacteristics(
+                title = "Information issue title",
+                text = "Information issue summary",
+                actions = listOf("Review")
+            )
+        )
+    }
+
+    @Test
+    @Postsubmit(reason = "Test takes too much time to setup")
     @EnsureHasAdditionalUser(installInstrumentedApp = TRUE)
     fun setSafetySourceData_forStoppedUser_shouldSetData() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
@@ -1207,11 +1273,15 @@ class SafetyCenterMultiUsersTest {
         }
     }
 
-    private fun createTestActivityRedirectPendingIntentForUser(user: UserHandle): PendingIntent {
+    private fun createTestActivityRedirectPendingIntentForUser(
+        user: UserHandle,
+        inQuietMode: Boolean = false
+    ): PendingIntent {
         return callWithShellPermissionIdentity(INTERACT_ACROSS_USERS) {
             SafetySourceTestData.createRedirectPendingIntent(
                 getContextForUser(user),
-                Intent(ACTION_TEST_ACTIVITY)
+                Intent(ACTION_TEST_ACTIVITY),
+                inQuietMode
             )
         }
     }
@@ -1238,16 +1308,26 @@ class SafetyCenterMultiUsersTest {
             getSafetyCenterDataWithPermission()
         }
 
-    private fun setQuietMode(value: Boolean) {
-        deviceState.workProfile().setQuietMode(value)
-        inQuietMode = value
-    }
-
-    private fun resetQuietMode() {
-        if (!inQuietMode) {
+    private fun setQuietMode(enableQuietMode: Boolean) {
+        if (inQuietMode == enableQuietMode) {
             return
         }
-        setQuietMode(false)
+        if (enableQuietMode) {
+            deviceState.workProfile().setQuietMode(true)
+        } else {
+            // This is needed to ensure the refresh broadcast doesn't leak onto other tests.
+            disableQuietModeAndWaitForRefreshToComplete()
+        }
+        inQuietMode = enableQuietMode
+    }
+
+    private fun disableQuietModeAndWaitForRefreshToComplete() {
+        val listener = safetyCenterTestHelper.addListener()
+        deviceState.workProfile().setQuietMode(false)
+        listener.receiveSafetyCenterData {
+            it.status.refreshStatus == REFRESH_STATUS_DATA_FETCH_IN_PROGRESS
+        }
+        listener.receiveSafetyCenterData { it.status.refreshStatus == REFRESH_STATUS_NONE }
     }
 
     private fun safetyCenterEntryOkForWork(sourceId: String, managedUserId: Int) =

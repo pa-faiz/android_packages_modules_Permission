@@ -24,7 +24,6 @@ import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLL
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SOURCE_STATE__SOURCE_CLEARED;
 import static com.android.permission.PermissionStatsLog.SAFETY_SOURCE_STATE_COLLECTED__SOURCE_STATE__SOURCE_ERROR;
 
-import android.annotation.Nullable;
 import android.annotation.UptimeMillisLong;
 import android.annotation.UserIdInt;
 import android.content.Context;
@@ -38,6 +37,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.safetycenter.SafetySourceKey;
@@ -102,10 +102,6 @@ final class SafetySourceDataRepository {
             String safetySourceId,
             @UserIdInt int userId) {
         SafetySourceKey key = SafetySourceKey.of(safetySourceId, userId);
-        safetySourceData =
-                AndroidLockScreenFix.maybeOverrideSafetySourceData(
-                        mContext, safetySourceId, safetySourceData);
-
         boolean sourceDataDiffers = !Objects.equals(safetySourceData, mSafetySourceData.get(key));
         boolean removedSourceError = mSafetySourceErrors.remove(key);
 

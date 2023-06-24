@@ -18,7 +18,6 @@ package com.android.safetycenter.data;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
-import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -30,6 +29,7 @@ import android.safetycenter.SafetySourceIssue;
 import android.safetycenter.SafetySourceStatus;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.modules.utils.build.SdkLevel;
@@ -41,9 +41,11 @@ import java.util.List;
 /**
  * A class to work around an issue with the {@code AndroidLockScreen} safety source, by potentially
  * overriding its {@link SafetySourceData}.
+ *
+ * @hide
  */
 @RequiresApi(TIRAMISU)
-final class AndroidLockScreenFix {
+public final class AndroidLockScreenFix {
 
     private static final String TAG = "AndroidLockScreenFix";
 
@@ -73,7 +75,7 @@ final class AndroidLockScreenFix {
      * created (the key does take into account the request code).
      */
     @Nullable
-    static SafetySourceData maybeOverrideSafetySourceData(
+    public static SafetySourceData maybeOverrideSafetySourceData(
             Context context, String sourceId, @Nullable SafetySourceData safetySourceData) {
         if (safetySourceData == null) {
             return null;
@@ -119,7 +121,9 @@ final class AndroidLockScreenFix {
                                 safetySourceStatus.getSeverityLevel())
                         .setPendingIntent(
                                 overridePendingIntent(
-                                        context, safetySourceStatus.getPendingIntent(), false))
+                                        context,
+                                        safetySourceStatus.getPendingIntent(),
+                                        /* isIconAction= */ false))
                         .setEnabled(safetySourceStatus.isEnabled());
         SafetySourceStatus.IconAction iconAction = safetySourceStatus.getIconAction();
         if (iconAction != null) {
@@ -134,7 +138,8 @@ final class AndroidLockScreenFix {
             Context context, SafetySourceStatus.IconAction iconAction) {
         return new SafetySourceStatus.IconAction(
                 iconAction.getIconType(),
-                overridePendingIntent(context, iconAction.getPendingIntent(), true));
+                overridePendingIntent(
+                        context, iconAction.getPendingIntent(), /* isIconAction= */ true));
     }
 
     private static SafetySourceIssue overrideTiramisuSafetySourceIssue(
@@ -163,7 +168,8 @@ final class AndroidLockScreenFix {
         return new SafetySourceIssue.Action.Builder(
                         action.getId(),
                         action.getLabel(),
-                        overridePendingIntent(context, action.getPendingIntent(), false))
+                        overridePendingIntent(
+                                context, action.getPendingIntent(), /* isIconAction= */ false))
                 .setWillResolve(action.willResolve())
                 .setSuccessMessage(action.getSuccessMessage())
                 .build();
@@ -206,7 +212,7 @@ final class AndroidLockScreenFix {
         // This is important because there are scenarios where the Settings app provides different
         // pending intents (e.g. in the work profile), and in this case we shouldn't override them.
         if (isIconAction) {
-            Log.w(
+            Log.i(
                     TAG,
                     "Replacing " + ANDROID_LOCK_SCREEN_SOURCE_ID + " icon action pending intent");
             return PendingIntentFactory.getActivityPendingIntent(
@@ -215,7 +221,7 @@ final class AndroidLockScreenFix {
                     newLockScreenIconActionIntent(settingsPackageName),
                     PendingIntent.FLAG_IMMUTABLE);
         }
-        Log.w(TAG, "Replacing " + ANDROID_LOCK_SCREEN_SOURCE_ID + " entry or issue pending intent");
+        Log.i(TAG, "Replacing " + ANDROID_LOCK_SCREEN_SOURCE_ID + " entry or issue pending intent");
         return PendingIntentFactory.getActivityPendingIntent(
                 settingsPackageContext,
                 ANDROID_LOCK_SCREEN_ENTRY_REQ_CODE,

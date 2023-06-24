@@ -38,7 +38,6 @@ import com.android.safetycenter.testing.Coroutines.TIMEOUT_LONG
 import com.android.safetycenter.testing.Coroutines.TIMEOUT_SHORT
 import com.android.safetycenter.testing.SafetyCenterActivityLauncher.launchSafetyCenterActivity
 import com.android.safetycenter.testing.SafetyCenterFlags
-import com.android.safetycenter.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
 import com.android.safetycenter.testing.SafetyCenterTestConfigs
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.ISSUE_ONLY_ALL_OPTIONAL_ID
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SINGLE_SOURCE_ID
@@ -48,12 +47,14 @@ import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE_ID_4
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE_ID_5
 import com.android.safetycenter.testing.SafetyCenterTestHelper
+import com.android.safetycenter.testing.SafetyCenterTestRule
 import com.android.safetycenter.testing.SafetySourceIntentHandler.Request
 import com.android.safetycenter.testing.SafetySourceIntentHandler.Response
 import com.android.safetycenter.testing.SafetySourceReceiver
 import com.android.safetycenter.testing.SafetySourceTestData
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.CRITICAL_ISSUE_ID
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.RECOMMENDATION_ISSUE_ID
+import com.android.safetycenter.testing.SupportsSafetyCenterRule
 import com.android.safetycenter.testing.UiTestHelper.MORE_ISSUES_LABEL
 import com.android.safetycenter.testing.UiTestHelper.RESCAN_BUTTON_LABEL
 import com.android.safetycenter.testing.UiTestHelper.clickConfirmDismissal
@@ -73,8 +74,6 @@ import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueNotDisplayed
 import org.junit.After
 import org.junit.Assume.assumeFalse
-import org.junit.Assume.assumeTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -83,40 +82,19 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SafetyCenterActivityTest {
 
-    @get:Rule val disableAnimationRule = DisableAnimationRule()
-
-    @get:Rule val freezeRotationRule = FreezeRotationRule()
-
-    @get:Rule val screenRecordRule = ScreenRecordRule()
-
     private val context: Context = getApplicationContext()
-
     private val safetyCenterTestHelper = SafetyCenterTestHelper(context)
     private val safetySourceTestData = SafetySourceTestData(context)
     private val safetyCenterTestConfigs = SafetyCenterTestConfigs(context)
-    // JUnit's Assume is not supported in @BeforeClass by the tests runner, so this is used to
-    // manually skip the setup and teardown methods.
-    private val shouldRunTests = context.deviceSupportsSafetyCenter()
 
-    @Before
-    fun assumeDeviceSupportsSafetyCenterToRunTests() {
-        assumeTrue(shouldRunTests)
-    }
-
-    @Before
-    fun enableSafetyCenterBeforeTest() {
-        if (!shouldRunTests) {
-            return
-        }
-        safetyCenterTestHelper.setup()
-    }
+    @get:Rule(order = 1) val supportsSafetyCenterRule = SupportsSafetyCenterRule(context)
+    @get:Rule(order = 2) val safetyCenterTestRule = SafetyCenterTestRule(safetyCenterTestHelper)
+    @get:Rule(order = 3) val disableAnimationRule = DisableAnimationRule()
+    @get:Rule(order = 4) val freezeRotationRule = FreezeRotationRule()
+    @get:Rule(order = 5) val screenRecordRule = ScreenRecordRule()
 
     @After
     fun clearDataAfterTest() {
-        if (!shouldRunTests) {
-            return
-        }
-        safetyCenterTestHelper.reset()
         getUiDevice().resetRotation()
     }
 

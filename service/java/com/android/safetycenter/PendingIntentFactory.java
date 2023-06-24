@@ -20,7 +20,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -32,6 +31,7 @@ import android.os.Binder;
 import android.os.UserHandle;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.safetycenter.resources.SafetyCenterResourcesContext;
@@ -235,7 +235,8 @@ public final class PendingIntentFactory {
         // This call requires the INTERACT_ACROSS_USERS permission.
         final long callingId = Binder.clearCallingIdentity();
         try {
-            return context.createPackageContextAsUser(packageName, 0, UserHandle.of(userId));
+            return context.createPackageContextAsUser(
+                    packageName, /* flags= */ 0, UserHandle.of(userId));
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Package name " + packageName + " not found", e);
             return null;

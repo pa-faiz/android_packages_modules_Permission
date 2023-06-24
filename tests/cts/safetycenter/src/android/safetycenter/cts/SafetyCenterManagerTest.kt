@@ -59,7 +59,6 @@ import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.set
 import com.android.safetycenter.testing.SafetyCenterApisWithShellPermissions.setSafetySourceDataWithPermission
 import com.android.safetycenter.testing.SafetyCenterEnabledChangedReceiver
 import com.android.safetycenter.testing.SafetyCenterFlags
-import com.android.safetycenter.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
 import com.android.safetycenter.testing.SafetyCenterTestConfigs
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.DYNAMIC_ALL_OPTIONAL_ID
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.DYNAMIC_BAREBONE_ID
@@ -77,6 +76,7 @@ import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.STATIC
 import com.android.safetycenter.testing.SafetyCenterTestData
 import com.android.safetycenter.testing.SafetyCenterTestHelper
 import com.android.safetycenter.testing.SafetyCenterTestListener
+import com.android.safetycenter.testing.SafetyCenterTestRule
 import com.android.safetycenter.testing.SafetySourceIntentHandler.Request
 import com.android.safetycenter.testing.SafetySourceIntentHandler.Response
 import com.android.safetycenter.testing.SafetySourceReceiver
@@ -89,15 +89,15 @@ import com.android.safetycenter.testing.SafetySourceTestData.Companion.CRITICAL_
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.CRITICAL_ISSUE_ID
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.EVENT_SOURCE_STATE_CHANGED
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.RECOMMENDATION_ISSUE_ID
+import com.android.safetycenter.testing.SupportsSafetyCenterRule
 import com.google.common.base.Preconditions.checkState
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.TimeoutCancellationException
-import org.junit.After
 import org.junit.Assume.assumeFalse
 import org.junit.Assume.assumeTrue
-import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -111,30 +111,8 @@ class SafetyCenterManagerTest {
     private val safetyCenterTestConfigs = SafetyCenterTestConfigs(context)
     private val safetyCenterManager = context.getSystemService(SafetyCenterManager::class.java)!!
 
-    // JUnit's Assume is not supported in @BeforeClass by the CTS tests runner, so this is used to
-    // manually skip the setup and teardown methods.
-    private val shouldRunTests = context.deviceSupportsSafetyCenter()
-
-    @Before
-    fun assumeDeviceSupportsSafetyCenterToRunTests() {
-        assumeTrue(shouldRunTests)
-    }
-
-    @Before
-    fun enableSafetyCenterBeforeTest() {
-        if (!shouldRunTests) {
-            return
-        }
-        safetyCenterTestHelper.setup()
-    }
-
-    @After
-    fun clearDataAfterTest() {
-        if (!shouldRunTests) {
-            return
-        }
-        safetyCenterTestHelper.reset()
-    }
+    @get:Rule(order = 1) val supportsSafetyCenterRule = SupportsSafetyCenterRule(context)
+    @get:Rule(order = 2) val safetyCenterTestRule = SafetyCenterTestRule(safetyCenterTestHelper)
 
     @Test
     fun isSafetyCenterEnabled_withFlagEnabled_returnsTrue() {

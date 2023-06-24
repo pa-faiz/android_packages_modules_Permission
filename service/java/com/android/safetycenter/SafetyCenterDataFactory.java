@@ -17,13 +17,14 @@
 package com.android.safetycenter;
 
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import static com.android.safetycenter.internaldata.SafetyCenterBundles.ISSUES_TO_GROUPS_BUNDLE_KEY;
 import static com.android.safetycenter.internaldata.SafetyCenterBundles.STATIC_ENTRIES_TO_IDS_BUNDLE_KEY;
 
 import static java.util.Collections.emptyList;
 
-import android.annotation.Nullable;
+import android.annotation.TargetApi;
 import android.annotation.UserIdInt;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -50,6 +51,7 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.modules.utils.build.SdkLevel;
@@ -400,8 +402,8 @@ public final class SafetyCenterDataFactory {
                                     safetySource,
                                     defaultPackageName,
                                     userProfileGroup.getProfileParentUserId(),
-                                    false,
-                                    false));
+                                    /* isUserManaged= */ false,
+                                    /* isManagedUserRunning= */ false));
 
             if (!SafetySources.supportsManagedProfiles(safetySource)) {
                 continue;
@@ -422,7 +424,7 @@ public final class SafetyCenterDataFactory {
                                         safetySource,
                                         defaultPackageName,
                                         managedProfileUserId,
-                                        true,
+                                        /* isUserManaged= */ true,
                                         isManagedUserRunning));
             }
         }
@@ -509,10 +511,7 @@ public final class SafetyCenterDataFactory {
                 for (int i = 0; i < entries.size(); i++) {
                     SafetySourceKey key = toSafetySourceKey(entries.get(i).getId());
                     if (mSafetyCenterDataManager.sourceHasError(key)) {
-                        // We always use the singular form of the error string for groups because
-                        // they appear as single entries in the UI and this ensures consistency,
-                        // especially when subpages are enabled.
-                        return getRefreshErrorString(1);
+                        return getRefreshErrorString();
                     }
                 }
                 return mSafetyCenterResourcesContext.getStringByName("group_unknown_summary");
@@ -717,7 +716,7 @@ public final class SafetyCenterDataFactory {
         CharSequence summary =
                 mSafetyCenterDataManager.sourceHasError(
                                 SafetySourceKey.of(safetySource.getId(), userId))
-                        ? getRefreshErrorString(1)
+                        ? getRefreshErrorString()
                         : mSafetyCenterResourcesContext.getOptionalString(
                                 safetySource.getSummaryResId());
         if (isQuietModeEnabled) {
@@ -754,8 +753,8 @@ public final class SafetyCenterDataFactory {
                     safetySource,
                     defaultPackageName,
                     userProfileGroup.getProfileParentUserId(),
-                    false,
-                    false);
+                    /* isUserManaged= */ false,
+                    /* isManagedUserRunning= */ false);
 
             if (!SafetySources.supportsManagedProfiles(safetySource)) {
                 continue;
@@ -774,7 +773,7 @@ public final class SafetyCenterDataFactory {
                         safetySource,
                         defaultPackageName,
                         managedProfileUserId,
-                        true,
+                        /* isUserManaged= */ true,
                         isManagedUserRunning);
             }
         }
@@ -921,7 +920,7 @@ public final class SafetyCenterDataFactory {
         CharSequence summary =
                 mSafetyCenterDataManager.sourceHasError(
                                 SafetySourceKey.of(safetySource.getId(), userId))
-                        ? getRefreshErrorString(1)
+                        ? getRefreshErrorString()
                         : mSafetyCenterResourcesContext.getOptionalString(
                                 safetySource.getSummaryResId());
         if (isQuietModeEnabled) {
@@ -1117,6 +1116,7 @@ public final class SafetyCenterDataFactory {
         return "";
     }
 
+    @TargetApi(UPSIDE_DOWN_CAKE)
     private String getStatusTitleFromIssueCategories(
             @Nullable SafetySourceIssueInfo topNonDismissedIssueInfo,
             String deviceResourceName,
@@ -1138,17 +1138,12 @@ public final class SafetyCenterDataFactory {
                 return mSafetyCenterResourcesContext.getStringByName(accountResourceName);
             case SafetySourceIssue.ISSUE_CATEGORY_GENERAL:
                 return generalString;
-        }
-        if (SdkLevel.isAtLeastU()) {
-            switch (issueCategory) {
-                case SafetySourceIssue.ISSUE_CATEGORY_DATA:
-                    return mSafetyCenterResourcesContext.getStringByName(dataResourceName);
-                case SafetySourceIssue.ISSUE_CATEGORY_PASSWORDS:
-                    return mSafetyCenterResourcesContext.getStringByName(passwordsResourceName);
-                case SafetySourceIssue.ISSUE_CATEGORY_PERSONAL_SAFETY:
-                    return mSafetyCenterResourcesContext.getStringByName(
-                            personalSafetyResourceName);
-            }
+            case SafetySourceIssue.ISSUE_CATEGORY_DATA:
+                return mSafetyCenterResourcesContext.getStringByName(dataResourceName);
+            case SafetySourceIssue.ISSUE_CATEGORY_PASSWORDS:
+                return mSafetyCenterResourcesContext.getStringByName(passwordsResourceName);
+            case SafetySourceIssue.ISSUE_CATEGORY_PERSONAL_SAFETY:
+                return mSafetyCenterResourcesContext.getStringByName(personalSafetyResourceName);
         }
 
         Log.w(TAG, "Unexpected SafetySourceIssue.IssueCategory: " + issueCategory);
@@ -1207,8 +1202,8 @@ public final class SafetyCenterDataFactory {
                         == SafetySourceIssue.ISSUE_ACTIONABILITY_AUTOMATIC;
     }
 
-    private String getRefreshErrorString(int numberOfErrorEntries) {
-        return getIcuPluralsString("refresh_error", numberOfErrorEntries);
+    private String getRefreshErrorString() {
+        return getIcuPluralsString("refresh_error", /* count= */ 1);
     }
 
     private String getIcuPluralsString(String name, int count, Object... formatArgs) {

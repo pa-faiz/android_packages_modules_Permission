@@ -399,6 +399,7 @@
         <activity android:name="com.android.permissioncontroller.role.ui.RequestRoleActivity"
                   android:excludeFromRecents="true"
                   android:exported="true"
+                  android:launchMode="singleTop"
                   android:theme="@style/RequestRole.FilterTouches">
             <intent-filter android:priority="1">
                 <action android:name="android.app.role.action.REQUEST_ROLE" />
@@ -606,8 +607,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Unexported empty activity for in-process tests -->
-        <activity android:name="android.app.Activity" />
     </application>
 
 </manifest>

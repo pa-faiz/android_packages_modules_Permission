@@ -19,7 +19,6 @@ package com.android.safetycenter.data;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.annotation.ElapsedRealtimeLong;
-import android.annotation.Nullable;
 import android.content.Context;
 import android.safetycenter.SafetyCenterManager;
 import android.safetycenter.SafetyEvent;
@@ -27,6 +26,7 @@ import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceIssue;
 import android.safetycenter.SafetySourceStatus;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.permission.util.UserUtils;
@@ -132,10 +132,11 @@ final class SafetySourceStateCollectedLogger {
             }
         }
 
+        Integer severityLevel = maxSeverityLevel > Integer.MIN_VALUE ? maxSeverityLevel : null;
         SafetyCenterStatsdLogger.writeSafetySourceStateCollected(
                 sourceKey.getSourceId(),
                 isManagedProfile,
-                maxSeverityLevel > Integer.MIN_VALUE ? maxSeverityLevel : null,
+                severityLevel,
                 openIssuesCount,
                 dismissedIssuesCount,
                 getDuplicateCount(sourceKey),

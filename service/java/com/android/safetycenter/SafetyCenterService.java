@@ -35,7 +35,6 @@ import static com.android.safetycenter.internaldata.SafetyCenterIds.toUserFriend
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.PendingIntent;
 import android.app.StatsManager;
@@ -69,13 +68,16 @@ import android.util.ArraySet;
 import android.util.Log;
 
 import androidx.annotation.Keep;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.modules.utils.BackgroundThread;
 import com.android.permission.util.ForegroundThread;
 import com.android.permission.util.UserUtils;
+import com.android.safetycenter.data.AndroidLockScreenFix;
 import com.android.safetycenter.data.SafetyCenterDataManager;
+import com.android.safetycenter.data.SafetyEventFix;
 import com.android.safetycenter.internaldata.SafetyCenterIds;
 import com.android.safetycenter.internaldata.SafetyCenterIssueActionId;
 import com.android.safetycenter.internaldata.SafetyCenterIssueId;
@@ -192,7 +194,7 @@ public final class SafetyCenterService extends SystemService {
                                         .getIdentifier(
                                                 "config_enableSafetyCenter", "bool", "android"));
         if (!mDeviceSupportsSafetyCenter) {
-            Log.i(TAG, "Device does not support safety center, safety center will be disabled.");
+            Log.i(TAG, "Device does not support Safety Center, it will be disabled");
         }
     }
 
@@ -208,7 +210,7 @@ public final class SafetyCenterService extends SystemService {
                     mSafetyCenterDataManager.loadPersistableDataStateFromFile();
                     new UserBroadcastReceiver().register(getContext());
                     new SafetyCenterNotificationReceiver(
-                                    this,
+                                    /* service= */ this,
                                     mSafetyCenterDataManager,
                                     mSafetyCenterDataChangeNotifier,
                                     mApiLock)
@@ -241,7 +243,10 @@ public final class SafetyCenterService extends SystemService {
         StatsManager statsManager =
                 requireNonNull(getContext().getSystemService(StatsManager.class));
         statsManager.setPullAtomCallback(
-                SAFETY_STATE, null, BackgroundThread.getExecutor(), mPullAtomCallback);
+                SAFETY_STATE,
+                /* metadata= */ null,
+                BackgroundThread.getExecutor(),
+                mPullAtomCallback);
     }
 
     /** Service implementation of {@link ISafetyCenterManager.Stub}. */
@@ -275,6 +280,16 @@ public final class SafetyCenterService extends SystemService {
 
             UserProfileGroup userProfileGroup = UserProfileGroup.fromUser(getContext(), userId);
             synchronized (mApiLock) {
+                safetySourceData =
+                        AndroidLockScreenFix.maybeOverrideSafetySourceData(
+                                getContext(), safetySourceId, safetySourceData);
+                safetyEvent =
+                        SafetyEventFix.maybeOverrideSafetyEvent(
+                                mSafetyCenterDataManager,
+                                safetySourceId,
+                                safetySourceData,
+                                safetyEvent,
+                                userId);
                 boolean hasUpdate =
                         mSafetyCenterDataManager.setSafetySourceData(
                                 safetySourceData, safetySourceId, safetyEvent, packageName, userId);
@@ -392,7 +407,7 @@ public final class SafetyCenterService extends SystemService {
             // search works by adding all the entries very rarely (and relies on filtering them out
             // instead).
             if (!canUseSafetyCenter()) {
-                Log.w(TAG, "Called getSafetyCenterConfig, but Safety Center is not supported");
+                Log.i(TAG, "Called getSafetyCenterConfig, but Safety Center is not supported");
                 return null;
             }
 
@@ -504,7 +519,7 @@ public final class SafetyCenterService extends SystemService {
                 PendingIntent onDismissPendingIntent =
                         safetySourceIssue.getOnDismissPendingIntent();
                 if (onDismissPendingIntent != null
-                        && !dispatchPendingIntent(onDismissPendingIntent, null)) {
+                        && !dispatchPendingIntent(onDismissPendingIntent)) {
                     Log.w(
                             TAG,
                             "Error dispatching dismissal for issue: "
@@ -634,13 +649,14 @@ public final class SafetyCenterService extends SystemService {
 
         /** Enforces cross user permission and returns whether the user is valid. */
         private boolean enforceCrossUserPermission(String message, @UserIdInt int userId) {
-            UserUtils.enforceCrossUserPermission(userId, false, message, getContext());
+            UserUtils.enforceCrossUserPermission(
+                    userId, /* allowAll= */ false, message, getContext());
             if (!UserUtils.isUserExistent(userId, getContext())) {
                 Log.w(
                         TAG,
                         "Called "
                                 + message
-                                + " with user id "
+                                + " with user id: "
                                 + userId
                                 + ", which does not correspond to an existing user");
                 return false;
@@ -650,7 +666,7 @@ public final class SafetyCenterService extends SystemService {
                         TAG,
                         "Called "
                                 + message
-                                + " with user id "
+                                + " with user id: "
                                 + userId
                                 + ", which is an unsupported user");
                 return false;
@@ -676,7 +692,7 @@ public final class SafetyCenterService extends SystemService {
                         packageManager.getPackageUidAsUser(
                                 packageName, PackageInfoFlags.of(0), userId);
             } catch (NameNotFoundException e) {
-                Log.e(TAG, "packageName=" + packageName + ", not found for userId=" + userId, e);
+                Log.w(TAG, "Package: " + packageName + ", not found for user id: " + userId, e);
                 return false;
             }
             if (callingUid == Process.ROOT_UID || callingUid == Process.SYSTEM_UID) {
@@ -684,9 +700,9 @@ public final class SafetyCenterService extends SystemService {
             }
             if (UserHandle.getAppId(callingUid) != UserHandle.getAppId(actualUid)) {
                 throw new SecurityException(
-                        "packageName="
+                        "Package: "
                                 + packageName
-                                + ", does not belong to callingUid="
+                                + ", does not belong to calling uid: "
                                 + callingUid);
             }
             return true;
@@ -719,9 +735,11 @@ public final class SafetyCenterService extends SystemService {
                 ParcelFileDescriptor err,
                 String[] args) {
             return new SafetyCenterShellCommandHandler(
-                            getContext(), this, mDeviceSupportsSafetyCenter)
+                            getContext(),
+                            /* safetyCenterManager= */ this,
+                            mDeviceSupportsSafetyCenter)
                     .exec(
-                            this,
+                            /* target= */ this,
                             in.getFileDescriptor(),
                             out.getFileDescriptor(),
                             err.getFileDescriptor(),
@@ -816,11 +834,11 @@ public final class SafetyCenterService extends SystemService {
 
         private void setInitialState() {
             mSafetyCenterEnabled = SafetyCenterFlags.getSafetyCenterEnabled();
-            Log.w(TAG, "SafetyCenter is " + (mSafetyCenterEnabled ? "enabled." : "disabled."));
+            Log.i(TAG, "Safety Center is " + (mSafetyCenterEnabled ? "enabled" : "disabled"));
         }
 
         private void onSafetyCenterEnabledChanged(boolean safetyCenterEnabled) {
-            Log.w(TAG, "SafetyCenter is now " + (safetyCenterEnabled ? "enabled." : "disabled."));
+            Log.i(TAG, "Safety Center is now " + (safetyCenterEnabled ? "enabled" : "disabled"));
 
             if (safetyCenterEnabled) {
                 onApiEnabled();
@@ -889,9 +907,7 @@ public final class SafetyCenterService extends SystemService {
                 }
             }
 
-            Log.v(
-                    TAG,
-                    "Cleared refresh with broadcastId:" + mRefreshBroadcastId + " after a timeout");
+            Log.w(TAG, "Timeout for refresh with id: " + mRefreshBroadcastId);
         }
 
         @Override
@@ -966,7 +982,11 @@ public final class SafetyCenterService extends SystemService {
         void register(Context context) {
             IntentFilter filter = new IntentFilter();
             filter.addAction(Intent.ACTION_LOCALE_CHANGED);
-            context.registerReceiverForAllUsers(this, filter, null, null);
+            context.registerReceiverForAllUsers(
+                    /* receiver= */ this,
+                    filter,
+                    /* broadcastPermission= */ null,
+                    /* scheduler= */ null);
         }
 
         @Override
@@ -992,42 +1012,46 @@ public final class SafetyCenterService extends SystemService {
             filter.addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED);
             filter.addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE);
             filter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
-            context.registerReceiverForAllUsers(this, filter, null, null);
+            context.registerReceiverForAllUsers(
+                    /* receiver= */ this,
+                    filter,
+                    /* broadcastPermission= */ null,
+                    /* scheduler= */ null);
         }
 
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action == null) {
-                Log.w(TAG, "Received broadcast with null action!");
+                Log.w(TAG, "Received broadcast with null action");
                 return;
             }
 
             UserHandle userHandle = intent.getParcelableExtra(Intent.EXTRA_USER, UserHandle.class);
             if (userHandle == null) {
-                Log.w(TAG, "Received " + action + " broadcast missing user extra!");
+                Log.w(TAG, "Received action: " + action + ", but missing user extra");
                 return;
             }
 
             int userId = userHandle.getIdentifier();
+            Log.d(TAG, "Received action: " + action + ", for user id: " + userId);
             if (!UserProfileGroup.isSupported(userId, context)) {
                 Log.i(
                         TAG,
-                        "Received broadcast for user id "
+                        "Received broadcast for user id: "
                                 + userId
                                 + ", which is an unsupported user");
                 return;
             }
-            Log.d(TAG, "Received " + action + " broadcast for user " + userId);
 
             switch (action) {
                 case Intent.ACTION_USER_REMOVED:
                 case Intent.ACTION_MANAGED_PROFILE_REMOVED:
-                    removeUser(userId, true);
+                    removeUserAndData(userId);
                     break;
                 case Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE:
-                    removeUser(userId, false);
-                    // fall through!
+                    removeUser(userId);
+                    break;
                 case Intent.ACTION_USER_ADDED:
                 case Intent.ACTION_MANAGED_PROFILE_ADDED:
                 case Intent.ACTION_MANAGED_PROFILE_AVAILABLE:
@@ -1036,6 +1060,14 @@ public final class SafetyCenterService extends SystemService {
                     break;
             }
         }
+    }
+
+    private void removeUserAndData(@UserIdInt int userId) {
+        removeUser(userId, /* clearDataPermanently= */ true);
+    }
+
+    private void removeUser(@UserIdInt int userId) {
+        removeUser(userId, /* clearDataPermanently= */ false);
     }
 
     private void removeUser(@UserIdInt int userId, boolean clearDataPermanently) {
@@ -1055,7 +1087,7 @@ public final class SafetyCenterService extends SystemService {
 
     private void startRefreshingSafetySources(
             @RefreshReason int refreshReason, @UserIdInt int userId) {
-        startRefreshingSafetySources(refreshReason, userId, null);
+        startRefreshingSafetySources(refreshReason, userId, /* selectedSafetySourceIds= */ null);
     }
 
     private void startRefreshingSafetySources(
@@ -1091,7 +1123,7 @@ public final class SafetyCenterService extends SystemService {
                 safetyCenterIssueActionId.getSafetyCenterIssueKey();
         UserProfileGroup userProfileGroup =
                 UserProfileGroup.fromUser(getContext(), safetyCenterIssueKey.getUserId());
-        executeIssueActionInternal(safetyCenterIssueActionId, userProfileGroup, null);
+        executeIssueActionInternal(safetyCenterIssueActionId, userProfileGroup, /* taskId= */ null);
     }
 
     private void executeIssueActionInternal(
@@ -1139,6 +1171,10 @@ public final class SafetyCenterService extends SystemService {
                 mSafetyCenterDataChangeNotifier.updateDataConsumers(userProfileGroup);
             }
         }
+    }
+
+    private boolean dispatchPendingIntent(PendingIntent pendingIntent) {
+        return dispatchPendingIntent(pendingIntent, /* launchTaskId= */ null);
     }
 
     private boolean dispatchPendingIntent(

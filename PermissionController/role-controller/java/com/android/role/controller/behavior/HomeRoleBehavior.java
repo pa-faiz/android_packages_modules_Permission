@@ -22,12 +22,16 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ResolveInfo;
+import android.os.Build;
 import android.os.UserHandle;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
+import com.android.modules.utils.build.SdkLevel;
+import com.android.role.controller.model.AppOpPermissions;
 import com.android.role.controller.model.Permissions;
 import com.android.role.controller.model.Role;
 import com.android.role.controller.model.RoleBehavior;
@@ -50,6 +54,14 @@ public class HomeRoleBehavior implements RoleBehavior {
             android.Manifest.permission.READ_CALL_LOG,
             android.Manifest.permission.WRITE_CALL_LOG,
             android.Manifest.permission.READ_CONTACTS);
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private static final List<String> WEAR_PERMISSIONS = Arrays.asList(
+            android.Manifest.permission.POST_NOTIFICATIONS,
+            android.Manifest.permission.SYSTEM_APPLICATION_OVERLAY);
+
+    private static final List<String> WEAR_APP_OP_PERMISSIONS = Arrays.asList(
+            android.Manifest.permission.SYSTEM_ALERT_WINDOW);
 
     @Override
     public boolean isAvailableAsUser(@NonNull Role role, @NonNull UserHandle user,
@@ -97,11 +109,12 @@ public class HomeRoleBehavior implements RoleBehavior {
     public static boolean isSettingsApplication(@NonNull ApplicationInfo applicationInfo,
             @NonNull Context context) {
         PackageManager packageManager = context.getPackageManager();
-        ResolveInfo resolveInfo = packageManager.resolveActivity(new Intent(
-                Settings.ACTION_SETTINGS), PackageManager.MATCH_DEFAULT_ONLY
+        ResolveInfo resolveInfo = packageManager.resolveActivity(
+                new Intent(Settings.ACTION_SETTINGS), PackageManager.MATCH_DEFAULT_ONLY
                 | PackageManager.MATCH_DIRECT_BOOT_AWARE
                 | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
-        if (resolveInfo == null || resolveInfo.activityInfo == null) {
+        if (resolveInfo == null || resolveInfo.activityInfo == null
+                || !resolveInfo.activityInfo.exported) {
             return false;
         }
         return Objects.equals(applicationInfo.packageName, resolveInfo.activityInfo.packageName);
@@ -131,6 +144,16 @@ public class HomeRoleBehavior implements RoleBehavior {
                     Arrays.asList(android.Manifest.permission.ALLOW_SLIPPERY_TOUCHES),
                     true, false, true, false, false, context);
         }
+
+        if (SdkLevel.isAtLeastT()) {
+            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)) {
+                Permissions.grant(packageName, WEAR_PERMISSIONS,
+                        true, false, true, false, false, context);
+                for (String permission : WEAR_APP_OP_PERMISSIONS) {
+                    AppOpPermissions.grant(packageName, permission, true, context);
+                }
+            }
+        }
     }
 
     @Override
@@ -144,6 +167,15 @@ public class HomeRoleBehavior implements RoleBehavior {
             Permissions.revoke(packageName,
                     Arrays.asList(android.Manifest.permission.ALLOW_SLIPPERY_TOUCHES),
                     true, false, false, context);
+        }
+
+        if (SdkLevel.isAtLeastT()) {
+            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)) {
+                Permissions.revoke(packageName, WEAR_PERMISSIONS, true, false, false, context);
+                for (String permission : WEAR_APP_OP_PERMISSIONS) {
+                    AppOpPermissions.revoke(packageName, permission, context);
+                }
+            }
         }
     }
 

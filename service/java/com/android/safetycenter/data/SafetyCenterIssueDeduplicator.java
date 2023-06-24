@@ -27,13 +27,13 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.safetycenter.config.SafetySourcesGroup;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.safetycenter.SafetySourceIssueInfo;
@@ -72,7 +72,7 @@ final class SafetyCenterIssueDeduplicator {
      * <p>In case any issue, in the bucket of duplicate issues, was dismissed, all issues of the
      * same or lower severity will be dismissed as well.
      *
-     * @return deduplicated list of issues, and some other information gathere in the deduplication
+     * @return deduplicated list of issues, and some other information gathered in the deduplication
      *     process
      */
     @RequiresApi(UPSIDE_DOWN_CAKE)
@@ -123,7 +123,7 @@ final class SafetyCenterIssueDeduplicator {
         for (int i = 0; i < dedupBuckets.size(); i++) {
             List<SafetySourceIssueInfo> duplicates = dedupBuckets.valueAt(i);
             if (duplicates.isEmpty()) {
-                Log.w(TAG, "List of duplicates in a dedupBucket is empty");
+                Log.w(TAG, "List of duplicates in a deduplication bucket is empty");
                 continue;
             }
 
@@ -164,7 +164,7 @@ final class SafetyCenterIssueDeduplicator {
     }
 
     /**
-     * Handles dismissals logic: in each bucket, dismissal details of the top (highest priority)
+     * Handles dismissals logic: in each bucket, dismissal details of the highest priority (top)
      * dismissed issue will be copied to all other duplicate issues in that bucket, that are of
      * equal or lower severity (not priority). Notification-dismissal details are handled similarly.
      */

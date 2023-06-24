@@ -17,6 +17,10 @@
 package android.safetycenter.functional.ui
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.hardware.SensorPrivacyManager
+import android.hardware.SensorPrivacyManager.Sensors.CAMERA
+import android.hardware.SensorPrivacyManager.Sensors.MICROPHONE
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.os.Bundle
 import android.safetycenter.SafetyCenterManager.EXTRA_SAFETY_SOURCES_GROUP_ID
@@ -31,23 +35,24 @@ import com.android.compatibility.common.util.UiAutomatorUtils2
 import com.android.safetycenter.testing.SafetyCenterActivityLauncher.launchSafetyCenterActivity
 import com.android.safetycenter.testing.SafetyCenterActivityLauncher.openPageAndExit
 import com.android.safetycenter.testing.SafetyCenterFlags
-import com.android.safetycenter.testing.SafetyCenterFlags.deviceSupportsSafetyCenter
 import com.android.safetycenter.testing.SafetyCenterTestConfigs
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.PRIVACY_SOURCE_ID_1
 import com.android.safetycenter.testing.SafetyCenterTestConfigs.Companion.SOURCE_ID_1
 import com.android.safetycenter.testing.SafetyCenterTestHelper
+import com.android.safetycenter.testing.SafetyCenterTestRule
 import com.android.safetycenter.testing.SafetySourceTestData
+import com.android.safetycenter.testing.SupportsSafetyCenterRule
 import com.android.safetycenter.testing.UiTestHelper.MORE_ISSUES_LABEL
 import com.android.safetycenter.testing.UiTestHelper.clickMoreIssuesCard
 import com.android.safetycenter.testing.UiTestHelper.resetRotation
 import com.android.safetycenter.testing.UiTestHelper.waitAllTextDisplayed
+import com.android.safetycenter.testing.UiTestHelper.waitAllTextNotDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitButtonDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitPageTitleDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueNotDisplayed
 import org.junit.After
-import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -58,39 +63,25 @@ import org.junit.runner.RunWith
 @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
 class PrivacySubpageTest {
 
-    @get:Rule val disableAnimationRule = DisableAnimationRule()
-
-    @get:Rule val freezeRotationRule = FreezeRotationRule()
-
     private val context: Context = getApplicationContext()
     private val safetyCenterTestHelper = SafetyCenterTestHelper(context)
     private val safetySourceTestData = SafetySourceTestData(context)
     private val safetyCenterTestConfigs = SafetyCenterTestConfigs(context)
+    private val sensorPrivacyManager: SensorPrivacyManager =
+        context.getSystemService(SensorPrivacyManager::class.java)!!
 
-    // JUnit's Assume is not supported in @BeforeClass by the tests runner, so this is used to
-    // manually skip the setup and teardown methods.
-    private val shouldRunTests = context.deviceSupportsSafetyCenter()
-
-    @Before
-    fun assumeDeviceSupportsSafetyCenterToRunTests() {
-        assumeTrue(shouldRunTests)
-    }
+    @get:Rule(order = 1) val supportsSafetyCenterRule = SupportsSafetyCenterRule(context)
+    @get:Rule(order = 2) val safetyCenterTestRule = SafetyCenterTestRule(safetyCenterTestHelper)
+    @get:Rule(order = 3) val disableAnimationRule = DisableAnimationRule()
+    @get:Rule(order = 4) val freezeRotationRule = FreezeRotationRule()
 
     @Before
     fun enableSafetyCenterBeforeTest() {
-        if (!shouldRunTests) {
-            return
-        }
-        safetyCenterTestHelper.setup()
         SafetyCenterFlags.showSubpages = true
     }
 
     @After
     fun clearDataAfterTest() {
-        if (!shouldRunTests) {
-            return
-        }
-        safetyCenterTestHelper.reset()
         UiAutomatorUtils2.getUiDevice().resetRotation()
     }
 
@@ -166,13 +157,20 @@ class PrivacySubpageTest {
         extras.putString(EXTRA_SAFETY_SOURCES_GROUP_ID, config.safetySourcesGroups.first().id)
 
         context.launchSafetyCenterActivity(extras) {
-            waitAllTextDisplayed(
-                "Camera access",
-                "Microphone access",
-                "Show clipboard access",
-                "Show passwords",
-                "Location access"
+            waitAllText(
+                displayed = sensorPrivacyManager.supportsSensorToggle(CAMERA),
+                text = "Camera access"
             )
+            waitAllText(
+                displayed = sensorPrivacyManager.supportsSensorToggle(MICROPHONE),
+                text = "Microphone access"
+            )
+            waitAllTextDisplayed("Show clipboard access")
+            waitAllText(
+                displayed = getPermissionControllerBool("config_display_show_password_toggle"),
+                text = "Show passwords"
+            )
+            waitAllTextDisplayed("Location access")
         }
     }
 
@@ -213,6 +211,34 @@ class PrivacySubpageTest {
                 context.getString(source.summaryResId),
                 "Controls",
             )
+        }
+    }
+
+    private fun waitAllText(displayed: Boolean, text: String) {
+        if (displayed) {
+            waitAllTextDisplayed(text)
+        } else {
+            waitAllTextNotDisplayed(text)
+        }
+    }
+
+    private fun getPermissionControllerBool(resourceName: String): Boolean {
+        val permissionControllerContext = getPermissionControllerContext()
+        val resourceId =
+            permissionControllerContext.resources.getIdentifier(
+                resourceName,
+                "bool",
+                "com.android.permissioncontroller"
+            )
+        return permissionControllerContext.resources.getBoolean(resourceId)
+    }
+
+    private fun getPermissionControllerContext(): Context {
+        val permissionControllerPkg = context.packageManager.permissionControllerPackageName
+        try {
+            return context.createPackageContext(permissionControllerPkg, 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+            throw RuntimeException(e)
         }
     }
 

@@ -20,7 +20,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -30,6 +29,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.permission.util.UserUtils;
@@ -141,9 +141,9 @@ public final class UserProfileGroup {
                         Arrays.copyOf(
                                 managedRunningProfilesUserIds, managedRunningProfilesUserIdsLen));
         if (!userProfileGroup.contains(userId)) {
-            Log.w(
+            Log.i(
                     TAG,
-                    "User id " + userId + " does not belong to " + userProfileGroup,
+                    "User id: " + userId + " does not belong to: " + userProfileGroup,
                     new Exception());
         }
         return userProfileGroup;
@@ -167,7 +167,8 @@ public final class UserProfileGroup {
             return context;
         } else {
             try {
-                return context.createPackageContextAsUser(context.getPackageName(), 0, userHandle);
+                return context.createPackageContextAsUser(
+                        context.getPackageName(), /* flags= */ 0, userHandle);
             } catch (PackageManager.NameNotFoundException doesNotHappen) {
                 throw new IllegalStateException(doesNotHappen);
             }
@@ -232,9 +233,9 @@ public final class UserProfileGroup {
         profileParentAndManagedRunningProfilesUserIds[0] = mProfileParentUserId;
         System.arraycopy(
                 mManagedRunningProfilesUserIds,
-                0,
+                /* srcPos= */ 0,
                 profileParentAndManagedRunningProfilesUserIds,
-                1,
+                /* destPos= */ 1,
                 mManagedRunningProfilesUserIds.length);
         return profileParentAndManagedRunningProfilesUserIds;
     }
