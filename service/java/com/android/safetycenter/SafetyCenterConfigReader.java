@@ -33,7 +33,7 @@ import androidx.annotation.RequiresApi;
 
 import com.android.safetycenter.config.ParseException;
 import com.android.safetycenter.config.SafetyCenterConfigParser;
-import com.android.safetycenter.resources.SafetyCenterResourcesContext;
+import com.android.safetycenter.resources.SafetyCenterResourcesApk;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -56,15 +56,15 @@ public final class SafetyCenterConfigReader {
 
     private static final String TAG = "SafetyCenterConfigReade";
 
-    private final SafetyCenterResourcesContext mSafetyCenterResourcesContext;
+    private final SafetyCenterResourcesApk mSafetyCenterResourcesApk;
 
     @Nullable private SafetyCenterConfigInternal mConfigInternalFromXml;
 
     @Nullable private SafetyCenterConfigInternal mConfigInternalOverrideForTests;
 
-    /** Creates a {@link SafetyCenterConfigReader} from a {@link SafetyCenterResourcesContext}. */
-    SafetyCenterConfigReader(SafetyCenterResourcesContext safetyCenterResourcesContext) {
-        mSafetyCenterResourcesContext = safetyCenterResourcesContext;
+    /** Creates a {@link SafetyCenterConfigReader} from a {@link SafetyCenterResourcesApk}. */
+    SafetyCenterConfigReader(SafetyCenterResourcesApk safetyCenterResourcesApk) {
+        mSafetyCenterResourcesApk = safetyCenterResourcesApk;
     }
 
     /**
@@ -76,7 +76,7 @@ public final class SafetyCenterConfigReader {
      * this method was {@code true}.
      */
     boolean loadConfig() {
-        SafetyCenterConfig safetyCenterConfig = readSafetyCenterConfig();
+        SafetyCenterConfig safetyCenterConfig = loadSafetyCenterConfig();
         if (safetyCenterConfig == null) {
             return false;
         }
@@ -137,15 +137,15 @@ public final class SafetyCenterConfigReader {
     @Nullable
     public ExternalSafetySource getExternalSafetySource(
             String safetySourceId, String callingPackageName) {
-        SafetyCenterConfigInternal currentConfig = getCurrentConfigInternal();
+        SafetyCenterConfigInternal testConfig = mConfigInternalOverrideForTests;
         SafetyCenterConfigInternal xmlConfig = requireNonNull(mConfigInternalFromXml);
-        if (currentConfig == xmlConfig) {
+        if (testConfig == null) {
             // No override, access source directly.
-            return currentConfig.getExternalSafetySources().get(safetySourceId);
+            return xmlConfig.getExternalSafetySources().get(safetySourceId);
         }
 
         ExternalSafetySource externalSafetySourceInTestConfig =
-                currentConfig.getExternalSafetySources().get(safetySourceId);
+                testConfig.getExternalSafetySources().get(safetySourceId);
         ExternalSafetySource externalSafetySourceInRealConfig =
                 xmlConfig.getExternalSafetySources().get(safetySourceId);
 
@@ -225,26 +225,21 @@ public final class SafetyCenterConfigReader {
     }
 
     @Nullable
-    private SafetyCenterConfig readSafetyCenterConfig() {
-        InputStream in = mSafetyCenterResourcesContext.getSafetyCenterConfig();
+    private SafetyCenterConfig loadSafetyCenterConfig() {
+        InputStream in = mSafetyCenterResourcesApk.getSafetyCenterConfig();
         if (in == null) {
-            Log.e(TAG, "Cannot get safety center config file, Safety Center will be disabled");
+            Log.e(TAG, "Cannot access Safety Center config file");
             return null;
         }
 
-        Resources resources = mSafetyCenterResourcesContext.getResources();
-        if (resources == null) {
-            Log.e(TAG, "Cannot get safety center resources, Safety Center will be disabled");
-            return null;
-        }
-
+        Resources resources = mSafetyCenterResourcesApk.getResources();
         try {
             SafetyCenterConfig safetyCenterConfig =
                     SafetyCenterConfigParser.parseXmlResource(in, resources);
-            Log.d(TAG, "SafetyCenterConfig read successfully");
+            Log.d(TAG, "SafetyCenterConfig loaded successfully");
             return safetyCenterConfig;
         } catch (ParseException e) {
-            Log.e(TAG, "Cannot read SafetyCenterConfig, Safety Center will be disabled", e);
+            Log.e(TAG, "Cannot parse SafetyCenterConfig", e);
             return null;
         }
     }
