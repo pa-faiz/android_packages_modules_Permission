@@ -19,7 +19,6 @@ package android.safetycenter.cts
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.safetycenter.SafetyCenterIssue
@@ -32,7 +31,6 @@ import androidx.test.filters.SdkSuppress
 import com.android.safetycenter.testing.EqualsHashCodeToStringTester
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
-import org.junit.Assume.assumeFalse
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -111,7 +109,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun getAttributionTitle_returnsAttributionTitle() {
         assertThat(
                 SafetyCenterIssue.Builder(issue1)
@@ -130,7 +128,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun getAttributionTitle_withNullAttributionTitle_returnsNull() {
         val safetyCenterIssue =
             SafetyCenterIssue.Builder("issue_id", "Everything's good", "Please acknowledge this")
@@ -228,7 +226,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun getGroupId_withNonNullValue_returnsGroupId() {
         val issue = SafetyCenterIssue.Builder(issue1).setGroupId("group_id").build()
 
@@ -236,7 +234,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun getGroupId_withNullValue_returnsNull() {
         val issue =
             SafetyCenterIssue.Builder("issue_id", "Everything's good", "Please acknowledge this")
@@ -248,22 +246,15 @@ class SafetyCenterIssueTest {
     @Test
     @SdkSuppress(maxSdkVersion = TIRAMISU)
     fun getGroupId_withVersionLessThanU_throwsUnsupportedOperationException() {
-        // TODO(b/258228790): Remove after U is no longer in pre-release
-        assumeFalse(Build.VERSION.CODENAME == "UpsideDownCake")
-        assumeFalse(Build.VERSION.CODENAME == "VanillaIceCream")
         val issue =
             SafetyCenterIssue.Builder("issue_id", "Everything's good", "Please acknowledge this")
                 .build()
 
-        val exception = assertFailsWith(UnsupportedOperationException::class) { issue.groupId }
-
-        assertThat(exception)
-            .hasMessageThat()
-            .isEqualTo("Method not supported for versions lower than UPSIDE_DOWN_CAKE")
+        assertFailsWith(UnsupportedOperationException::class) { issue.groupId }
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun setGroupId_withNullValue_returnsNull() {
         val issue = SafetyCenterIssue.Builder(issue1).setGroupId(null).build()
 
@@ -273,18 +264,9 @@ class SafetyCenterIssueTest {
     @Test
     @SdkSuppress(maxSdkVersion = TIRAMISU)
     fun setGroupId_withVersionLessThanU_throwsUnsupportedOperationException() {
-        // TODO(b/258228790): Remove after U is no longer in pre-release
-        assumeFalse(Build.VERSION.CODENAME == "UpsideDownCake")
-        assumeFalse(Build.VERSION.CODENAME == "VanillaIceCream")
-
-        val exception =
-            assertFailsWith(UnsupportedOperationException::class) {
-                SafetyCenterIssue.Builder(issue1).setGroupId("group_id").build()
-            }
-
-        assertThat(exception)
-            .hasMessageThat()
-            .isEqualTo("Method not supported for versions lower than UPSIDE_DOWN_CAKE")
+        assertFailsWith(UnsupportedOperationException::class) {
+            SafetyCenterIssue.Builder(issue1).setGroupId("group_id").build()
+        }
     }
 
     @Test
@@ -300,7 +282,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun parcelRoundTrip_recreatesEqual_atLeastAndroidU() {
         val safetyCenterIssue =
             SafetyCenterIssue.Builder("issue_id", "Everything's good", "Please acknowledge this")
@@ -330,7 +312,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun equalsHashCodeToString_usingEqualsHashCodeToStringTester_atLeastAndroidU() {
         newUpsideDownCakeEqualsHashCodeToStringTester().test()
     }
@@ -374,19 +356,12 @@ class SafetyCenterIssueTest {
     @Test
     @SdkSuppress(maxSdkVersion = TIRAMISU)
     fun action_getConfirmationDialogDetails_withVersionLessThanU_throwsUnsupportedOperation() {
-        // TODO(b/258228790): Remove after U is no longer in pre-release
-        assumeFalse(Build.VERSION.CODENAME == "UpsideDownCake")
-        assumeFalse(Build.VERSION.CODENAME == "VanillaIceCream")
-
         assertFailsWith(UnsupportedOperationException::class) { action1.confirmationDialogDetails }
     }
 
     @Test
     @SdkSuppress(maxSdkVersion = TIRAMISU)
     fun action_setConfirmationDialogDetails_withVersionLessThanU_throwsUnsupportedOperation() {
-        // TODO(b/258228790): Remove after U is no longer in pre-release
-        assumeFalse(Build.VERSION.CODENAME == "UpsideDownCake")
-        assumeFalse(Build.VERSION.CODENAME == "VanillaIceCream")
         assertFailsWith(UnsupportedOperationException::class) {
             SafetyCenterIssue.Action.Builder("action_id", "Action label", pendingIntent1)
                 .setConfirmationDialogDetails(
@@ -396,7 +371,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun action_getConfirmationDialogDetails_withDefaultBuilder_returnsNull() {
         val action =
             SafetyCenterIssue.Action.Builder("action_id", "Action label", pendingIntent1).build()
@@ -405,7 +380,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun action_getConfirmationDialogDetails_whenSetExplicitly_returnsConfirmation() {
         val action =
             SafetyCenterIssue.Action.Builder("action_id", "Action label", pendingIntent1)
@@ -431,7 +406,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun action_parcelRoundTrip_recreatesEqual_atLeastAndroidU() {
         val action =
             SafetyCenterIssue.Action.Builder(action1)
@@ -449,7 +424,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun action_equalsHashCodeToString_usingEqualsHashCodeToStringTester_atLeastAndroidU() {
         val confirmationDialogDetails = ConfirmationDialogDetails("Title", "Text", "Accept", "Deny")
         issueActionNewTiramisuEqualsHashCodeToStringTester(
@@ -596,7 +571,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun actionConfirmation_getTitle_returnsTitle() {
         val confirmationDialogDetails = ConfirmationDialogDetails("Title", "Text", "Accept", "Deny")
 
@@ -604,7 +579,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun actionConfirmation_getText_returnsText() {
         val confirmationDialogDetails = ConfirmationDialogDetails("Title", "Text", "Accept", "Deny")
 
@@ -612,7 +587,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun actionConfirmation_getAcceptButtonText_returnsAcceptButtonText() {
         val confirmationDialogDetails = ConfirmationDialogDetails("Title", "Text", "Accept", "Deny")
 
@@ -620,7 +595,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun actionConfirmation_getDenyButtonText_returnsDenyButtonText() {
         val confirmationDialogDetails = ConfirmationDialogDetails("Title", "Text", "Accept", "Deny")
 
@@ -628,7 +603,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun actionConfirmation_describeContents_returns0() {
         val confirmationDialogDetails = ConfirmationDialogDetails("Title", "Text", "Accept", "Deny")
 
@@ -636,7 +611,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun actionConfirmation_parcelRoundTrip_recreatesEqual() {
         val confirmationDialogDetails = ConfirmationDialogDetails("Title", "Text", "Accept", "Deny")
 
@@ -644,7 +619,7 @@ class SafetyCenterIssueTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun actionConfirmation_equalsHashCodeToString_usingEqualsHashCodeToStringTester() {
         EqualsHashCodeToStringTester.ofParcelable(
                 parcelableCreator = ConfirmationDialogDetails.CREATOR

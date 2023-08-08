@@ -21,8 +21,8 @@ import static android.Manifest.permission.READ_SAFETY_CENTER_STATUS;
 import static android.Manifest.permission.SEND_SAFETY_CENTER_UPDATE;
 import static android.Manifest.permission.START_TASKS_FROM_RECENTS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static android.safetycenter.SafetyCenterManager.REFRESH_REASON_DEVICE_LOCALE_CHANGE;
 import static android.safetycenter.SafetyCenterManager.REFRESH_REASON_OTHER;
 import static android.safetycenter.SafetyCenterManager.RefreshReason;
 import static android.safetycenter.SafetyEvent.SAFETY_EVENT_TYPE_RESOLVING_ACTION_FAILED;
@@ -36,6 +36,7 @@ import static com.android.safetycenter.internaldata.SafetyCenterIds.toUserFriend
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.UserIdInt;
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.app.StatsManager;
 import android.content.BroadcastReceiver;
@@ -72,6 +73,7 @@ import androidx.annotation.RequiresApi;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.modules.utils.BackgroundThread;
+import com.android.modules.utils.build.SdkLevel;
 import com.android.permission.util.ForegroundThread;
 import com.android.permission.util.UserUtils;
 import com.android.safetycenter.data.AndroidLockScreenFix;
@@ -100,7 +102,6 @@ import java.util.List;
  * @hide
  */
 @Keep
-@RequiresApi(TIRAMISU)
 public final class SafetyCenterService extends SystemService {
 
     private static final String TAG = "SafetyCenterService";
@@ -407,7 +408,10 @@ public final class SafetyCenterService extends SystemService {
                     || !checkApiEnabled("refreshSafetySources")) {
                 return;
             }
-            startRefreshingSafetySources(refreshReason, userId);
+
+            synchronized (mApiLock) {
+                startRefreshingSafetySourcesLocked(refreshReason, userId);
+            }
         }
 
         @Override
@@ -424,7 +428,10 @@ public final class SafetyCenterService extends SystemService {
                     || !checkApiEnabled("refreshSpecificSafetySources")) {
                 return;
             }
-            startRefreshingSafetySources(refreshReason, userId, safetySourceIds);
+
+            synchronized (mApiLock) {
+                startRefreshingSafetySourcesLocked(refreshReason, userId, safetySourceIds);
+            }
         }
 
         @Override
@@ -852,7 +859,7 @@ public final class SafetyCenterService extends SystemService {
                 return;
             }
             boolean safetyCenterEnabled =
-                    properties.getBoolean(PROPERTY_SAFETY_CENTER_ENABLED, false);
+                    properties.getBoolean(PROPERTY_SAFETY_CENTER_ENABLED, SdkLevel.isAtLeastU());
             synchronized (mApiLock) {
                 if (mSafetyCenterEnabled == safetyCenterEnabled) {
                     Log.i(
@@ -1012,7 +1019,7 @@ public final class SafetyCenterService extends SystemService {
     /** {@link BroadcastReceiver} which handles Locale changes. */
     private final class LocaleBroadcastReceiver extends BroadcastReceiver {
 
-        private static final String TAG = "LocaleBroadcastReceiver";
+        private static final String TAG = "SafetyCenterLocaleBroad";
 
         void register(Context context) {
             IntentFilter filter = new IntentFilter();
@@ -1026,9 +1033,23 @@ public final class SafetyCenterService extends SystemService {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (!SafetyCenterFlags.getSafetyCenterEnabled()) {
+                Log.i(TAG, "Safety Center is disabled, ignoring intent: " + intent);
+                return;
+            }
+
+            String action = intent.getAction();
+            if (!TextUtils.equals(action, Intent.ACTION_LOCALE_CHANGED)) {
+                Log.w(TAG, "Received unexpected action: " + action);
+                return;
+            }
+
             Log.d(TAG, "Locale changed broadcast received");
+
+            int userId = ActivityManager.getCurrentUser();
             synchronized (mApiLock) {
-                mNotificationChannels.createAllChannelsForAllUsers(getContext());
+                startRefreshingSafetySourcesLocked(REFRESH_REASON_DEVICE_LOCALE_CHANGE, userId);
+                mNotificationChannels.createAllChannelsForUser(getContext(), UserHandle.of(userId));
             }
         }
     }
@@ -1039,11 +1060,11 @@ public final class SafetyCenterService extends SystemService {
      */
     private final class UserBroadcastReceiver extends BroadcastReceiver {
 
-        private static final String TAG = "UserBroadcastReceiver";
+        private static final String TAG = "SafetyCenterUserBroadca";
 
         void register(Context context) {
             IntentFilter filter = new IntentFilter();
-            filter.addAction(Intent.ACTION_USER_ADDED);
+            filter.addAction(Intent.ACTION_USER_SWITCHED);
             filter.addAction(Intent.ACTION_USER_REMOVED);
             filter.addAction(Intent.ACTION_MANAGED_PROFILE_ADDED);
             filter.addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED);
@@ -1058,6 +1079,11 @@ public final class SafetyCenterService extends SystemService {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (!SafetyCenterFlags.getSafetyCenterEnabled()) {
+                Log.i(TAG, "Safety Center is disabled, ignoring intent: " + intent);
+                return;
+            }
+
             String action = intent.getAction();
             if (action == null) {
                 Log.w(TAG, "Received broadcast with null action");
@@ -1089,11 +1115,28 @@ public final class SafetyCenterService extends SystemService {
                 case Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE:
                     removeUser(userId);
                     break;
-                case Intent.ACTION_USER_ADDED:
+                case Intent.ACTION_USER_SWITCHED:
+                    if (userId != ActivityManager.getCurrentUser()) {
+                        Log.w(
+                                TAG,
+                                "Received broadcast for user id: "
+                                        + userId
+                                        + ", which is not the current user");
+                        return;
+                    }
+                    // Fall through
                 case Intent.ACTION_MANAGED_PROFILE_ADDED:
                 case Intent.ACTION_MANAGED_PROFILE_AVAILABLE:
-                    startRefreshingSafetySources(REFRESH_REASON_OTHER, userId);
+                    if (!UserUtils.isUserExistent(userId, getContext())) {
+                        Log.w(
+                                TAG,
+                                "Received broadcast for user id: "
+                                        + userId
+                                        + ", which does not exist");
+                        return;
+                    }
                     synchronized (mApiLock) {
+                        startRefreshingSafetySourcesLocked(REFRESH_REASON_OTHER, userId);
                         mNotificationChannels.createAllChannelsForUser(getContext(), userHandle);
                     }
                     break;
@@ -1124,31 +1167,44 @@ public final class SafetyCenterService extends SystemService {
         }
     }
 
-    private void startRefreshingSafetySources(
+    @GuardedBy("mApiLock")
+    private void startRefreshingSafetySourcesLocked(
             @RefreshReason int refreshReason, @UserIdInt int userId) {
-        startRefreshingSafetySources(refreshReason, userId, /* selectedSafetySourceIds= */ null);
+        startRefreshingSafetySourcesLocked(
+                refreshReason,
+                UserProfileGroup.fromUser(getContext(), userId),
+                /* selectedSafetySourceIds= */ null);
     }
 
-    private void startRefreshingSafetySources(
+    @GuardedBy("mApiLock")
+    private void startRefreshingSafetySourcesLocked(
             @RefreshReason int refreshReason,
             @UserIdInt int userId,
+            List<String> selectedSafetySourceIds) {
+        startRefreshingSafetySourcesLocked(
+                refreshReason,
+                UserProfileGroup.fromUser(getContext(), userId),
+                selectedSafetySourceIds);
+    }
+
+    @GuardedBy("mApiLock")
+    private void startRefreshingSafetySourcesLocked(
+            @RefreshReason int refreshReason,
+            UserProfileGroup userProfileGroup,
             @Nullable List<String> selectedSafetySourceIds) {
-        UserProfileGroup userProfileGroup = UserProfileGroup.fromUser(getContext(), userId);
-        synchronized (mApiLock) {
-            String refreshBroadcastId =
-                    mSafetyCenterBroadcastDispatcher.sendRefreshSafetySources(
-                            refreshReason, userProfileGroup, selectedSafetySourceIds);
-            if (refreshBroadcastId == null) {
-                return;
-            }
-
-            RefreshTimeout refreshTimeout =
-                    new RefreshTimeout(refreshBroadcastId, refreshReason, userProfileGroup);
-            mSafetyCenterTimeouts.add(
-                    refreshTimeout, SafetyCenterFlags.getRefreshSourcesTimeout(refreshReason));
-
-            mSafetyCenterDataChangeNotifier.updateDataConsumers(userProfileGroup);
+        String refreshBroadcastId =
+                mSafetyCenterBroadcastDispatcher.sendRefreshSafetySources(
+                        refreshReason, userProfileGroup, selectedSafetySourceIds);
+        if (refreshBroadcastId == null) {
+            return;
         }
+
+        RefreshTimeout refreshTimeout =
+                new RefreshTimeout(refreshBroadcastId, refreshReason, userProfileGroup);
+        mSafetyCenterTimeouts.add(
+                refreshTimeout, SafetyCenterFlags.getRefreshSourcesTimeout(refreshReason));
+
+        mSafetyCenterDataChangeNotifier.updateDataConsumers(userProfileGroup);
     }
 
     /**

@@ -17,7 +17,7 @@
 package android.safetycenter.functional.ui
 
 import android.content.Context
-import android.os.Build.VERSION.CODENAME
+import android.os.Build
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.os.Bundle
@@ -57,6 +57,7 @@ import com.android.safetycenter.testing.SafetySourceReceiver
 import com.android.safetycenter.testing.SafetySourceTestData
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.CRITICAL_ISSUE_ID
 import com.android.safetycenter.testing.SafetySourceTestData.Companion.RECOMMENDATION_ISSUE_ID
+import com.android.safetycenter.testing.SettingsPackage.getSettingsPackageName
 import com.android.safetycenter.testing.SupportsSafetyCenterRule
 import com.android.safetycenter.testing.UiTestHelper.MORE_ISSUES_LABEL
 import com.android.safetycenter.testing.UiTestHelper.RESCAN_BUTTON_LABEL
@@ -72,13 +73,13 @@ import com.android.safetycenter.testing.UiTestHelper.waitButtonDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitCollapsedIssuesDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitExpandedIssuesDisplayed
+import com.android.safetycenter.testing.UiTestHelper.waitPageTitleDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceDataDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueNotDisplayed
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import org.junit.After
-import org.junit.Assume.assumeFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout
@@ -106,7 +107,7 @@ class SafetyCenterActivityTest {
     val timeoutRule =
         Timeout(
             InstrumentationRegistry.getArguments().getString("timeout_msec", "60000").toLong(),
-            TimeUnit.MILLISECONDS
+            MILLISECONDS
         )
 
     @After
@@ -548,7 +549,7 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun issueCard_withAttribution_hasProperContentDescriptions() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
 
@@ -721,7 +722,7 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun issueCard_resolveIssue_withDialogClickYes_resolves() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
         safetyCenterTestHelper.setData(
@@ -747,7 +748,7 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun issueCard_resolveIssue_withDialog_rotates_clickYes_resolves() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
         safetyCenterTestHelper.setData(
@@ -777,7 +778,7 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun issueCard_resolveIssue_withDialogClicksNo_cancels() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
         safetyCenterTestHelper.setData(
@@ -879,7 +880,7 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun issueCard_withAttributionTitleSetBySource_displaysAttributionTitle() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
 
@@ -890,7 +891,7 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun issueCard_attributionNotSetBySource_displaysGroupTitleAsAttribution() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
 
@@ -901,7 +902,7 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE, codeName = "UpsideDownCake")
+    @SdkSuppress(minSdkVersion = UPSIDE_DOWN_CAKE)
     fun issueCard_attributionNotSetBySourceAndGroupTitleNull_doesNotDisplayAttributionTitle() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.issueOnlySourceNoGroupTitleConfig)
 
@@ -914,9 +915,6 @@ class SafetyCenterActivityTest {
     @Test
     @SdkSuppress(maxSdkVersion = TIRAMISU)
     fun issueCard_attributionNotSetBySourceOnTiramisu_doesNotDisplayAttributionTitle() {
-        // TODO(b/258228790): Remove after U is no longer in pre-release
-        assumeFalse(CODENAME == "UpsideDownCake")
-        assumeFalse(CODENAME == "VanillaIceCream")
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.singleSourceConfig)
 
         val data = safetySourceTestData.recommendationWithGeneralIssue
@@ -1124,7 +1122,7 @@ class SafetyCenterActivityTest {
         )
         safetyCenterTestHelper.setData(SOURCE_ID_3, safetySourceTestData.informationWithIssue)
 
-        context.launchSafetyCenterActivity {
+        context.launchSafetyCenterActivity(withRetry = true) {
             clickMoreIssuesCard()
 
             val uiDevice = getUiDevice()
@@ -1417,10 +1415,6 @@ class SafetyCenterActivityTest {
     @Test
     @SdkSuppress(maxSdkVersion = TIRAMISU)
     fun launchSafetyCenter_enableSubpagesFlagOnT_stillShowsExpandAndCollapseEntries() {
-        // TODO(b/258228790): Remove after U is no longer in pre-release
-        assumeFalse(CODENAME == "UpsideDownCake")
-        assumeFalse(CODENAME == "VanillaIceCream")
-
         SafetyCenterFlags.showSubpages = true
         val sourceTestData = safetySourceTestData.information
         val config = safetyCenterTestConfigs.multipleSourceGroupsConfig
@@ -1474,17 +1468,40 @@ class SafetyCenterActivityTest {
         }
     }
 
-    companion object {
-        private const val EXPAND_ISSUE_GROUP_QS_FRAGMENT_KEY = "expand_issue_group_qs_fragment_key"
-        private const val SAFETY_SOURCE_1_TITLE = "Safety Source 1 Title"
-        private const val SAFETY_SOURCE_1_SUMMARY = "Safety Source 1 Summary"
-        private const val SAFETY_SOURCE_2_TITLE = "Safety Source 2 Title"
-        private const val SAFETY_SOURCE_2_SUMMARY = "Safety Source 2 Summary"
-        private const val SAFETY_SOURCE_3_TITLE = "Safety Source 3 Title"
-        private const val SAFETY_SOURCE_3_SUMMARY = "Safety Source 3 Summary"
-        private const val SAFETY_SOURCE_4_TITLE = "Safety Source 4 Title"
-        private const val SAFETY_SOURCE_4_SUMMARY = "Safety Source 4 Summary"
-        private const val SAFETY_SOURCE_5_TITLE = "Safety Source 5 Title"
-        private const val SAFETY_SOURCE_5_SUMMARY = "Safety Source 5 Summary"
+    @Test
+    fun launchActivity_openWithPrivacyControlsIntent_showsPrivacyControls() {
+        context.launchSafetyCenterActivity(intentAction = PRIVACY_CONTROLS_ACTION) {
+            waitPageTitleDisplayed("Privacy controls")
+        }
+    }
+
+    @Test
+    fun launchActivity_openWithPrivacyControlsIntentWithScDisabled_showsLegacyPrivacyPage() {
+        // This test should technically run on T+ but we have to restrict it to V+ as b/286690307 is
+        // causing a flake which was only fixed on master.
+        assumeTrue(
+            Build.VERSION.SDK_INT > UPSIDE_DOWN_CAKE || Build.VERSION.CODENAME == "VanillaIceCream"
+        )
+        safetyCenterTestHelper.setEnabled(false)
+
+        context.launchSafetyCenterActivity(intentAction = PRIVACY_CONTROLS_ACTION) {
+            waitDisplayed(By.pkg(context.getSettingsPackageName()))
+            waitPageTitleDisplayed("Privacy")
+        }
+    }
+
+    private companion object {
+        const val EXPAND_ISSUE_GROUP_QS_FRAGMENT_KEY = "expand_issue_group_qs_fragment_key"
+        const val SAFETY_SOURCE_1_TITLE = "Safety Source 1 Title"
+        const val SAFETY_SOURCE_1_SUMMARY = "Safety Source 1 Summary"
+        const val SAFETY_SOURCE_2_TITLE = "Safety Source 2 Title"
+        const val SAFETY_SOURCE_2_SUMMARY = "Safety Source 2 Summary"
+        const val SAFETY_SOURCE_3_TITLE = "Safety Source 3 Title"
+        const val SAFETY_SOURCE_3_SUMMARY = "Safety Source 3 Summary"
+        const val SAFETY_SOURCE_4_TITLE = "Safety Source 4 Title"
+        const val SAFETY_SOURCE_4_SUMMARY = "Safety Source 4 Summary"
+        const val SAFETY_SOURCE_5_TITLE = "Safety Source 5 Title"
+        const val SAFETY_SOURCE_5_SUMMARY = "Safety Source 5 Summary"
+        const val PRIVACY_CONTROLS_ACTION = "android.settings.PRIVACY_CONTROLS"
     }
 }
