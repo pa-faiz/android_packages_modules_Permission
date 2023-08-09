@@ -291,16 +291,25 @@ object KotlinUtils {
      */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, codename = "UpsideDownCake")
     fun isPhotoPickerPromptEnabled(): Boolean {
-        val app = PermissionControllerApplication.get()
-        return SdkLevel.isAtLeastU() &&
-            !DeviceUtils.isAuto(app) &&
-            !DeviceUtils.isTelevision(app) &&
-            !DeviceUtils.isWear(app) &&
+        return isPhotoPickerPromptSupported() &&
             DeviceConfig.getBoolean(
                 DeviceConfig.NAMESPACE_PRIVACY,
                 PROPERTY_PHOTO_PICKER_PROMPT_ENABLED,
                 true
             )
+    }
+
+    /**
+     * Whether the Photo Picker Prompt is supported by the device
+     *
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, codename = "UpsideDownCake")
+    fun isPhotoPickerPromptSupported(): Boolean {
+        val app = PermissionControllerApplication.get()
+        return SdkLevel.isAtLeastU() &&
+                !DeviceUtils.isAuto(app) &&
+                !DeviceUtils.isTelevision(app) &&
+                !DeviceUtils.isWear(app)
     }
 
     /*
@@ -1769,22 +1778,21 @@ object KotlinUtils {
 /** Get the [value][LiveData.getValue], suspending until [isInitialized] if not yet so */
 suspend fun <T, LD : LiveData<T>> LD.getInitializedValue(
     observe: LD.(Observer<T>) -> Unit = { observeForever(it) },
-    isInitialized: LD.() -> Boolean = { value != null }
+    isValueInitialized: LD.() -> Boolean = { value != null }
 ): T {
-    return if (isInitialized()) {
+    return if (isValueInitialized()) {
         @Suppress("UNCHECKED_CAST")
         value as T
     } else {
         suspendCoroutine { continuation: Continuation<T> ->
             val observer = AtomicReference<Observer<T>>()
-            observer.set(
-                Observer { newValue ->
-                    if (isInitialized()) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            observer.getAndSet(null)?.let { observerSnapshot ->
-                                removeObserver(observerSnapshot)
-                                continuation.resume(newValue)
-                            }
+            observer.set(Observer { newValue ->
+                if (isValueInitialized()) {
+                    GlobalScope.launch(Dispatchers.Main) {
+                        observer.getAndSet(null)?.let { observerSnapshot ->
+                            removeObserver(observerSnapshot)
+                            continuation.resume(newValue)
+                           }
                         }
                     }
                 }
