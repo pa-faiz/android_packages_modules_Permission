@@ -152,11 +152,15 @@ android_app {
         "lottie",
         "safety-label",
         "role-controller",
+        "permissions-flags-lib",
         "androidx.compose.runtime_runtime",
+        "androidx.compose.runtime_runtime-livedata",
         "androidx.annotation_annotation",
         "androidx.compose.ui_ui",
         "androidx.compose.foundation_foundation",
         "androidx.wear.compose_compose-foundation",
+        "androidx.wear.compose_compose-material",
+        "androidx.wear.compose_compose-material-core",
         "androidx.compose.material3_material3",
         "androidx.activity_activity-compose",
     ],
@@ -172,6 +176,7 @@ android_app {
     },
 
     optimize: {
+        proguard_compatibility: false, // TODO(b/215530220): remove when this is default behavior
         proguard_flags_files: ["proguard.flags"],
     },
 

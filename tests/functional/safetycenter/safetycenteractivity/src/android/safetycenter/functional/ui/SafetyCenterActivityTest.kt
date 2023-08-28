@@ -21,8 +21,6 @@ import android.os.Build
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 import android.os.Bundle
-import android.platform.test.rule.ScreenRecordRule
-import android.platform.test.rule.ScreenRecordRule.ScreenRecord
 import android.safetycenter.SafetyCenterManager.EXTRA_SAFETY_SOURCE_ID
 import android.safetycenter.SafetyCenterManager.EXTRA_SAFETY_SOURCE_ISSUE_ID
 import android.safetycenter.SafetySourceData.SEVERITY_LEVEL_CRITICAL_WARNING
@@ -31,11 +29,9 @@ import android.safetycenter.SafetySourceData.SEVERITY_LEVEL_RECOMMENDATION
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import com.android.compatibility.common.util.DisableAnimationRule
 import com.android.compatibility.common.util.FreezeRotationRule
-import com.android.compatibility.common.util.RetryRule
 import com.android.compatibility.common.util.UiAutomatorUtils2.getUiDevice
 import com.android.safetycenter.testing.Coroutines.TIMEOUT_LONG
 import com.android.safetycenter.testing.Coroutines.TIMEOUT_SHORT
@@ -77,12 +73,10 @@ import com.android.safetycenter.testing.UiTestHelper.waitPageTitleDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceDataDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueDisplayed
 import com.android.safetycenter.testing.UiTestHelper.waitSourceIssueNotDisplayed
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 
 /** Functional tests for the Safety Center Activity. */
@@ -98,17 +92,6 @@ class SafetyCenterActivityTest {
     @get:Rule(order = 2) val safetyCenterTestRule = SafetyCenterTestRule(safetyCenterTestHelper)
     @get:Rule(order = 3) val disableAnimationRule = DisableAnimationRule()
     @get:Rule(order = 4) val freezeRotationRule = FreezeRotationRule()
-    @get:Rule(order = 5) val screenRecordRule = ScreenRecordRule()
-
-    // It is necessary to couple RetryRule and Timeout to ensure that all the retries together are
-    // restricted with the test timeout
-    @get:Rule(order = 6) val retryRule = RetryRule(/* retries = */ 3)
-    @get:Rule(order = 7)
-    val timeoutRule =
-        Timeout(
-            InstrumentationRegistry.getArguments().getString("timeout_msec", "60000").toLong(),
-            MILLISECONDS
-        )
 
     @After
     fun clearDataAfterTest() {
@@ -425,7 +408,6 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @ScreenRecord
     fun entryListWithEntryGroup_clickingAClickableDisabledEntry_redirectsToDifferentScreen() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.multipleSourcesConfig)
         safetyCenterTestHelper.setData(
@@ -481,7 +463,6 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @ScreenRecord
     fun entryListWithSingleSource_clickingDefaultEntryImplicitIntent_redirectsToDifferentScreen() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.implicitIntentSingleSourceConfig)
 
@@ -924,7 +905,6 @@ class SafetyCenterActivityTest {
     }
 
     @Test
-    @ScreenRecord
     fun launchActivity_fromQuickSettings_issuesExpanded() {
         safetyCenterTestHelper.setConfig(safetyCenterTestConfigs.multipleSourcesConfig)
         safetyCenterTestHelper.setData(
@@ -939,7 +919,7 @@ class SafetyCenterActivityTest {
 
         val bundle = Bundle()
         bundle.putBoolean(EXPAND_ISSUE_GROUP_QS_FRAGMENT_KEY, true)
-        context.launchSafetyCenterActivity(bundle, withRetry = true) {
+        context.launchSafetyCenterActivity(bundle) {
             waitExpandedIssuesDisplayed(
                 safetySourceTestData.criticalResolvingGeneralIssue,
                 safetySourceTestData.recommendationGeneralIssue,
@@ -1074,7 +1054,7 @@ class SafetyCenterActivityTest {
         )
         safetyCenterTestHelper.setData(SOURCE_ID_3, safetySourceTestData.informationWithIssue)
 
-        context.launchSafetyCenterActivity(withRetry = true) {
+        context.launchSafetyCenterActivity {
             waitCollapsedIssuesDisplayed(
                 safetySourceTestData.criticalResolvingGeneralIssue,
                 safetySourceTestData.recommendationGeneralIssue,
@@ -1122,7 +1102,7 @@ class SafetyCenterActivityTest {
         )
         safetyCenterTestHelper.setData(SOURCE_ID_3, safetySourceTestData.informationWithIssue)
 
-        context.launchSafetyCenterActivity(withRetry = true) {
+        context.launchSafetyCenterActivity {
             clickMoreIssuesCard()
 
             val uiDevice = getUiDevice()
@@ -1163,7 +1143,7 @@ class SafetyCenterActivityTest {
         val bundle = Bundle()
         bundle.putString(EXTRA_SAFETY_SOURCE_ID, SOURCE_ID_2)
         bundle.putString(EXTRA_SAFETY_SOURCE_ISSUE_ID, RECOMMENDATION_ISSUE_ID)
-        context.launchSafetyCenterActivity(bundle, withRetry = true) {
+        context.launchSafetyCenterActivity(bundle) {
             waitSourceIssueDisplayed(safetySourceTestData.criticalResolvingGeneralIssue)
             waitSourceIssueDisplayed(safetySourceTestData.recommendationGeneralIssue)
             waitAllTextDisplayed(MORE_ISSUES_LABEL)

@@ -143,7 +143,7 @@ import com.android.permissioncontroller.permission.utils.v34.SafetyLabelUtils
  * @param sessionId: A long to identify this session
  * @param storedState: Previous state, if this activity was stopped and is being recreated
  */
-class GrantPermissionsViewModel(
+open class GrantPermissionsViewModel(
     private val app: Application,
     private val packageName: String,
     private val requestedPermissions: List<String>,
@@ -186,6 +186,8 @@ class GrantPermissionsViewModel(
      * A class which represents a correctly requested permission group, and the buttons and messages
      * which should be shown with it.
      */
+    // TODO: 284183336, once the old viewModel is gone, this should be replaced with a Prompt and
+    // DenyButton
     data class RequestInfo(
         val groupInfo: LightPermGroupInfo,
         val buttonVisibilities: List<Boolean> = List(NEXT_BUTTON) { false },
@@ -194,16 +196,18 @@ class GrantPermissionsViewModel(
         val detailMessage: RequestMessage = RequestMessage.NO_MESSAGE,
         val sendToSettingsImmediately: Boolean = false,
         val openPhotoPicker: Boolean = false,
+        // Unused for now, will be included in the GrantPermissions refactor
+        val filteredPermissions: Collection<String> = emptyList()
     ) {
         val groupName = groupInfo.name
     }
 
-    var activityResultCallback: Consumer<Intent>? = null
+    open var activityResultCallback: Consumer<Intent>? = null
 
     /**
      * A LiveData which holds a list of the currently pending RequestInfos
      */
-    val requestInfosLiveData = object :
+    open val requestInfosLiveData = object :
         SmartUpdateMediatorLiveData<List<RequestInfo>>() {
         private val LOG_TAG = GrantPermissionsViewModel::class.java.simpleName
         private val packagePermissionsLiveData = PackagePermissionsLiveData[packageName, user]
@@ -947,7 +951,7 @@ class GrantPermissionsViewModel(
      * @param affectedForegroundPermissions The name of the foreground permission which was changed
      * @param result The choice the user made regarding the group.
      */
-    fun onPermissionGrantResult(
+    open fun onPermissionGrantResult(
         groupName: String?,
         affectedForegroundPermissions: List<String>?,
         result: Int
@@ -1251,7 +1255,7 @@ class GrantPermissionsViewModel(
      *
      * @param outState The bundle in which to store state
      */
-    fun saveInstanceState(outState: Bundle) {
+    open fun saveInstanceState(outState: Bundle) {
         for ((groupKey, groupState) in groupStates) {
             val (groupName, isBackground) = groupKey
             outState.putInt(getInstanceStateKey(groupName, isBackground), groupState.state)
@@ -1264,7 +1268,7 @@ class GrantPermissionsViewModel(
      * @return Whether or not state should be returned. False only if the package is pre-M, true
      * otherwise.
      */
-    fun shouldReturnPermissionState(): Boolean {
+    open fun shouldReturnPermissionState(): Boolean {
         return if (packageInfoLiveData.value != null) {
             packageInfoLiveData.value!!.targetSdkVersion >= Build.VERSION_CODES.M
         } else {
@@ -1279,7 +1283,7 @@ class GrantPermissionsViewModel(
         }
     }
 
-    fun handleHealthConnectPermissions(activity: Activity) {
+    open fun handleHealthConnectPermissions(activity: Activity) {
         if (activityResultCallback == null) {
             activityResultCallback = Consumer {
                 permGroupsToSkip.add(HEALTH_PERMISSION_GROUP)
@@ -1303,7 +1307,7 @@ class GrantPermissionsViewModel(
      * @param activity The current activity
      * @param groupName The name of the permission group whose fragment should be opened
      */
-    fun sendDirectlyToSettings(activity: Activity, groupName: String) {
+    open fun sendDirectlyToSettings(activity: Activity, groupName: String) {
         if (activityResultCallback == null) {
             activityResultCallback = Consumer { data ->
                 if (data?.getStringExtra(EXTRA_RESULT_PERMISSION_INTERACTED) == null) {
@@ -1327,7 +1331,7 @@ class GrantPermissionsViewModel(
         }
     }
 
-    fun openPhotoPicker(activity: Activity, result: Int) {
+    open fun openPhotoPicker(activity: Activity, result: Int) {
         if (activityResultCallback != null) {
             return
         }
@@ -1363,7 +1367,7 @@ class GrantPermissionsViewModel(
      * @param activity The current activity
      * @param groupName The name of the permission group whose fragment should be opened
      */
-    fun sendToSettingsFromLink(activity: Activity, groupName: String) {
+    open fun sendToSettingsFromLink(activity: Activity, groupName: String) {
         startAppPermissionFragment(activity, groupName)
         activityResultCallback = Consumer { data ->
             val returnGroupName = data?.getStringExtra(EXTRA_RESULT_PERMISSION_INTERACTED)
@@ -1382,7 +1386,7 @@ class GrantPermissionsViewModel(
     * @param activity The current activity
     * @param groupName The name of the permission group whose fragment should be opened
     */
-    fun showPermissionRationaleActivity(activity: Activity, groupName: String) {
+    open fun showPermissionRationaleActivity(activity: Activity, groupName: String) {
         if (!SdkLevel.isAtLeastU()) {
             return
         }
@@ -1477,7 +1481,7 @@ class GrantPermissionsViewModel(
     /**
      * Log all permission groups which were requested
      */
-    fun logRequestedPermissionGroups() {
+    open fun logRequestedPermissionGroups() {
         if (groupStates.isEmpty()) {
             return
         }
@@ -1494,7 +1498,7 @@ class GrantPermissionsViewModel(
      * @param clickedButton The button that was clicked by the user
      * @param presentedButtons All buttons which were shown to the user
      */
-    fun logClickedButtons(
+    open fun logClickedButtons(
         groupName: String?,
         selectedPrecision: Int,
         clickedButton: Int,
@@ -1529,7 +1533,7 @@ class GrantPermissionsViewModel(
     /**
      * Use the autoGrantNotifier to notify of auto-granted permissions.
      */
-    fun autoGrantNotify() {
+    open fun autoGrantNotify() {
         autoGrantNotifier?.notifyOfAutoGrantPermissions(true)
     }
 

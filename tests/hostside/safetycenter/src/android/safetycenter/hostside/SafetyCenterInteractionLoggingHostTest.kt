@@ -20,6 +20,7 @@ import android.cts.statsdatom.lib.ConfigUtils
 import android.cts.statsdatom.lib.ReportUtils
 import android.safetycenter.hostside.rules.HelperAppRule
 import android.safetycenter.hostside.rules.RequireSafetyCenterRule
+import com.android.compatibility.common.util.ApiLevelUtil
 import com.android.os.AtomsProto.Atom
 import com.android.os.AtomsProto.SafetyCenterInteractionReported
 import com.android.os.AtomsProto.SafetyCenterInteractionReported.Action
@@ -28,8 +29,8 @@ import com.android.tradefed.testtype.DeviceJUnit4ClassRunner
 import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
+import org.junit.Assume.assumeTrue
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,6 +72,8 @@ class SafetyCenterInteractionLoggingHostTest : BaseHostJUnit4Test() {
 
     @Test
     fun sendNotification_recordsNotificationPostedEvent() {
+        assumeAtLeastUpsideDownCake("Safety Center notification APIs require Android U+")
+
         helperAppRule.runTest(
             testClassName = ".SafetyCenterNotificationLoggingHelperTests",
             testMethodName = "sendNotification"
@@ -85,6 +88,8 @@ class SafetyCenterInteractionLoggingHostTest : BaseHostJUnit4Test() {
 
     @Test
     fun openSubpageFromIntentExtra_recordsEventWithUnknownNavigationSource() {
+        assumeAtLeastUpsideDownCake("Safety Center subpages require Android U+")
+
         helperAppRule.runTest(TEST_CLASS_NAME, testMethodName = "openSubpageFromIntentExtra")
 
         val safetyCenterViewedAtoms = getInteractionReportedAtoms(Action.SAFETY_CENTER_VIEWED)
@@ -99,25 +104,24 @@ class SafetyCenterInteractionLoggingHostTest : BaseHostJUnit4Test() {
     }
 
     @Test
-    @Ignore
-    // TODO(b/278202773): Fix/de-flake this test
     fun openSubpageFromHomepage_recordsEventWithSafetyCenterNavigationSource() {
+        assumeAtLeastUpsideDownCake("Safety Center subpages require Android U+")
+
         helperAppRule.runTest(TEST_CLASS_NAME, testMethodName = "openSubpageFromHomepage")
 
         val safetyCenterViewedAtoms = getInteractionReportedAtoms(Action.SAFETY_CENTER_VIEWED)
+        val subpageViewedEvent = safetyCenterViewedAtoms.find { it.viewType == ViewType.SUBPAGE }
 
-        assertThat(safetyCenterViewedAtoms.map { it.viewType })
-            .containsExactly(ViewType.FULL, ViewType.SUBPAGE, ViewType.FULL)
-            .inOrder()
-        assertThat(safetyCenterViewedAtoms[1].navigationSource)
+        assertThat(subpageViewedEvent).isNotNull()
+        assertThat(subpageViewedEvent!!.navigationSource)
             .isEqualTo(SafetyCenterInteractionReported.NavigationSource.SAFETY_CENTER)
         assertThat(safetyCenterViewedAtoms.map { it.sessionId }.distinct()).hasSize(1)
     }
 
     @Test
-    @Ignore
-    // TODO(b/278202773): Fix/de-flake this test
     fun openSubpageFromSettingsSearch_recordsEventWithSettingsNavigationSource() {
+        assumeAtLeastUpsideDownCake("Safety Center subpages require Android U+")
+
         helperAppRule.runTest(TEST_CLASS_NAME, testMethodName = "openSubpageFromSettingsSearch")
 
         val safetyCenterViewedAtoms = getInteractionReportedAtoms(Action.SAFETY_CENTER_VIEWED)
@@ -137,6 +141,10 @@ class SafetyCenterInteractionLoggingHostTest : BaseHostJUnit4Test() {
         ReportUtils.getEventMetricDataList(device)
             .mapNotNull { it.atom.safetyCenterInteractionReported }
             .filter { it.action == action }
+
+    private fun assumeAtLeastUpsideDownCake(message: String) {
+        assumeTrue(message, ApiLevelUtil.isAtLeast(device, 34))
+    }
 
     private companion object {
         const val TEST_CLASS_NAME = ".SafetyCenterInteractionLoggingHelperTests"

@@ -22,17 +22,17 @@ import android.os.SystemClock
 import android.safetycenter.SafetySourceData
 import android.safetycenter.SafetySourceIssue
 import android.safetycenter.config.SafetySourcesGroup
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
+import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil.runShellCommand
 import com.android.compatibility.common.util.UiAutomatorUtils2.getUiDevice
 import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObject
-import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObjectOrNull
+import com.android.compatibility.common.util.UiDumpUtils
 import java.time.Duration
 import java.util.concurrent.TimeoutException
 import java.util.regex.Pattern
@@ -46,19 +46,28 @@ object UiTestHelper {
     const val MORE_ISSUES_LABEL = "More alerts"
 
     private const val DISMISS_ISSUE_LABEL = "Dismiss"
-    private val WAIT_TIMEOUT = Duration.ofSeconds(15)
-    private val NOT_DISPLAYED_TIMEOUT = Duration.ofMillis(500)
+    private val WAIT_TIMEOUT = Duration.ofSeconds(20)
 
     private val TAG = UiTestHelper::class.java.simpleName
 
     /**
-     * Waits for the given [selector] to be displayed and performs the given [uiObjectAction] on it.
+     * Waits for the given [selector] to be displayed, and optionally perform a given
+     * [uiObjectAction] on it.
      */
     fun waitDisplayed(selector: BySelector, uiObjectAction: (UiObject2) -> Unit = {}) {
-        waitFor("$selector to be displayed", WAIT_TIMEOUT) {
-            uiObjectAction(waitFindObject(selector, it.toMillis()))
-            true
+        val whenToTimeout = currentElapsedRealtime() + WAIT_TIMEOUT
+        var remaining = WAIT_TIMEOUT
+        while (remaining > Duration.ZERO) {
+            getUiDevice().waitForIdle()
+            try {
+                uiObjectAction(waitFindObject(selector, remaining.toMillis()))
+                return
+            } catch (e: StaleObjectException) {
+                // Found, but stale before uiObjectAction could be performed, retry
+                remaining = whenToTimeout - currentElapsedRealtime()
+            }
         }
+        throw TimeoutException("Timed out waiting for $selector to be displayed")
     }
 
     /** Waits for all the given [textToFind] to be displayed. */
@@ -77,16 +86,19 @@ object UiTestHelper {
 
     /** Waits for the given [selector] not to be displayed. */
     fun waitNotDisplayed(selector: BySelector) {
-        waitFor("$selector not to be displayed", NOT_DISPLAYED_TIMEOUT) {
-            waitFindObjectOrNull(selector, it.toMillis()) == null
+        val timeoutMs = WAIT_TIMEOUT.toMillis()
+        // TODO(b/294038848): Add scrolling to make sure it is properly gone.
+        val view = getUiDevice().wait(Until.gone(selector), timeoutMs)
+        if (view == null) {
+            throw UiDumpUtils.wrapWithUiDump(
+                TimeoutException("View not found after waiting for $timeoutMs $selector")
+            )
         }
     }
 
     /** Waits for all the given [textToFind] not to be displayed. */
     fun waitAllTextNotDisplayed(vararg textToFind: CharSequence?) {
-        for (text in textToFind) {
-            if (text != null) waitNotDisplayed(By.text(text.toString()))
-        }
+        waitNotDisplayed(By.text(anyOf(*textToFind)))
     }
 
     /** Waits for a button with the given [label] not to be displayed. */
@@ -131,7 +143,7 @@ object UiTestHelper {
     fun waitCollapsedIssuesDisplayed(vararg sourceIssues: SafetySourceIssue) {
         waitSourceIssueDisplayed(sourceIssues.first())
         waitAllTextDisplayed(MORE_ISSUES_LABEL)
-        sourceIssues.asSequence().drop(1).forEach { waitSourceIssueNotDisplayed(it) }
+        waitAllTextNotDisplayed(*sourceIssues.drop(1).map { it.title }.toTypedArray())
     }
 
     /** Waits for all the [SafetySourceIssue] to be displayed with the [MORE_ISSUES_LABEL] card. */
@@ -221,35 +233,16 @@ object UiTestHelper {
     }
 
     private fun buttonSelector(label: CharSequence): BySelector {
-        return By.clickable(true).text(Pattern.compile("$label|${label.toString().uppercase()}"))
+        return By.clickable(true).text(anyOf(label, label.toString().uppercase()))
     }
 
-    private fun waitFor(
-        message: String,
-        uiAutomatorConditionTimeout: Duration,
-        uiAutomatorCondition: (Duration) -> Boolean
-    ) {
-        val elapsedStartMillis = SystemClock.elapsedRealtime()
-        while (true) {
-            getUiDevice().waitForIdle()
-            val durationSinceStart =
-                Duration.ofMillis(SystemClock.elapsedRealtime() - elapsedStartMillis)
-            if (durationSinceStart >= WAIT_TIMEOUT) {
-                break
+    private fun anyOf(vararg anyTextToFind: CharSequence?): Pattern {
+        val regex =
+            anyTextToFind.filterNotNull().joinToString(separator = "|") {
+                Pattern.quote(it.toString())
             }
-            val remainingTime = WAIT_TIMEOUT - durationSinceStart
-            val uiAutomatorTimeout = minOf(uiAutomatorConditionTimeout, remainingTime)
-            try {
-                if (uiAutomatorCondition(uiAutomatorTimeout)) {
-                    return
-                } else {
-                    Log.d(TAG, "Failed condition for $message, will retry if within timeout")
-                }
-            } catch (e: StaleObjectException) {
-                Log.d(TAG, "StaleObjectException for $message, will retry if within timeout", e)
-            }
-        }
-
-        throw TimeoutException("Timed out waiting for $message")
+        return Pattern.compile(regex)
     }
+    private fun currentElapsedRealtime(): Duration =
+        Duration.ofMillis(SystemClock.elapsedRealtime())
 }

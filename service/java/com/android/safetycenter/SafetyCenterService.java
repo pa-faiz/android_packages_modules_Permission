@@ -115,9 +115,6 @@ public final class SafetyCenterService extends SystemService {
     private final SafetyCenterResourcesApk mSafetyCenterResourcesApk;
 
     @GuardedBy("mApiLock")
-    private final SafetyCenterNotificationChannels mNotificationChannels;
-
-    @GuardedBy("mApiLock")
     private final SafetyCenterConfigReader mSafetyCenterConfigReader;
 
     @GuardedBy("mApiLock")
@@ -131,6 +128,9 @@ public final class SafetyCenterService extends SystemService {
 
     @GuardedBy("mApiLock")
     private final SafetyCenterListeners mSafetyCenterListeners;
+
+    @GuardedBy("mApiLock")
+    private final SafetyCenterNotificationChannels mNotificationChannels;
 
     @GuardedBy("mApiLock")
     private final SafetyCenterNotificationSender mNotificationSender;
@@ -231,7 +231,6 @@ public final class SafetyCenterService extends SystemService {
         synchronized (mApiLock) {
             registerSafetyCenterEnabledListenerLocked();
             pullAtomCallback = newSafetyCenterPullAtomCallbackLocked();
-            mNotificationChannels.createAllChannelsForAllUsers(getContext());
         }
         registerSafetyCenterPullAtomCallback(pullAtomCallback);
     }
@@ -876,6 +875,9 @@ public final class SafetyCenterService extends SystemService {
         @GuardedBy("mApiLock")
         private void setInitialStateLocked() {
             mSafetyCenterEnabled = SafetyCenterFlags.getSafetyCenterEnabled();
+            if (mSafetyCenterEnabled) {
+                onApiInitEnabledLocked();
+            }
             Log.i(TAG, "Safety Center is " + (mSafetyCenterEnabled ? "enabled" : "disabled"));
         }
 
@@ -892,12 +894,25 @@ public final class SafetyCenterService extends SystemService {
         }
 
         @GuardedBy("mApiLock")
+        private void onApiInitEnabledLocked() {
+            mNotificationChannels.createAllChannelsForAllUsers(getContext());
+        }
+
+        @GuardedBy("mApiLock")
         private void onApiEnabledLocked() {
+            mNotificationChannels.createAllChannelsForAllUsers(getContext());
             mSafetyCenterBroadcastDispatcher.sendEnabledChanged();
         }
 
         @GuardedBy("mApiLock")
         private void onApiDisabledLocked() {
+            // We're not clearing the Safety Center notification channels here. The reason for this
+            // is that the NotificationManager will post a runnable to cancel all associated
+            // notifications when clearing the channels. Given this happens asynchronously, this can
+            // leak between test cases and cause notifications that should be active to be cleared
+            // inadvertently. We're ok with the inconsistency because the channels are hidden
+            // somewhat deeply under Settings anyway, and we're unlikely to turn off Safety Center
+            // in production.
             clearDataLocked();
             mSafetyCenterListeners.clear();
             mSafetyCenterBroadcastDispatcher.sendEnabledChanged();
@@ -929,22 +944,12 @@ public final class SafetyCenterService extends SystemService {
                 if (stillInFlight == null) {
                     return;
                 }
-                boolean showErrorEntriesOnTimeout =
-                        SafetyCenterFlags.getShowErrorEntriesOnTimeout();
-                boolean setError =
-                        showErrorEntriesOnTimeout
-                                && !RefreshReasons.isBackgroundRefresh(mRefreshReason);
+                boolean setError = !RefreshReasons.isBackgroundRefresh(mRefreshReason);
                 for (int i = 0; i < stillInFlight.size(); i++) {
                     mSafetyCenterDataManager.markSafetySourceRefreshTimedOut(
                             stillInFlight.valueAt(i), setError);
                 }
                 mSafetyCenterDataChangeNotifier.updateDataConsumers(mUserProfileGroup);
-                if (!showErrorEntriesOnTimeout) {
-                    mSafetyCenterListeners.deliverErrorForUserProfileGroup(
-                            mUserProfileGroup,
-                            new SafetyCenterErrorDetails(
-                                    mSafetyCenterResourcesApk.getStringByName("refresh_timeout")));
-                }
             }
         }
 
