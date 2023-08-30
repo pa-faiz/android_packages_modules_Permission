@@ -30,12 +30,12 @@ import android.os.SystemClock
 import android.os.SystemProperties
 import android.permission.PermissionManager
 import android.platform.test.annotations.AsbSecurityTest
-import android.platform.test.annotations.FlakyTest
 import android.provider.DeviceConfig
 import android.provider.Settings
 import android.safetycenter.SafetyCenterManager
 import android.server.wm.WindowManagerStateHelper
 import androidx.annotation.RequiresApi
+import androidx.test.filters.FlakyTest
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -68,7 +68,7 @@ import org.junit.Rule
 import org.junit.Test
 
 private const val APK_PATH =
-    "/data/local/tmp/cts/permissionui/CtsAppThatAccessesMicAndCameraPermission.apk"
+    "/data/local/tmp/cts-permissionui/CtsAppThatAccessesMicAndCameraPermission.apk"
 private const val APP_LABEL = "CtsCameraMicAccess"
 private const val APP_PKG = "android.permissionui.cts.appthataccessescameraandmic"
 private const val SHELL_PKG = "com.android.shell"
