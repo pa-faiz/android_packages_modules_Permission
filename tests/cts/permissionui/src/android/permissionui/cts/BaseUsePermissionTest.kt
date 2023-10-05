@@ -89,6 +89,8 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
             "$APK_DIRECTORY/CtsMediaPermissionApp33WithStorage.apk"
         const val APP_APK_PATH_IMPLICIT_USER_SELECT_STORAGE =
             "$APK_DIRECTORY/CtsUsePermissionAppImplicitUserSelectStorage.apk"
+        const val APP_APK_PATH_STORAGE_33 =
+            "$APK_DIRECTORY/CtsUsePermissionAppStorage33.apk"
         const val APP_APK_PATH_OTHER_APP =
             "$APK_DIRECTORY/CtsDifferentPkgNameApp.apk"
         const val APP_PACKAGE_NAME = "android.permissionui.cts.usepermission"
@@ -532,9 +534,11 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
 
     protected fun clickPermissionReviewCancel() {
         if (isAutomotive || isWatch) {
-            clickAndWaitForWindowTransition(By.text(getPermissionControllerString("review_button_cancel")))
+            clickAndWaitForWindowTransition(
+                    By.text(getPermissionControllerString("review_button_cancel")))
         } else {
-            clickAndWaitForWindowTransition(By.res("com.android.permissioncontroller:id/cancel_button"))
+            clickAndWaitForWindowTransition(
+                    By.res("com.android.permissioncontroller:id/cancel_button"))
         }
     }
 
@@ -683,14 +687,18 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
         )
     }
 
-    // Performs the requested action and returns, waiting for a new window transition if at least
-    // one has not already occurred while the action took place.
+    // Perform the requested action, then wait both for the action to complete, and for at least
+    // one window transition to occur since the moment the action begins executing.
     protected inline fun doAndWaitForWindowTransition(
         crossinline block: () -> Unit
     ) {
-        uiDevice.performActionAndWait({
+        val timeoutOccurred = !uiDevice.performActionAndWait({
             block()
         }, Until.newWindow(), NEW_WINDOW_TIMEOUT_MILLIS)
+
+        if (timeoutOccurred) {
+            throw RuntimeException("Timed out waiting for window transition.")
+        }
     }
 
     protected fun findPermissionRequestAllowButton(timeoutMillis: Long = 20000) {
@@ -931,7 +939,6 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
         permission: String,
         manuallyNavigate: Boolean = false
     ) {
-
         val useLegacyNavigation = isWatch || isAutomotive || manuallyNavigate
         if (useLegacyNavigation) {
             navigateToAppPermissionSettings()
