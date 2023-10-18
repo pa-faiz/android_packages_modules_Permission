@@ -21,6 +21,7 @@ import static com.android.permissioncontroller.permission.ui.Category.ALLOWED;
 import static com.android.permissioncontroller.permission.ui.Category.ALLOWED_FOREGROUND;
 import static com.android.permissioncontroller.permission.ui.Category.ASK;
 import static com.android.permissioncontroller.permission.ui.Category.DENIED;
+import static com.android.permissioncontroller.permission.ui.Category.STORAGE_FOOTER;
 import static com.android.permissioncontroller.permission.ui.handheld.UtilsKt.pressBack;
 
 import android.Manifest;
@@ -34,6 +35,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.safetycenter.SafetyCenterManager;
 import android.util.ArrayMap;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -86,9 +88,10 @@ public final class PermissionAppsFragment extends SettingsWithLargeHeader implem
     private static final String STORAGE_ALLOWED_FULL = "allowed_storage_full";
     private static final String STORAGE_ALLOWED_SCOPED = "allowed_storage_scoped";
     private static final String BLOCKED_SENSOR_PREF_KEY = "sensor_card";
-    private static final String STORAGE_FOOTER_CATEGORY_KEY = "storage_footer_category";
     private static final String STORAGE_FOOTER_PREFERENCE_KEY = "storage_footer_preference";
     private static final int SHOW_LOAD_DELAY_MS = 200;
+
+    private static final String PRIVACY_CONTROLS_ACTION = "android.settings.PRIVACY_CONTROLS";
 
     /**
      * Create a bundle with the arguments needed by this fragment
@@ -269,12 +272,31 @@ public final class PermissionAppsFragment extends SettingsWithLargeHeader implem
         findPreference(ALLOWED_FOREGROUND.getCategoryName()).setVisible(false);
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private String getPrivacyControlsIntent() {
+        Context context = getPreferenceManager().getContext();
+        SafetyCenterManager safetyCenterManager =
+                context.getSystemService(SafetyCenterManager.class);
+        if (safetyCenterManager.isSafetyCenterEnabled()) {
+            return PRIVACY_CONTROLS_ACTION;
+        } else {
+            return Settings.ACTION_PRIVACY_SETTINGS;
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.S)
     private CardViewPreference createSensorCard() {
         boolean isLocation = Manifest.permission_group.LOCATION.equals(mPermGroupName);
         Context context = getPreferenceManager().getContext();
-        String action = isLocation ? Settings.ACTION_LOCATION_SOURCE_SETTINGS
-                : Settings.ACTION_PRIVACY_SETTINGS;
+
+        String action;
+        if (isLocation) {
+            action = Settings.ACTION_LOCATION_SOURCE_SETTINGS;
+        } else  if (SdkLevel.isAtLeastT()) {
+            action = getPrivacyControlsIntent();
+        } else {
+            action = Settings.ACTION_PRIVACY_SETTINGS;
+        }
         CardViewPreference sensorCard = new CardViewPreference(context, action);
         sensorCard.setKey(BLOCKED_SENSOR_PREF_KEY);
         sensorCard.setIcon(Utils.getBlockedIcon(mPermGroupName));
@@ -291,7 +313,7 @@ public final class PermissionAppsFragment extends SettingsWithLargeHeader implem
     private void addStorageFooterSeeAllFilesAccess() {
         PreferenceScreen screen = getPreferenceScreen();
         Context context = screen.getPreferenceManager().getContext();
-        PreferenceCategory preferenceCategory = findPreference(STORAGE_FOOTER_CATEGORY_KEY);
+        PreferenceCategory preferenceCategory = findPreference(STORAGE_FOOTER.getCategoryName());
         Preference existingPreference = findPreference(STORAGE_FOOTER_PREFERENCE_KEY);
 
         if (preferenceCategory == null || existingPreference != null) {
@@ -490,6 +512,13 @@ public final class PermissionAppsFragment extends SettingsWithLargeHeader implem
 
         if (SdkLevel.isAtLeastT() && Manifest.permission_group.STORAGE.equals(mPermGroupName)) {
             addStorageFooterSeeAllFilesAccess();
+        } else {
+            // Hide storage footer category
+            PreferenceCategory storageFooterPreferenceCategory =
+                    findPreference(STORAGE_FOOTER.getCategoryName());
+            if (storageFooterPreferenceCategory != null) {
+                storageFooterPreferenceCategory.setVisible(false);
+            }
         }
 
         mViewModel.setCreationLogged(true);
