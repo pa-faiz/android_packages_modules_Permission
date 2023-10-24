@@ -27,9 +27,9 @@ import android.content.pm.PackageManager.FLAG_PERMISSION_USER_FIXED
 import android.content.pm.PackageManager.FLAG_PERMISSION_USER_SET
 import android.net.Uri
 import android.os.Build
-import android.platform.test.annotations.FlakyTest
 import android.provider.DeviceConfig
 import android.provider.DeviceConfig.NAMESPACE_PRIVACY
+import androidx.test.filters.FlakyTest
 import androidx.test.filters.SdkSuppress
 import androidx.test.uiautomator.By
 import com.android.compatibility.common.util.SystemUtil.eventually
@@ -328,6 +328,26 @@ class PhotoPickerPermissionTest : BaseUsePermissionTest() {
     @Throws(PackageManager.NameNotFoundException::class)
     fun testPre33AppDoesntShowSelect() {
         installPackage(APP_APK_PATH_30)
+        runWithShellPermissionIdentity {
+            val requestedPerms = packageManager.getPackageInfo(APP_PACKAGE_NAME,
+                PackageManager.GET_PERMISSIONS).requestedPermissions!!.toList()
+            assertTrue("Expected package to have USER_SELECTED",
+                requestedPerms.contains(READ_MEDIA_VISUAL_USER_SELECTED))
+        }
+
+        requestAppPermissions(READ_MEDIA_IMAGES, waitForWindowTransition = false) {
+            findView(By.res(SELECT_BUTTON), expected = false)
+            pressBack()
+        }
+
+        navigateToIndividualPermissionSetting(READ_MEDIA_IMAGES)
+        findView(By.res(SELECT_RADIO_BUTTON), expected = false)
+    }
+
+    @Test
+    fun test33AppWithImplicitUserSelectDoesntShowSelect() {
+        installPackage(APP_APK_PATH_STORAGE_33)
+
         runWithShellPermissionIdentity {
             val requestedPerms = packageManager.getPackageInfo(APP_PACKAGE_NAME,
                 PackageManager.GET_PERMISSIONS).requestedPermissions!!.toList()

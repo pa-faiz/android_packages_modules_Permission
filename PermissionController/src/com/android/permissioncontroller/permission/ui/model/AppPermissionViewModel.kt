@@ -20,6 +20,7 @@ package com.android.permissioncontroller.permission.ui.model
 import android.Manifest
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
 import android.Manifest.permission_group.READ_MEDIA_VISUAL
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -375,9 +376,8 @@ class AppPermissionViewModel(
                     val detailId = getIndividualPermissionDetailResId(group)
                     detailResIdLiveData.value = detailId.first to detailId.second
                 }
-            } else if (KotlinUtils.isPhotoPickerPromptEnabled() &&
-                group.permGroupName == READ_MEDIA_VISUAL &&
-                group.packageInfo.targetSdkVersion >= Build.VERSION_CODES.TIRAMISU) {
+            } else if (shouldShowPhotoPickerPromptForApp(group) &&
+                group.permGroupName == READ_MEDIA_VISUAL) {
                 // Allow / Select Photos / Deny case
                 allowedState.isShown = true
                 deniedState.isShown = true
@@ -469,6 +469,19 @@ class AppPermissionViewModel(
                 ASK to askState, DENY to deniedState, DENY_FOREGROUND to deniedForegroundState,
                 LOCATION_ACCURACY to locationAccuracyState, SELECT_PHOTOS to selectState)
         }
+    }
+
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, codename = "UpsideDownCake")
+    private fun shouldShowPhotoPickerPromptForApp(group: LightAppPermGroup): Boolean {
+        if (!isPhotoPickerPromptEnabled() ||
+            group.packageInfo.targetSdkVersion < Build.VERSION_CODES.TIRAMISU) {
+            return false
+        }
+        if (group.packageInfo.targetSdkVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            return true
+        }
+        val userSelectedPerm = group.permissions[READ_MEDIA_VISUAL_USER_SELECTED] ?: return false
+        return !userSelectedPerm.isImplicit
     }
 
     fun registerPhotoPickerResultIfNeeded(fragment: Fragment) {
@@ -1139,7 +1152,7 @@ class AppPermissionViewModel(
         PermissionControllerStatsLog.write(APP_PERMISSION_FRAGMENT_ACTION_REPORTED, sessionId,
             changeId, uid, packageName, permission.permInfo.name,
             permission.isGrantedIncludingAppOp, permission.flags, buttonPressed)
-        Log.v(LOG_TAG, "Permission changed via UI with sessionId=$sessionId changeId=" +
+        Log.i(LOG_TAG, "Permission changed via UI with sessionId=$sessionId changeId=" +
             "$changeId uid=$uid packageName=$packageName permission=" + permission.permInfo.name +
             " isGranted=" + permission.isGrantedIncludingAppOp + " permissionFlags=" +
             permission.flags + " buttonPressed=$buttonPressed")
@@ -1157,7 +1170,7 @@ class AppPermissionViewModel(
             packageName,
             permGroupName,
             permissionRationaleShown)
-        Log.v(
+        Log.i(
             LOG_TAG,
             "AppPermission fragment viewed with sessionId=$sessionId uid=$uid " +
                 "packageName=$packageName permGroupName=$permGroupName " +

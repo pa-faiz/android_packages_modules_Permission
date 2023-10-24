@@ -28,11 +28,10 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.UserHandle
-import android.platform.test.annotations.FlakyTest
 import android.provider.Settings
+import androidx.test.filters.FlakyTest
 import androidx.test.filters.SdkSuppress
 import androidx.test.uiautomator.By
-import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil
 import com.android.compatibility.common.util.SystemUtil.callWithShellPermissionIdentity
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
@@ -195,7 +194,7 @@ class NotificationPermissionTest : BaseUsePermissionTest() {
     fun notificationPromptShownForSubsequentStartsIfTaskStartWasLauncher() {
         installPackage(APP_APK_PATH_CREATE_NOTIFICATION_CHANNELS_31, expectSuccess = true)
         launchApp(startSecondActivity = true)
-        if (isAutomotive) {
+        if (isAutomotive || isWatch) {
             waitFindObject(By.text(getPermissionControllerString(ALLOW_BUTTON_TEXT)))
         } else {
             waitFindObject(By.res(ALLOW_BUTTON))
@@ -389,9 +388,9 @@ class NotificationPermissionTest : BaseUsePermissionTest() {
 
         val options = ActivityOptions.makeBasic()
         options.isEligibleForLegacyPermissionPrompt = isEligibleForPromptOption
-        uiDevice.performActionAndWait({
+        doAndWaitForWindowTransition {
             context.startActivity(intent, options.toBundle())
-        }, Until.newWindow(), NEW_WINDOW_TIMEOUT_MILLIS)
+        }
 
         // Watch does not have app bar
         if (!isWatch) {

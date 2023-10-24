@@ -72,9 +72,9 @@ import com.android.permissioncontroller.auto.DrivingDecisionReminderService
 import com.android.permissioncontroller.permission.data.LightAppPermGroupLiveData
 import com.android.permissioncontroller.permission.data.LightPackageInfoLiveData
 import com.android.permissioncontroller.permission.data.PackagePermissionsLiveData
-import com.android.permissioncontroller.permission.data.v34.SafetyLabelInfoLiveData
 import com.android.permissioncontroller.permission.data.SmartUpdateMediatorLiveData
 import com.android.permissioncontroller.permission.data.get
+import com.android.permissioncontroller.permission.data.v34.SafetyLabelInfoLiveData
 import com.android.permissioncontroller.permission.model.AppPermissionGroup
 import com.android.permissioncontroller.permission.model.livedatatypes.LightAppPermGroup
 import com.android.permissioncontroller.permission.model.livedatatypes.LightPackageInfo
@@ -124,7 +124,7 @@ import com.android.permissioncontroller.permission.ui.model.grantPermissions.Loc
 import com.android.permissioncontroller.permission.ui.model.grantPermissions.NotificationGrantBehavior
 import com.android.permissioncontroller.permission.ui.model.grantPermissions.StorageGrantBehavior
 import com.android.permissioncontroller.permission.ui.v34.PermissionRationaleActivity
-import com.android.permissioncontroller.permission.utils.v31.AdminRestrictedPermissionsUtils
+import com.android.permissioncontroller.permission.utils.ContextCompat
 import com.android.permissioncontroller.permission.utils.KotlinUtils
 import com.android.permissioncontroller.permission.utils.KotlinUtils.grantBackgroundRuntimePermissions
 import com.android.permissioncontroller.permission.utils.KotlinUtils.grantForegroundRuntimePermissions
@@ -134,6 +134,7 @@ import com.android.permissioncontroller.permission.utils.PermissionMapping
 import com.android.permissioncontroller.permission.utils.PermissionMapping.getPartialStorageGrantPermissionsForGroup
 import com.android.permissioncontroller.permission.utils.SafetyNetLogger
 import com.android.permissioncontroller.permission.utils.Utils
+import com.android.permissioncontroller.permission.utils.v31.AdminRestrictedPermissionsUtils
 import com.android.permissioncontroller.permission.utils.v34.SafetyLabelUtils
 
 /**
@@ -446,7 +447,6 @@ class NewGrantPermissionsViewModel(
 
         val splitPerms = app.getSystemService(PermissionManager::class.java)!!.splitPermissions
         for (splitPerm in splitPerms) {
-
             if (requestingAppTargetSDK < splitPerm.targetSdk && perm == splitPerm.splitPermission) {
                 extendedBySplitPerms.addAll(splitPerm.newPermissions)
             }
@@ -804,7 +804,7 @@ class NewGrantPermissionsViewModel(
             safetyLabelInfoLiveData?.value?.safetyLabel,
             PermissionMapping.getGroupOfPlatformPermission(permission))
 
-        Log.v(LOG_TAG, "Permission grant result requestId=$sessionId " +
+        Log.i(LOG_TAG, "Permission grant result requestId=$sessionId " +
             "callingUid=${packageInfo.uid} callingPackage=$packageName permission=$permission " +
             "isImplicit=$isImplicit result=$result " +
             "isPermissionRationaleShown=$isPermissionRationaleShown")
@@ -1065,15 +1065,15 @@ class NewGrantPermissionsViewModel(
         }
 
         PermissionControllerStatsLog.write(GRANT_PERMISSIONS_ACTIVITY_BUTTON_ACTIONS,
-                groupName, packageInfo.uid, packageName, presentedButtons, clickedButton, sessionId,
-                packageInfo.targetSdkVersion, selectedPrecision,
-                isPermissionRationaleShown)
-        Log.v(LOG_TAG, "Logged buttons presented and clicked permissionGroupName=" +
-                "$groupName uid=${packageInfo.uid} selectedPrecision=$selectedPrecision " +
-                "package=$packageName presentedButtons=$presentedButtons " +
-                "clickedButton=$clickedButton isPermissionRationaleShown=" +
-                "$isPermissionRationaleShown sessionId=$sessionId " +
-                "targetSdk=${packageInfo.targetSdkVersion}")
+            groupName, packageInfo.uid, packageName, presentedButtons, clickedButton, sessionId,
+            packageInfo.targetSdkVersion, selectedPrecision,
+            isPermissionRationaleShown)
+        Log.i(LOG_TAG, "Logged buttons presented and clicked permissionGroupName=" +
+            "$groupName uid=${packageInfo.uid} selectedPrecision=$selectedPrecision " +
+            "package=$packageName presentedButtons=$presentedButtons " +
+            "clickedButton=$clickedButton isPermissionRationaleShown=" +
+            "$isPermissionRationaleShown sessionId=$sessionId " +
+            "targetSdk=${packageInfo.targetSdkVersion}")
     }
 
     /**
@@ -1184,8 +1184,16 @@ class NewGrantPermissionsViewModel(
         }
         val buttonArray = convertSetToBoolList(buttons, NEXT_BUTTON)
         val locationArray = convertSetToBoolList(locationButtons, NEXT_LOCATION_DIALOG)
-        return RequestInfo(groupState.group.permGroupInfo, buttonArray, locationArray,
-            message, detailMessage)
+
+        val permissionResourceDeviceId = ContextCompat.DEVICE_ID_DEFAULT
+        // TODO(b/298623935) Determine the device ID of the permission resource
+        // More logic is required at that point to properly identify permissions which can be
+        // device-aware (once implemented)
+        // e.g. check VDM for the VirtualDevice's capabilities
+        // e.g. check the permission request for the target device ID.
+
+        return RequestInfo(groupState.group.permGroupInfo, buttonArray, locationArray, message,
+                detailMessage, deviceId = permissionResourceDeviceId)
     }
 
     private fun getSelectedLocation(group: LightAppPermGroup): Int {

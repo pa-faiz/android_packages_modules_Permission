@@ -55,7 +55,7 @@ class UndefinedGroupPermissionTest {
     @Before
     fun install() {
         SystemUtil.runShellCommand("pm uninstall $APP_PKG_NAME")
-        SystemUtil.runShellCommand("pm install -r " +
+        SystemUtil.runShellCommandOrThrow("pm install -r " +
                 TEST_APP_DEFINES_UNDEFINED_PERMISSION_GROUP_ELEMENT_APK)
     }
 
@@ -192,7 +192,7 @@ class UndefinedGroupPermissionTest {
 
     companion object {
         private const val TEST_APP_DEFINES_UNDEFINED_PERMISSION_GROUP_ELEMENT_APK =
-                "/data/local/tmp/cts/permissions/AppThatDefinesUndefinedPermissionGroupElement.apk"
+                "/data/local/tmp/cts-permission/AppThatDefinesUndefinedPermissionGroupElement.apk"
         private const val APP_PKG_NAME = "android.permission.cts.appthatrequestpermission"
         private const val EXTRA_PERMISSIONS =
                 "android.permission.cts.appthatrequestpermission.extra.PERMISSIONS"

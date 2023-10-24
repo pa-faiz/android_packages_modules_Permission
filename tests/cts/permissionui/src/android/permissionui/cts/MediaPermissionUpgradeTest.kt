@@ -21,7 +21,7 @@ import android.Manifest.permission.READ_MEDIA_AUDIO
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VIDEO
 import android.os.Build
-import android.platform.test.annotations.FlakyTest
+import androidx.test.filters.FlakyTest
 import androidx.test.filters.SdkSuppress
 import com.android.compatibility.common.util.CddTest
 import org.junit.Test
@@ -40,7 +40,8 @@ class MediaPermissionUpgradeTest : BaseUsePermissionTest() {
 
         // Request STORAGE, and click allow
         requestAppPermissionsAndAssertResult(
-            READ_EXTERNAL_STORAGE to true
+            READ_EXTERNAL_STORAGE to true,
+            waitForWindowTransition = !isWatch
         ) {
             clickPermissionRequestAllowButton()
         }

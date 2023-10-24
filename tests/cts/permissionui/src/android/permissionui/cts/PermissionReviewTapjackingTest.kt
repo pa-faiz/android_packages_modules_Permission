@@ -18,7 +18,7 @@ package android.permissionui.cts
 
 import android.content.ComponentName
 import android.content.Intent
-import android.platform.test.annotations.FlakyTest
+import androidx.test.filters.FlakyTest
 import androidx.test.uiautomator.By
 import com.android.compatibility.common.util.SystemUtil
 import java.lang.Exception
@@ -73,7 +73,9 @@ class PermissionReviewTapjackingTest : BaseUsePermissionTest() {
         )
 
         if (isWatch) {
-            waitFindObject(By.text(getPermissionControllerString("review_button_cancel")))
+            waitFindObject(
+                By.text(getPermissionControllerString("review_button_cancel")), TIMEOUT_MILLIS * 2
+            )
         } else {
             waitFindObject(By.res("com.android.permissioncontroller:id/permissions_message"))
         }

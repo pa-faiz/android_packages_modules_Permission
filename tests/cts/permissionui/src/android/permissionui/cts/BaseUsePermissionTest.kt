@@ -53,6 +53,7 @@ import com.android.modules.utils.build.SdkLevel
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import org.junit.After
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -75,6 +76,7 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
         const val APP_APK_PATH_30 = "$APK_DIRECTORY/CtsUsePermissionApp30.apk"
         const val APP_APK_PATH_31 = "$APK_DIRECTORY/$APP_APK_NAME_31"
         const val APP_APK_PATH_32 = "$APK_DIRECTORY/CtsUsePermissionApp32.apk"
+        const val APP_APK_PATH_STREAMING = "$APK_DIRECTORY/CtsUsePermissionAppStreaming.apk"
 
         const val APP_APK_PATH_30_WITH_BACKGROUND =
                 "$APK_DIRECTORY/CtsUsePermissionApp30WithBackground.apk"
@@ -89,6 +91,8 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
             "$APK_DIRECTORY/CtsMediaPermissionApp33WithStorage.apk"
         const val APP_APK_PATH_IMPLICIT_USER_SELECT_STORAGE =
             "$APK_DIRECTORY/CtsUsePermissionAppImplicitUserSelectStorage.apk"
+        const val APP_APK_PATH_STORAGE_33 =
+            "$APK_DIRECTORY/CtsUsePermissionAppStorage33.apk"
         const val APP_APK_PATH_OTHER_APP =
             "$APK_DIRECTORY/CtsDifferentPkgNameApp.apk"
         const val APP_PACKAGE_NAME = "android.permissionui.cts.usepermission"
@@ -160,6 +164,9 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
             "com.android.permissioncontroller:id/settings_title"
         const val SETTINGS_MESSAGE_ID =
             "com.android.permissioncontroller:id/settings_message"
+        const val PERMISSION_MESSAGE_ID = "com.android.permissioncontroller:id/permission_message"
+        const val PERMISSION_MESSAGE_ID_AUTOMOTIVE =
+                "com.android.permissioncontroller:id/car_ui_alert_title"
 
         const val REQUEST_LOCATION_MESSAGE = "permgrouprequest_location"
 
@@ -383,7 +390,8 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
     protected fun clickPermissionReviewContinue() {
         if (isAutomotive || isWatch) {
             clickAndWaitForWindowTransition(
-                By.text(getPermissionControllerString("review_button_continue")))
+                By.text(getPermissionControllerString("review_button_continue")), TIMEOUT_MILLIS * 2
+            )
         } else {
             clickAndWaitForWindowTransition(
                 By.res("com.android.permissioncontroller:id/continue_button"))
@@ -532,9 +540,11 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
 
     protected fun clickPermissionReviewCancel() {
         if (isAutomotive || isWatch) {
-            clickAndWaitForWindowTransition(By.text(getPermissionControllerString("review_button_cancel")))
+            clickAndWaitForWindowTransition(
+                    By.text(getPermissionControllerString("review_button_cancel")))
         } else {
-            clickAndWaitForWindowTransition(By.res("com.android.permissioncontroller:id/cancel_button"))
+            clickAndWaitForWindowTransition(
+                    By.res("com.android.permissioncontroller:id/cancel_button"))
         }
     }
 
@@ -637,19 +647,24 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
             waitForWindowTransition = waitForWindowTransition,
             block = block
         )
-        assertEquals(Activity.RESULT_OK, result.resultCode)
+        assertEquals(
+            "Permission request result had unexpected resultCode:",
+            Activity.RESULT_OK,
+            result.resultCode
+        )
 
         val responseSize: Int =
             result.resultData!!.getStringArrayExtra("$APP_PACKAGE_NAME.PERMISSIONS")!!.size
-        assertEquals(
+        assertEquals("Permission request result had unexpected number of grant results:",
             responseSize,
             result.resultData!!.getIntArrayExtra("$APP_PACKAGE_NAME.GRANT_RESULTS")!!.size
         )
 
         // Note that the behavior around requesting `null` permissions changed in the platform
         // in Android U. Currently, null permissions are ignored and left out of the result set.
-        assertTrue(permissions.size >= responseSize)
-        assertEquals(
+        assertTrue("Permission request result had fewer permissions than request",
+            permissions.size >= responseSize)
+        assertEquals("Permission request result had unexpected grant results:",
             permissionAndExpectedGrantResults
                 .filter { it.first != null }
                 .toList(),
@@ -683,18 +698,22 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
         )
     }
 
-    // Performs the requested action and returns, waiting for a new window transition if at least
-    // one has not already occurred while the action took place.
+    // Perform the requested action, then wait both for the action to complete, and for at least
+    // one window transition to occur since the moment the action begins executing.
     protected inline fun doAndWaitForWindowTransition(
         crossinline block: () -> Unit
     ) {
-        uiDevice.performActionAndWait({
+        val timeoutOccurred = !uiDevice.performActionAndWait({
             block()
         }, Until.newWindow(), NEW_WINDOW_TIMEOUT_MILLIS)
+
+        if (timeoutOccurred) {
+            throw RuntimeException("Timed out waiting for window transition.")
+        }
     }
 
     protected fun findPermissionRequestAllowButton(timeoutMillis: Long = 20000) {
-        if (isAutomotive) {
+        if (isAutomotive || isWatch) {
             waitFindObject(By.text(getPermissionControllerString(ALLOW_BUTTON_TEXT)), timeoutMillis)
         } else {
             waitFindObject(By.res(ALLOW_BUTTON), timeoutMillis)
@@ -702,7 +721,7 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
     }
 
     protected fun clickPermissionRequestAllowButton(timeoutMillis: Long = 20000) {
-        if (isAutomotive) {
+        if (isAutomotive || isWatch) {
             click(By.text(getPermissionControllerString(ALLOW_BUTTON_TEXT)), timeoutMillis)
         } else {
             click(By.res(ALLOW_BUTTON), timeoutMillis)
@@ -761,7 +780,7 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
     }
 
     protected fun findPermissionRequestAllowForegroundButton(timeoutMillis: Long = 20000) {
-        if (isAutomotive) {
+        if (isAutomotive || isWatch) {
             waitFindObject(By.text(
                 getPermissionControllerString(ALLOW_FOREGROUND_BUTTON_TEXT)), timeoutMillis)
         } else {
@@ -770,7 +789,7 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
     }
 
     protected fun clickPermissionRequestAllowForegroundButton(timeoutMillis: Long = 10_000) {
-        if (isAutomotive) {
+        if (isAutomotive || isWatch) {
             click(By.text(
                 getPermissionControllerString(ALLOW_FOREGROUND_BUTTON_TEXT)), timeoutMillis)
         } else {
@@ -931,7 +950,6 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
         permission: String,
         manuallyNavigate: Boolean = false
     ) {
-
         val useLegacyNavigation = isWatch || isAutomotive || manuallyNavigate
         if (useLegacyNavigation) {
             navigateToAppPermissionSettings()
@@ -1198,14 +1216,20 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
         By.text(Pattern.compile("(?i)^${Pattern.quote(prefix)}.*$"))
 
     protected fun assertAppHasPermission(permissionName: String, expectPermission: Boolean) {
-        assertEquals( "Permission $permissionName",
-            if (expectPermission) {
-                PackageManager.PERMISSION_GRANTED
-            } else {
-                PackageManager.PERMISSION_DENIED
-            },
-            packageManager.checkPermission(permissionName, APP_PACKAGE_NAME)
+        val checkPermissionResult = packageManager.checkPermission(permissionName, APP_PACKAGE_NAME)
+        assertTrue(
+            "Invalid permission check result: $checkPermissionResult",
+            checkPermissionResult == PackageManager.PERMISSION_GRANTED ||
+                checkPermissionResult == PackageManager.PERMISSION_DENIED
         )
+        if (!expectPermission && checkPermissionResult == PackageManager.PERMISSION_GRANTED) {
+            Assert.fail("Unexpected permission check result for $permissionName: " +
+                "expected -1 (PERMISSION_DENIED) but was 0 (PERMISSION_GRANTED)")
+        }
+        if (expectPermission && checkPermissionResult == PackageManager.PERMISSION_DENIED) {
+            Assert.fail("Unexpected permission check result for $permissionName: " +
+                "expected 0 (PERMISSION_GRANTED) but was -1 (PERMISSION_DENIED)")
+        }
     }
 
     protected fun assertAppHasCalendarAccess(expectAccess: Boolean) {

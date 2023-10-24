@@ -18,6 +18,7 @@ package android.app.role.cts;
 
 import static com.android.compatibility.common.util.SystemUtil.callWithShellPermissionIdentity;
 import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
+import static com.android.compatibility.common.util.SystemUtil.runShellCommandOrThrow;
 import static com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity;
 import static com.android.compatibility.common.util.UiAutomatorUtils.waitFindObject;
 import static com.android.compatibility.common.util.UiAutomatorUtils.waitFindObjectOrNull;
@@ -40,7 +41,6 @@ import android.content.pm.PermissionInfo;
 import android.os.Build;
 import android.os.Process;
 import android.os.UserHandle;
-import android.platform.test.annotations.FlakyTest;
 import android.provider.Settings;
 import android.provider.Telephony;
 import android.support.test.uiautomator.By;
@@ -52,6 +52,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
+import androidx.test.filters.FlakyTest;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
@@ -90,7 +91,7 @@ public class RoleManagerTest {
     private static final String ROLE_NAME = RoleManager.ROLE_BROWSER;
     private static final String ROLE_SHORT_LABEL = "Browser app";
 
-    private static final String APP_APK_PATH = "/data/local/tmp/cts/role/CtsRoleTestApp.apk";
+    private static final String APP_APK_PATH = "/data/local/tmp/cts-role/CtsRoleTestApp.apk";
     private static final String APP_PACKAGE_NAME = "android.app.role.cts.app";
     private static final String APP_LABEL = "CtsRoleTestApp";
     private static final String APP_IS_ROLE_HELD_ACTIVITY_NAME = APP_PACKAGE_NAME
@@ -104,7 +105,7 @@ public class RoleManagerTest {
     private static final String APP_CHANGE_DEFAULT_SMS_ACTIVITY_NAME = APP_PACKAGE_NAME
             + ".ChangeDefaultSmsActivity";
 
-    private static final String APP_28_APK_PATH = "/data/local/tmp/cts/role/CtsRoleTestApp28.apk";
+    private static final String APP_28_APK_PATH = "/data/local/tmp/cts-role/CtsRoleTestApp28.apk";
     private static final String APP_28_PACKAGE_NAME = "android.app.role.cts.app28";
     private static final String APP_28_LABEL = "CtsRoleTestApp28";
     private static final String APP_28_CHANGE_DEFAULT_DIALER_ACTIVITY_NAME = APP_28_PACKAGE_NAME
@@ -113,7 +114,7 @@ public class RoleManagerTest {
             + ".ChangeDefaultSmsActivity";
 
     private static final String APP_33_WITHOUT_INCALLSERVICE_APK_PATH =
-            "/data/local/tmp/cts/role/CtsRoleTestApp33WithoutInCallService.apk";
+            "/data/local/tmp/cts-role/CtsRoleTestApp33WithoutInCallService.apk";
     private static final String APP_33_WITHOUT_INCALLSERVICE_PACKAGE_NAME =
             "android.app.role.cts.app33WithoutInCallService";
 
@@ -125,6 +126,8 @@ public class RoleManagerTest {
     private static final Context sContext = InstrumentationRegistry.getTargetContext();
     private static final PackageManager sPackageManager = sContext.getPackageManager();
     private static final RoleManager sRoleManager = sContext.getSystemService(RoleManager.class);
+    private static final boolean sIsWatch = sPackageManager.hasSystemFeature(
+            PackageManager.FEATURE_WATCH);
 
     @Rule
     public DisableAnimationRule mDisableAnimationRule = new DisableAnimationRule();
@@ -427,8 +430,8 @@ public class RoleManagerTest {
     }
 
     private void installPackage(@NonNull String apkPath) {
-        runShellCommand("pm install -r --user " + Process.myUserHandle().getIdentifier() + " "
-                + apkPath);
+        runShellCommandOrThrow(
+                "pm install -r --user " + Process.myUserHandle().getIdentifier() + " " + apkPath);
     }
 
     private void uninstallPackage(@NonNull String packageName) {
@@ -610,8 +613,12 @@ public class RoleManagerTest {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK)));
 
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
-                .hasDescendant(By.text(APP_LABEL)));
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(false).hasDescendant(By.text(APP_LABEL)));
+        } else {
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
+                    .hasDescendant(By.text(APP_LABEL)));
+        }
 
         pressBack();
     }
@@ -626,11 +633,20 @@ public class RoleManagerTest {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK)));
         waitForIdle();
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
-                .hasDescendant(By.text(APP_LABEL))).click();
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(false).hasDescendant(
+                    By.text(APP_LABEL))).click();
+        } else {
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
+                    .hasDescendant(By.text(APP_LABEL))).click();
+        }
 
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(true))
-                .hasDescendant(By.text(APP_LABEL)));
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(true).hasDescendant(By.text(APP_LABEL)));
+        } else {
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(true))
+                    .hasDescendant(By.text(APP_LABEL)));
+        }
         assertIsRoleHolder(ROLE_NAME, APP_PACKAGE_NAME, true);
 
         pressBack();
@@ -647,15 +663,30 @@ public class RoleManagerTest {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK)));
         waitForIdle();
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
-                .hasDescendant(By.text(APP_LABEL))).click();
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(true))
-                .hasDescendant(By.text(APP_LABEL)));
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(false).hasDescendant(
+                    By.text(APP_LABEL))).click();
+            waitFindObject(By.clickable(true).checked(true).hasDescendant(By.text(APP_LABEL)));
+        } else {
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
+                    .hasDescendant(By.text(APP_LABEL))).click();
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(true))
+                    .hasDescendant(By.text(APP_LABEL)));
+        }
         waitForIdle();
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))).click();
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(false)).click();
+        } else {
+            waitFindObject(
+                    By.clickable(true).hasDescendant(By.checkable(true).checked(false))).click();
+        }
 
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
-                .hasDescendant(By.text(APP_LABEL)));
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(false).hasDescendant(By.text(APP_LABEL)));
+        } else {
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
+                    .hasDescendant(By.text(APP_LABEL)));
+        }
         assertIsRoleHolder(ROLE_NAME, APP_PACKAGE_NAME, false);
 
         pressBack();
@@ -694,11 +725,20 @@ public class RoleManagerTest {
         waitForIdle();
         waitFindObject(By.text(ROLE_SHORT_LABEL)).click();
         waitForIdle();
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
-                .hasDescendant(By.text(APP_LABEL))).click();
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(false).hasDescendant(
+                    By.text(APP_LABEL))).click();
+        } else {
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
+                    .hasDescendant(By.text(APP_LABEL))).click();
+        }
 
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(true))
-                .hasDescendant(By.text(APP_LABEL)));
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(true).hasDescendant(By.text(APP_LABEL)));
+        } else {
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(true))
+                    .hasDescendant(By.text(APP_LABEL)));
+        }
         assertIsRoleHolder(ROLE_NAME, APP_PACKAGE_NAME, true);
 
         pressBack();
@@ -714,10 +754,16 @@ public class RoleManagerTest {
         waitForIdle();
         waitFindObject(By.text(ROLE_SHORT_LABEL)).click();
         waitForIdle();
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
-                .hasDescendant(By.text(APP_LABEL))).click();
-        waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(true))
-                .hasDescendant(By.text(APP_LABEL)));
+        if (sIsWatch) {
+            waitFindObject(By.clickable(true).checked(false).hasDescendant(
+                    By.text(APP_LABEL))).click();
+            waitFindObject(By.clickable(true).checked(true).hasDescendant(By.text(APP_LABEL)));
+        } else {
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(false))
+                    .hasDescendant(By.text(APP_LABEL))).click();
+            waitFindObject(By.clickable(true).hasDescendant(By.checkable(true).checked(true))
+                    .hasDescendant(By.text(APP_LABEL)));
+        }
         pressBack();
 
         waitFindObject(By.text(APP_LABEL));

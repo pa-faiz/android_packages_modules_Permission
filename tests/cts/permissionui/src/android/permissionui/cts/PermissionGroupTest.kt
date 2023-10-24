@@ -16,7 +16,7 @@
 
 package android.permissionui.cts
 
-import android.platform.test.annotations.FlakyTest
+import androidx.test.filters.FlakyTest
 import org.junit.Test
 
 /**
@@ -80,6 +80,7 @@ class PermissionGroupTest : BaseUsePermissionTest() {
         // but two from this group are <uses-permission> in the manifest
         requestAppPermissionsAndAssertResult(
             android.Manifest.permission.RECEIVE_SMS to true,
+            waitForWindowTransition = !isWatch
         ) {
             clickPermissionRequestAllowButton()
         }

@@ -1,4 +1,5 @@
-<!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
   ~ Copyright (C) 2022 The Android Open Source Project
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,11 @@
   ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
-  -->
+   -->
 
-<Space
-    style="@style/SafetyCenterNoLabelPreferenceCategory"/>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="private_space_title" msgid="6158245041481535879">"Privatni prostor"</string>
+    <string name="private_space_summary" msgid="529869826714610294">"Postavljanje privatnog prostora i drugo"</string>
+    <string name="private_space_search_terms" msgid="4820808478299116258">"Privatni prostor"</string>
+</resources>

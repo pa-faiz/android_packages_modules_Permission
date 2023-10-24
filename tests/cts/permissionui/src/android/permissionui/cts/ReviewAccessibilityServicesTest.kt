@@ -23,7 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.platform.test.annotations.AppModeFull
-import android.platform.test.annotations.FlakyTest
+import androidx.test.filters.FlakyTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import androidx.test.uiautomator.By
@@ -139,7 +139,7 @@ class ReviewAccessibilityServicesTest {
         val automan =
             InstrumentationRegistry.getInstrumentation()
                 .getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
-        uiDevice.performActionAndWait({
+        doAndWaitForWindowTransition {
             automan.adoptShellPermissionIdentity()
             try {
                 context.startActivity(
@@ -150,7 +150,19 @@ class ReviewAccessibilityServicesTest {
             } finally {
                 automan.dropShellPermissionIdentity()
             }
+        }
+    }
+
+    private inline fun doAndWaitForWindowTransition(
+            crossinline block: () -> Unit
+    ) {
+        val timeoutOccurred: Boolean = !uiDevice.performActionAndWait({
+            block()
         }, Until.newWindow(), NEW_WINDOW_TIMEOUT_MILLIS)
+
+        if (timeoutOccurred) {
+            throw RuntimeException("Timed out waiting for window transition.")
+        }
     }
 
     private fun findTestService(shouldBePresent: Boolean): UiObject2? {

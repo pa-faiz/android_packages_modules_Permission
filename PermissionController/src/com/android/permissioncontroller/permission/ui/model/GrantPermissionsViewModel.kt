@@ -118,6 +118,7 @@ import com.android.permissioncontroller.permission.ui.ManagePermissionsActivity
 import com.android.permissioncontroller.permission.ui.ManagePermissionsActivity.EXTRA_RESULT_PERMISSION_INTERACTED
 import com.android.permissioncontroller.permission.ui.ManagePermissionsActivity.EXTRA_RESULT_PERMISSION_RESULT
 import com.android.permissioncontroller.permission.ui.v34.PermissionRationaleActivity
+import com.android.permissioncontroller.permission.utils.ContextCompat
 import com.android.permissioncontroller.permission.utils.v31.AdminRestrictedPermissionsUtils
 import com.android.permissioncontroller.permission.utils.KotlinUtils
 import com.android.permissioncontroller.permission.utils.KotlinUtils.getDefaultPrecision
@@ -198,7 +199,8 @@ open class GrantPermissionsViewModel(
         val sendToSettingsImmediately: Boolean = false,
         val openPhotoPicker: Boolean = false,
         // Unused for now, will be included in the GrantPermissions refactor
-        val filteredPermissions: Collection<String> = emptyList()
+        val filteredPermissions: Collection<String> = emptyList(),
+        val deviceId: Int = ContextCompat.DEVICE_ID_DEFAULT,
     ) {
         val groupName = groupInfo.name
     }
@@ -265,7 +267,6 @@ open class GrantPermissionsViewModel(
         }
 
         private fun setAppPermGroupsLiveDatas(groups: Map<String, List<String>>) {
-
             val requestedGroups = groups.filter { (_, perms) ->
                 perms.any { it in unfilteredAffectedPermissions }
             }
@@ -713,7 +714,6 @@ open class GrantPermissionsViewModel(
 
         val splitPerms = app.getSystemService(PermissionManager::class.java)!!.splitPermissions
         for (splitPerm in splitPerms) {
-
             if (requestingAppTargetSDK < splitPerm.targetSdk && perm == splitPerm.splitPermission) {
                 extendedBySplitPerms.addAll(splitPerm.newPermissions)
             }
@@ -742,7 +742,6 @@ open class GrantPermissionsViewModel(
     }
 
     private fun isPermissionGrantableAndNotFixed(perm: String, group: LightAppPermGroup): Boolean {
-
         // If the permission is restricted it does not show in the UI and
         // is not added to the group at all, so check that first.
         if (perm in group.packageInfo.requestedPermissions && perm !in group.permissions) {
@@ -1239,7 +1238,7 @@ open class GrantPermissionsViewModel(
             safetyLabelInfoLiveData?.value?.safetyLabel,
             PermissionMapping.getGroupOfPlatformPermission(permission))
 
-        Log.v(LOG_TAG, "Permission grant result requestId=$sessionId " +
+        Log.i(LOG_TAG, "Permission grant result requestId=$sessionId " +
             "callingUid=${packageInfo.uid} callingPackage=$packageName permission=$permission " +
             "isImplicit=$isImplicit result=$result " +
             "isPermissionRationaleShown=$isPermissionRationaleShown")
@@ -1520,15 +1519,15 @@ open class GrantPermissionsViewModel(
         }
 
         PermissionControllerStatsLog.write(GRANT_PERMISSIONS_ACTIVITY_BUTTON_ACTIONS,
-                groupName, packageInfo.uid, packageName, presentedButtons, clickedButton, sessionId,
-                packageInfo.targetSdkVersion, selectedPrecision,
-                isPermissionRationaleShown)
-        Log.v(LOG_TAG, "Logged buttons presented and clicked permissionGroupName=" +
-                "$groupName uid=${packageInfo.uid} selectedPrecision=$selectedPrecision " +
-                "package=$packageName presentedButtons=$presentedButtons " +
-                "clickedButton=$clickedButton isPermissionRationaleShown=" +
-                "$isPermissionRationaleShown sessionId=$sessionId " +
-                "targetSdk=${packageInfo.targetSdkVersion}")
+            groupName, packageInfo.uid, packageName, presentedButtons, clickedButton, sessionId,
+            packageInfo.targetSdkVersion, selectedPrecision,
+            isPermissionRationaleShown)
+        Log.i(LOG_TAG, "Logged buttons presented and clicked permissionGroupName=" +
+            "$groupName uid=${packageInfo.uid} selectedPrecision=$selectedPrecision " +
+            "package=$packageName presentedButtons=$presentedButtons " +
+            "clickedButton=$clickedButton isPermissionRationaleShown=" +
+            "$isPermissionRationaleShown sessionId=$sessionId " +
+            "targetSdk=${packageInfo.targetSdkVersion}")
     }
 
     /**

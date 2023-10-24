@@ -29,6 +29,7 @@ import androidx.test.InstrumentationRegistry
 import androidx.test.filters.SdkSuppress
 import androidx.test.runner.AndroidJUnit4
 import com.android.compatibility.common.util.SystemUtil.runShellCommand
+import com.android.compatibility.common.util.SystemUtil.runShellCommandOrThrow
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import com.android.compatibility.common.util.ThrowingSupplier
 import com.google.common.truth.Truth.assertThat
@@ -131,8 +132,10 @@ class RoleControllerManagerTest {
     private fun installPackage(apkPath: String) {
         assertEquals(
             "Success",
-            runShellCommand("pm install -r --user ${Process.myUserHandle().identifier} $apkPath")
-                .trim()
+            runShellCommandOrThrow(
+                "pm install -r --user ${Process.myUserHandle().identifier} $apkPath"
+            )
+            .trim()
         )
     }
 
@@ -146,7 +149,7 @@ class RoleControllerManagerTest {
 
     companion object {
         private const val ROLE_NAME = RoleManager.ROLE_BROWSER
-        private const val APP_APK_PATH = "/data/local/tmp/cts/role/CtsRoleTestApp.apk"
+        private const val APP_APK_PATH = "/data/local/tmp/cts-role/CtsRoleTestApp.apk"
         private const val APP_PACKAGE_NAME = "android.app.role.cts.app"
         private const val SYSTEM_GALLERY_ROLE_NAME = "android.app.role.SYSTEM_GALLERY"
         private const val TIMEOUT_MILLIS = 15 * 1000L
