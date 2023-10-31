@@ -99,6 +99,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+
 /**
  * A set of util functions designed to work with kotlin, though they can work with java, as well.
  */
@@ -166,8 +167,6 @@ object KotlinUtils {
     private const val PROPERTY_SAFETY_LABEL_CHANGES_JOB_SERVICE_KILL_SWITCH =
         "safety_label_changes_job_service_kill_switch"
 
-    private const val PROPERTY_NEW_GRANT_DIALOG_BACKEND = "new_grand_dialog_backend"
-
     /**
      * Whether to show Camera and Mic Icons.
      *
@@ -176,24 +175,22 @@ object KotlinUtils {
     @ChecksSdkIntAtLeast(Build.VERSION_CODES.S)
     fun shouldShowCameraMicIndicators(): Boolean {
         return SdkLevel.isAtLeastS() &&
-                DeviceConfig.getBoolean(
-                    DeviceConfig.NAMESPACE_PRIVACY,
-                    PROPERTY_CAMERA_MIC_ICONS_ENABLED,
-                    true
-                )
+            DeviceConfig.getBoolean(
+                DeviceConfig.NAMESPACE_PRIVACY,
+                PROPERTY_CAMERA_MIC_ICONS_ENABLED,
+                true
+            )
     }
 
-    /**
-     * Whether to show the location indicators.
-     */
+    /** Whether to show the location indicators. */
     @ChecksSdkIntAtLeast(Build.VERSION_CODES.S)
     fun shouldShowLocationIndicators(): Boolean {
         return SdkLevel.isAtLeastS() &&
-                DeviceConfig.getBoolean(
-                    DeviceConfig.NAMESPACE_PRIVACY,
-                    PROPERTY_LOCATION_INDICATORS_ENABLED,
-                    false
-                )
+            DeviceConfig.getBoolean(
+                DeviceConfig.NAMESPACE_PRIVACY,
+                PROPERTY_LOCATION_INDICATORS_ENABLED,
+                false
+            )
     }
 
     /** Whether the location accuracy feature is enabled */
@@ -242,17 +239,14 @@ object KotlinUtils {
             )
     }
 
-    /**
-     * Whether the Photo Picker Prompt is supported by the device
-     *
-     */
+    /** Whether the Photo Picker Prompt is supported by the device */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, codename = "UpsideDownCake")
     fun isPhotoPickerPromptSupported(): Boolean {
         val app = PermissionControllerApplication.get()
         return SdkLevel.isAtLeastU() &&
-                !DeviceUtils.isAuto(app) &&
-                !DeviceUtils.isTelevision(app) &&
-                !DeviceUtils.isWear(app)
+            !DeviceUtils.isAuto(app) &&
+            !DeviceUtils.isTelevision(app) &&
+            !DeviceUtils.isWear(app)
     }
 
     /*
@@ -318,11 +312,6 @@ object KotlinUtils {
             PROPERTY_SAFETY_LABEL_CHANGES_JOB_RUN_WHEN_IDLE,
             true
         )
-    }
-
-    fun isNewGrantDialogBackendEnabled(): Boolean {
-         return DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_PRIVACY,
-            PROPERTY_NEW_GRANT_DIALOG_BACKEND, true)
     }
 
     /**
@@ -532,16 +521,12 @@ object KotlinUtils {
      * @param app The current application
      * @param user The user for whom we want the icon
      * @param pm The PackageManager
-     *
      * @return Bitmap of the setting's icon, or null
      */
-    fun getSettingsIcon(
-        app: Application,
-        user: UserHandle,
-        pm: PackageManager
-    ): Bitmap? {
-        val settingsPackageName = getPackageNameForIntent(pm,
-                Settings.ACTION_SETTINGS) ?: Constants.SETTINGS_PACKAGE_NAME_FALLBACK
+    fun getSettingsIcon(app: Application, user: UserHandle, pm: PackageManager): Bitmap? {
+        val settingsPackageName =
+            getPackageNameForIntent(pm, Settings.ACTION_SETTINGS)
+                ?: Constants.SETTINGS_PACKAGE_NAME_FALLBACK
         return getBadgedPackageIconBitmap(app, user, settingsPackageName)
     }
 
@@ -569,7 +554,6 @@ object KotlinUtils {
      * @param application The current application
      * @param user The user for whom we want the icon
      * @param packageName The name of the package whose icon we want
-     *
      * @return Bitmap of the package icon, or null
      */
     fun getBadgedPackageIconBitmap(
@@ -577,16 +561,14 @@ object KotlinUtils {
         user: UserHandle,
         packageName: String
     ): Bitmap? {
-        val drawable = getBadgedPackageIcon(
-                application,
-                packageName,
-                user)
+        val drawable = getBadgedPackageIcon(application, packageName, user)
 
-        val icon = if (drawable != null) {
-            convertToBitmap(drawable)
-        } else {
-            null
-        }
+        val icon =
+            if (drawable != null) {
+                convertToBitmap(drawable)
+            } else {
+                null
+            }
         return icon
     }
 
@@ -627,7 +609,6 @@ object KotlinUtils {
      *
      * @param pm The PackageManager
      * @param intentAction The name of the intent action
-     *
      * @return The package's name, or null
      */
     fun getPackageNameForIntent(pm: PackageManager, intentAction: String): String? {
@@ -706,11 +687,7 @@ object KotlinUtils {
      * for an application targeting the given SDK level.
      */
     @JvmStatic
-    fun isPermissionSplitFromNonRuntime(
-        app: Context,
-        permName: String,
-        targetSdk: Int
-    ): Boolean {
+    fun isPermissionSplitFromNonRuntime(app: Context, permName: String, targetSdk: Int): Boolean {
         val permissionManager = app.getSystemService(PermissionManager::class.java) ?: return false
         val splitPerms = permissionManager.splitPermissions
         val size = splitPerms.size
@@ -829,8 +806,15 @@ object KotlinUtils {
         group: LightAppPermGroup,
         filterPermissions: Collection<String> = group.permissions.keys
     ): LightAppPermGroup {
-        return grantRuntimePermissions(app, group, grantBackground = true, isOneTime = false,
-            userFixed = false, withoutAppOps = false, filterPermissions = filterPermissions)
+        return grantRuntimePermissions(
+            app,
+            group,
+            grantBackground = true,
+            isOneTime = false,
+            userFixed = false,
+            withoutAppOps = false,
+            filterPermissions = filterPermissions
+        )
     }
 
     private fun grantRuntimePermissions(
@@ -1729,13 +1713,14 @@ suspend fun <T, LD : LiveData<T>> LD.getInitializedValue(
     } else {
         suspendCoroutine { continuation: Continuation<T> ->
             val observer = AtomicReference<Observer<T>>()
-            observer.set(Observer { newValue ->
-                if (isValueInitialized()) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        observer.getAndSet(null)?.let { observerSnapshot ->
-                            removeObserver(observerSnapshot)
-                            continuation.resume(newValue)
-                           }
+            observer.set(
+                Observer { newValue ->
+                    if (isValueInitialized()) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            observer.getAndSet(null)?.let { observerSnapshot ->
+                                removeObserver(observerSnapshot)
+                                continuation.resume(newValue)
+                            }
                         }
                     }
                 }

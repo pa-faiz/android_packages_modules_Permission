@@ -118,6 +118,8 @@ android_test {
         "safety-label",
         "role-controller",
         "lottie",
+        "permissions-flags-lib",
+        "android.permission.flags-aconfig-java",
 
         "androidx.test.rules",
         "androidx.test.ext.truth",
