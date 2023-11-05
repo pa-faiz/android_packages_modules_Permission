@@ -25,6 +25,7 @@ import android.Manifest.permission.POST_NOTIFICATIONS
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VIDEO
 import android.Manifest.permission_group.NOTIFICATIONS
+import android.app.Activity
 import android.app.ActivityManager
 import android.app.AppOpsManager
 import android.app.AppOpsManager.MODE_ALLOWED
@@ -59,8 +60,10 @@ import android.health.connect.HealthConnectManager
 import android.os.Build
 import android.os.Bundle
 import android.os.UserHandle
+import android.os.UserManager
 import android.permission.PermissionManager
 import android.provider.DeviceConfig
+import android.provider.MediaStore
 import android.provider.Settings
 import android.safetylabel.SafetyLabelConstants.PERMISSION_RATIONALE_ENABLED
 import android.safetylabel.SafetyLabelConstants.SAFETY_LABEL_CHANGE_NOTIFICATIONS_ENABLED
@@ -142,9 +145,6 @@ object KotlinUtils {
     /** Whether to show 7-day toggle in privacy hub. */
     private const val PRIVACY_DASHBOARD_7_DAY_TOGGLE = "privacy_dashboard_7_day_toggle"
 
-    /** Default location precision */
-    private const val PROPERTY_LOCATION_PRECISION = "location_precision"
-
     /** Whether to show the photo picker option in permission prompts. */
     private const val PROPERTY_PHOTO_PICKER_PROMPT_ENABLED = "photo_picker_prompt_enabled"
 
@@ -166,6 +166,13 @@ object KotlinUtils {
     /** Whether the kill switch is set for [SafetyLabelChangesJobService]. */
     private const val PROPERTY_SAFETY_LABEL_CHANGES_JOB_SERVICE_KILL_SWITCH =
         "safety_label_changes_job_service_kill_switch"
+
+    data class Quadruple<out A, out B, out C, out D>(
+        val first: A,
+        val second: B,
+        val third: C,
+        val fourth: D
+    )
 
     /**
      * Whether to show Camera and Mic Icons.
@@ -197,16 +204,6 @@ object KotlinUtils {
     @ChecksSdkIntAtLeast(Build.VERSION_CODES.S)
     fun isLocationAccuracyEnabled(): Boolean {
         return SdkLevel.isAtLeastS()
-    }
-
-    /** Default state of location precision true: default is FINE. false: default is COARSE. */
-    fun getDefaultPrecision(): Boolean {
-        return !SdkLevel.isAtLeastS() ||
-            DeviceConfig.getBoolean(
-                DeviceConfig.NAMESPACE_PRIVACY,
-                PROPERTY_LOCATION_PRECISION,
-                true
-            )
     }
 
     /**
@@ -638,6 +635,28 @@ object KotlinUtils {
                 null
             }
         }
+    }
+
+    fun openPhotoPickerForApp(
+        activity: Activity,
+        uid: Int,
+        requestedPermissions: List<String>,
+        requestCode: Int
+    ) {
+        // A clone profile doesn't have a MediaProvider. If the app's user is a clone profile, open
+        // the photo picker in the parent profile
+        val appUser = UserHandle.getUserHandleForUid(uid)
+        val userManager =
+            activity.createContextAsUser(appUser, 0).getSystemService(UserManager::class.java)!!
+        val user = if (userManager.isCloneProfile) {
+            userManager.getProfileParent(appUser) ?: appUser
+        } else {
+            appUser
+        }
+        val pickerIntent = Intent(MediaStore.ACTION_USER_SELECT_IMAGES_FOR_APP)
+            .putExtra(Intent.EXTRA_UID, uid)
+            .setType(getMimeTypeForPermissions(requestedPermissions))
+        activity.startActivityForResultAsUser(pickerIntent, requestCode, user)
     }
 
     /** Return a specific MIME type, if a set of permissions is associated with one */
