@@ -33,9 +33,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
+import com.android.permissioncontroller.DeviceUtils;
 import com.android.permissioncontroller.PermissionControllerStatsLog;
 import com.android.permissioncontroller.permission.utils.CollectionUtils;
 import com.android.permissioncontroller.role.model.UserDeniedManager;
+import com.android.permissioncontroller.role.ui.wear.WearRequestRoleFragment;
 import com.android.permissioncontroller.role.utils.PackageUtils;
 import com.android.permissioncontroller.role.utils.RoleUiBehaviorUtils;
 import com.android.role.controller.model.Role;
@@ -103,7 +105,7 @@ public class RequestRoleActivity extends FragmentActivity {
             return;
         }
 
-        if (!role.isAvailable(this)) {
+        if (!role.isAvailableAsUser(Process.myUserHandle(), this)) {
             Log.e(LOG_TAG, "Role is unavailable: " + mRoleName);
             reportRequestResult(
                     PermissionControllerStatsLog.ROLE_REQUEST_RESULT_REPORTED__RESULT__IGNORED);
@@ -165,7 +167,7 @@ public class RequestRoleActivity extends FragmentActivity {
             return;
         }
 
-        if (!role.isPackageQualified(mPackageName, this)) {
+        if (!role.isPackageQualifiedAsUser(mPackageName, Process.myUserHandle(), this)) {
             Log.w(LOG_TAG, "Application doesn't qualify for role, role: " + mRoleName
                     + ", package: " + mPackageName);
             reportRequestResult(PermissionControllerStatsLog
@@ -184,10 +186,19 @@ public class RequestRoleActivity extends FragmentActivity {
         }
 
         if (savedInstanceState == null) {
-            RequestRoleFragment fragment = RequestRoleFragment.newInstance(mRoleName, mPackageName);
-            getSupportFragmentManager().beginTransaction()
-                    .add(fragment, null)
-                    .commit();
+            if (DeviceUtils.isWear(this)) {
+                WearRequestRoleFragment fragment = WearRequestRoleFragment.newInstance(
+                        mRoleName, mPackageName);
+                getSupportFragmentManager().beginTransaction()
+                        .add(android.R.id.content, fragment)
+                        .commit();
+            } else {
+                RequestRoleFragment fragment = RequestRoleFragment.newInstance(mRoleName,
+                        mPackageName);
+                getSupportFragmentManager().beginTransaction()
+                        .add(fragment, null)
+                        .commit();
+            }
         }
     }
 

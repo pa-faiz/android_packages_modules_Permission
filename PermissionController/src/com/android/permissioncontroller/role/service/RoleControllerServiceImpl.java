@@ -72,7 +72,7 @@ public class RoleControllerServiceImpl extends RoleControllerService {
         for (int i = 0; i < roleMapSize; i++) {
             Role role = roleMap.valueAt(i);
 
-            if (!role.isAvailable(this)) {
+            if (!role.isAvailableAsUser(Process.myUserHandle(), this)) {
                 continue;
             }
             roles.add(role);
@@ -93,7 +93,7 @@ public class RoleControllerServiceImpl extends RoleControllerService {
             String roleName = addedRoleNames.valueAt(i);
 
             Role role = roleMap.get(roleName);
-            role.onRoleAdded(this);
+            role.onRoleAddedAsUser(Process.myUserHandle(), this);
         }
 
         // Go through the holders of all roles.
@@ -112,7 +112,7 @@ public class RoleControllerServiceImpl extends RoleControllerService {
                     currentPackageNamesIndex++) {
                 String packageName = currentPackageNames.get(currentPackageNamesIndex);
 
-                if (role.isPackageQualified(packageName, this)) {
+                if (role.isPackageQualifiedAsUser(packageName, Process.myUserHandle(), this)) {
                     // We should not override user set or fixed permissions because we are only
                     // redoing the grant here. Otherwise, user won't be able to revoke permissions
                     // granted by role.
@@ -132,11 +132,11 @@ public class RoleControllerServiceImpl extends RoleControllerService {
             if (currentPackageNamesSize == 0 || isStaticRole) {
                 List<String> packageNamesToAdd = null;
                 if (addedRoleNames.contains(roleName) || isStaticRole) {
-                    packageNamesToAdd = role.getDefaultHolders(this);
+                    packageNamesToAdd = role.getDefaultHoldersAsUser(Process.myUserHandle(), this);
                 }
                 if (packageNamesToAdd == null || packageNamesToAdd.isEmpty()) {
-                    packageNamesToAdd = CollectionUtils.singletonOrEmpty(role.getFallbackHolder(
-                            this));
+                    packageNamesToAdd = CollectionUtils.singletonOrEmpty(
+                            role.getFallbackHolderAsUser(Process.myUserHandle(), this));
                 }
 
                 int packageNamesToAddSize = packageNamesToAdd.size();
@@ -149,7 +149,8 @@ public class RoleControllerServiceImpl extends RoleControllerService {
                         // static roles.
                         continue;
                     }
-                    if (!role.isPackageQualified(packageName, this)) {
+                    if (!role.isPackageQualifiedAsUser(packageName, Process.myUserHandle(),
+                            this)) {
                         Log.e(LOG_TAG, "Default/fallback role holder package doesn't qualify for"
                                 + " the role, package: " + packageName + ", role: " + roleName);
                         continue;
@@ -199,12 +200,12 @@ public class RoleControllerServiceImpl extends RoleControllerService {
             Log.e(LOG_TAG, "Unknown role: " + roleName);
             return false;
         }
-        if (!role.isAvailable(this)) {
+        if (!role.isAvailableAsUser(Process.myUserHandle(), this)) {
             Log.e(LOG_TAG, "Role is unavailable: " + roleName);
             return false;
         }
 
-        if (!role.isPackageQualified(packageName, this)) {
+        if (!role.isPackageQualifiedAsUser(packageName, Process.myUserHandle(), this)) {
             Log.e(LOG_TAG, "Package does not qualify for the role, package: " + packageName
                     + ", role: " + roleName);
             return false;
@@ -258,7 +259,7 @@ public class RoleControllerServiceImpl extends RoleControllerService {
             Log.e(LOG_TAG, "Unknown role: " + roleName);
             return false;
         }
-        if (!role.isAvailable(this)) {
+        if (!role.isAvailableAsUser(Process.myUserHandle(), this)) {
             Log.e(LOG_TAG, "Role is unavailable: " + roleName);
             return false;
         }
@@ -292,7 +293,7 @@ public class RoleControllerServiceImpl extends RoleControllerService {
             Log.e(LOG_TAG, "Unknown role: " + roleName);
             return false;
         }
-        if (!role.isAvailable(this)) {
+        if (!role.isAvailableAsUser(Process.myUserHandle(), this)) {
             Log.e(LOG_TAG, "Role is unavailable: " + roleName);
             return false;
         }
@@ -386,12 +387,12 @@ public class RoleControllerServiceImpl extends RoleControllerService {
             return true;
         }
 
-        String fallbackPackageName = role.getFallbackHolder(this);
+        String fallbackPackageName = role.getFallbackHolderAsUser(Process.myUserHandle(), this);
         if (fallbackPackageName == null) {
             return true;
         }
 
-        if (!role.isPackageQualified(fallbackPackageName, this)) {
+        if (!role.isPackageQualifiedAsUser(fallbackPackageName, Process.myUserHandle(), this)) {
             Log.e(LOG_TAG, "Fallback role holder package doesn't qualify for the role, package: "
                     + fallbackPackageName + ", role: " + roleName);
             return false;
@@ -422,10 +423,10 @@ public class RoleControllerServiceImpl extends RoleControllerService {
         if (role == null) {
             return false;
         }
-        if (!role.isAvailable(this)) {
+        if (!role.isAvailableAsUser(Process.myUserHandle(), this)) {
             return false;
         }
-        if (!role.isPackageQualified(packageName, this)) {
+        if (!role.isPackageQualifiedAsUser(packageName, Process.myUserHandle(), this)) {
             return false;
         }
         ApplicationInfo applicationInfo = PackageUtils.getApplicationInfo(packageName, this);
@@ -442,7 +443,7 @@ public class RoleControllerServiceImpl extends RoleControllerService {
         if (role == null) {
             return false;
         }
-        if (!role.isAvailable(this)) {
+        if (!role.isAvailableAsUser(Process.myUserHandle(), this)) {
             return false;
         }
 

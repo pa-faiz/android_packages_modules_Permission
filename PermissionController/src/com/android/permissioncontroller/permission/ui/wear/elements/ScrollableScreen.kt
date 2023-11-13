@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,13 +36,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.rotary.onRotaryScrollEvent
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
@@ -75,6 +81,7 @@ fun ScrollableScreen(
     subtitle: String? = null,
     image: Any? = null,
     isLoading: Boolean = false,
+    titleTestTag: String? = null,
     content: ScalingLazyListScope.() -> Unit,
 ) {
     var dismissed by remember { mutableStateOf(false) }
@@ -92,14 +99,15 @@ fun ScrollableScreen(
             if (isBackground || dismissed) {
                 Box(modifier = Modifier.fillMaxSize())
             } else {
-                Scaffold(showTimeText, title, subtitle, image, isLoading, content)
+                Scaffold(showTimeText, title, subtitle, image, isLoading, content, titleTestTag)
             }
         }
     } else {
-        Scaffold(showTimeText, title, subtitle, image, isLoading, content)
+        Scaffold(showTimeText, title, subtitle, image, isLoading, content, titleTestTag)
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun Scaffold(
     showTimeText: Boolean,
@@ -108,6 +116,7 @@ internal fun Scaffold(
     image: Any?,
     isLoading: Boolean,
     content: ScalingLazyListScope.() -> Unit,
+    titleTestTag: String? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
     val listState = remember { ScalingLazyListState(initialCenterItemIndex = 0) }
@@ -121,7 +130,8 @@ internal fun Scaffold(
                         true
                     }
                     .focusRequester(focusRequester)
-                    .focusable(),
+                    .focusable()
+                    .semantics { testTagsAsResourceId = true },
             timeText = {
                 if (showTimeText && !isLoading) {
                     TimeText(
@@ -146,26 +156,43 @@ internal fun Scaffold(
                             PaddingValues(start = 10.dp, end = 10.dp, top = 32.dp, bottom = 70.dp)
                     ) {
                         image?.let {
+                            val imageModifier = Modifier.size(24.dp)
                             when (image) {
                                 is Int ->
                                     item {
                                         Image(
                                             painter = painterResource(id = image),
-                                            contentDescription = null
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = imageModifier
                                         )
                                     }
                                 is Drawable ->
                                     item {
                                         Image(
                                             painter = rememberDrawablePainter(image),
-                                            contentDescription = null
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = imageModifier
                                         )
                                     }
                                 else -> {}
                             }
                         }
                         if (title != null) {
-                            item { ListHeader { Text(text = title, textAlign = TextAlign.Center) } }
+                            item {
+                                var modifier: Modifier = Modifier
+                                if (titleTestTag != null) {
+                                    modifier = modifier.testTag(titleTestTag)
+                                }
+                                ListHeader {
+                                    Text(
+                                        text = title,
+                                        textAlign = TextAlign.Center,
+                                        modifier = modifier
+                                    )
+                                }
+                            }
                         }
                         if (subtitle != null) {
                             item {

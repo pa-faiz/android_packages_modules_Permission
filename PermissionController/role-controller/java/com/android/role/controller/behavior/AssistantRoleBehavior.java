@@ -26,7 +26,6 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.os.Process;
 import android.os.UserHandle;
 import android.service.voice.VoiceInteractionService;
 import android.util.ArraySet;
@@ -56,15 +55,16 @@ public class AssistantRoleBehavior implements RoleBehavior {
     private static final String LOG_TAG = AssistantRoleBehavior.class.getSimpleName();
 
     @Override
-    public void onRoleAdded(@NonNull Role role, @NonNull Context context) {
+    public void onRoleAddedAsUser(@NonNull Role role, @NonNull UserHandle user,
+            @NonNull Context context) {
         PackageManager packageManager = context.getPackageManager();
         if (packageManager.isDeviceUpgrading()) {
             RoleManager roleManager = context.getSystemService(RoleManager.class);
-            List<String> packageNames = roleManager.getRoleHolders(role.getName());
+            List<String> packageNames = roleManager.getRoleHoldersAsUser(role.getName(), user);
             if (packageNames.isEmpty()) {
                 // If the device was upgraded, and there isn't any legacy role holders, it means
                 // user selected "None" in Settings and we need to keep that.
-                role.onNoneHolderSelectedAsUser(Process.myUserHandle(), context);
+                role.onNoneHolderSelectedAsUser(user, context);
             }
         }
     }
@@ -84,9 +84,9 @@ public class AssistantRoleBehavior implements RoleBehavior {
 
     @Nullable
     @Override
-    public Boolean isPackageQualified(@NonNull Role role, @NonNull String packageName,
-            @NonNull Context context) {
-        return !getQualifyingPackagesInternal(packageName, Process.myUserHandle(), context)
+    public Boolean isPackageQualifiedAsUser(@NonNull Role role, @NonNull String packageName,
+            @NonNull UserHandle user, @NonNull Context context) {
+        return !getQualifyingPackagesInternal(packageName, user, context)
                 .isEmpty();
     }
 
