@@ -31,9 +31,10 @@ import java.util.List;
 public interface RoleBehavior {
 
     /**
-     * @see Role#onRoleAdded(Context)
+     * @see Role#onRoleAddedAsUser(UserHandle, Context)
      */
-    default void onRoleAdded(@NonNull Role role, @NonNull Context context) {}
+    default void onRoleAddedAsUser(@NonNull Role role, @NonNull UserHandle user,
+            @NonNull Context context) {}
 
     /**
      * @see Role#isAvailableAsUser(UserHandle, Context)
@@ -47,7 +48,8 @@ public interface RoleBehavior {
      * @see Role#getDefaultHolders(Context)
      */
     @NonNull
-    default List<String> getDefaultHolders(@NonNull Role role, @NonNull Context context) {
+    default List<String> getDefaultHoldersAsUser(@NonNull Role role, @NonNull UserHandle user,
+            @NonNull Context context) {
         return Collections.emptyList();
     }
 
@@ -55,7 +57,8 @@ public interface RoleBehavior {
      * @see Role#getFallbackHolder(Context)
      */
     @Nullable
-    default String getFallbackHolder(@NonNull Role role, @NonNull Context context) {
+    default String getFallbackHolderAsUser(@NonNull Role role, @NonNull UserHandle user,
+            @NonNull Context context) {
         return null;
     }
 
@@ -72,8 +75,8 @@ public interface RoleBehavior {
      * @see Role#isPackageQualified(String, Context)
      */
     @Nullable
-    default Boolean isPackageQualified(@NonNull Role role, @NonNull String packageName,
-            @NonNull Context context) {
+    default Boolean isPackageQualifiedAsUser(@NonNull Role role, @NonNull String packageName,
+            @NonNull UserHandle user, @NonNull Context context) {
         return null;
     }
 
