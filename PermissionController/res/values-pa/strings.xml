@@ -34,6 +34,7 @@
     <string name="grant_dialog_button_more_info" msgid="213350268561945193">"ਹੋਰ ਜਾਣਕਾਰੀ"</string>
     <string name="grant_dialog_button_allow_all" msgid="5939066403732409516">"ਸਭ \'ਤੇ ਕਰਨ ਦਿਓ"</string>
     <string name="grant_dialog_button_always_allow_all" msgid="1719900027660252167">"ਹਮੇਸ਼ਾਂ ਸਭ ਨੂੰ ਆਗਿਆ ਦਿਓ"</string>
+    <string name="grant_dialog_button_allow_limited_access" msgid="5713551784422137594">"ਸੀਮਤ ਪਹੁੰਚ ਦੀ ਆਗਿਆ ਦਿਓ"</string>
     <string name="grant_dialog_button_allow_selected_photos" msgid="5497042471576153842">"ਫ਼ੋਟੋਆਂ ਅਤੇ ਵੀਡੀਓ ਚੁਣੋ"</string>
     <string name="grant_dialog_button_allow_more_selected_photos" msgid="5145657877588697709">"ਹੋਰ ਚੁਣੋ"</string>
     <string name="grant_dialog_button_dont_select_more" msgid="6643552729129461268">"ਹੋਰ ਡਾਟਾ ਨਾ ਚੁਣੋ"</string>
@@ -60,8 +61,7 @@
     <string name="app_permissions_breadcrumb" msgid="5136969550489411650">"ਐਪਾਂ"</string>
     <string name="app_permissions" msgid="3369917736607944781">"ਐਪ ਇਜਾਜ਼ਤਾਂ"</string>
     <string name="unused_apps" msgid="2058057455175955094">"ਅਣਵਰਤੀਆਂ ਐਪਾਂ"</string>
-    <!-- no translation found for edit_photos_description (5540108003480078892) -->
-    <skip />
+    <string name="edit_photos_description" msgid="5540108003480078892">"ਇਸ ਐਪ ਲਈ ਚੁਣੀਆਂ ਫ਼ੋਟੋਆਂ ਦਾ ਸੰਪਾਦਨ ਕਰੋ"</string>
     <string name="no_unused_apps" msgid="12809387670415295">"ਕੋਈ ਅਣਵਰਤੀ ਐਪ ਨਹੀਂ"</string>
     <string name="zero_unused_apps" msgid="9024448554157499748">"0 ਅਣਵਰਤੀਆਂ ਐਪਾਂ"</string>
     <string name="review_permission_decisions" msgid="309559429150613632">"ਇਜਾਜ਼ਤ ਸੰਬੰਧੀ ਹਾਲੀਆ ਫ਼ੈਸਲੇ"</string>
@@ -116,8 +116,6 @@
     <string name="all_permissions" msgid="6911125611996872522">"ਸਾਰੀਆਂ ਇਜਾਜ਼ਤਾਂ"</string>
     <string name="other_permissions" msgid="2901186127193849594">"ਐਪ ਦੀਆਂ ਹੋਰ ਸਮਰੱਥਤਾਵਾਂ"</string>
     <string name="permission_request_title" msgid="8790310151025020126">"ਇਜਾਜ਼ਤ ਬੇਨਤੀ"</string>
-    <string name="wear_not_allowed_dlg_title" msgid="1429467891296932713">"Android Wear"</string>
-    <string name="wear_not_allowed_dlg_text" msgid="512340555334769098">"Wear \'ਤੇ ਸਥਾਪਤ/ਅਣਸਥਾਪਤ ਕਰਨ ਦੀਆਂ ਕਾਰਵਾਈਆਂ ਸਮਰਥਿਤ ਨਹੀਂ ਹਨ।"</string>
     <string name="permission_review_title_template_install" msgid="1284337937156289081">"ਇਹ ਚੁਣੋ ਕਿ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ਨੂੰ ਕਿਸ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੇਣੀ ਹੈ"</string>
     <string name="permission_review_title_template_update" msgid="3232333580548588657">"&lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ਨੂੰ ਅੱਪਡੇਟ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ। ਇਹ ਚੁਣੋ ਕਿ ਇਸ ਐਪ ਨੂੰ ਕਿਸ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੇਣੀ ਹੈ।"</string>
     <string name="review_button_cancel" msgid="2191147944056548886">"ਰੱਦ ਕਰੋ"</string>

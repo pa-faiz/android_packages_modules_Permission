@@ -34,6 +34,7 @@
     <string name="grant_dialog_button_more_info" msgid="213350268561945193">"Weitere Infos"</string>
     <string name="grant_dialog_button_allow_all" msgid="5939066403732409516">"Vollen Zugriff erlauben"</string>
     <string name="grant_dialog_button_always_allow_all" msgid="1719900027660252167">"Immer vollen Zugriff erlauben"</string>
+    <string name="grant_dialog_button_allow_limited_access" msgid="5713551784422137594">"Eingeschränkten Zugriff zulassen"</string>
     <string name="grant_dialog_button_allow_selected_photos" msgid="5497042471576153842">"Fotos und Videos auswählen"</string>
     <string name="grant_dialog_button_allow_more_selected_photos" msgid="5145657877588697709">"Mehr auswählen"</string>
     <string name="grant_dialog_button_dont_select_more" msgid="6643552729129461268">"Keine weiteren auswählen"</string>
@@ -60,8 +61,7 @@
     <string name="app_permissions_breadcrumb" msgid="5136969550489411650">"Apps"</string>
     <string name="app_permissions" msgid="3369917736607944781">"App-Berech­tigungen"</string>
     <string name="unused_apps" msgid="2058057455175955094">"Nicht verwendete Apps"</string>
-    <!-- no translation found for edit_photos_description (5540108003480078892) -->
-    <skip />
+    <string name="edit_photos_description" msgid="5540108003480078892">"Für diese App ausgewählte Fotos bearbeiten"</string>
     <string name="no_unused_apps" msgid="12809387670415295">"Keine nicht verwendeten Apps"</string>
     <string name="zero_unused_apps" msgid="9024448554157499748">"Keine nicht verwendeten Apps"</string>
     <string name="review_permission_decisions" msgid="309559429150613632">"Aktuelle Berechtigungsentscheidungen"</string>
@@ -116,8 +116,6 @@
     <string name="all_permissions" msgid="6911125611996872522">"Alle Berechtigungen"</string>
     <string name="other_permissions" msgid="2901186127193849594">"Andere App-Funktionen"</string>
     <string name="permission_request_title" msgid="8790310151025020126">"Berechtigungsanfrage"</string>
-    <string name="wear_not_allowed_dlg_title" msgid="1429467891296932713">"Android Wear"</string>
-    <string name="wear_not_allowed_dlg_text" msgid="512340555334769098">"Installations-/Deinstallationsaktion auf Android Wear nicht unterstützt."</string>
     <string name="permission_review_title_template_install" msgid="1284337937156289081">"Worauf darf die App &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; zugreifen?"</string>
     <string name="permission_review_title_template_update" msgid="3232333580548588657">"Die App &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; wurde aktualisiert. Worauf darf diese App zugreifen?"</string>
     <string name="review_button_cancel" msgid="2191147944056548886">"Abbrechen"</string>
@@ -549,7 +547,7 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"Für Apps und Dienste"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Die Mikrofondaten können immer noch geteilt werden, wenn du den Notruf wählst."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Ändern"</string>
-    <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Sicherheit &amp; Datenschutz"</string>
+    <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Datenschutz &amp; Sicherheit"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Gerät prüfen"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Schließen"</string>
     <string name="safety_center_issue_card_dismiss_confirmation_title" msgid="2734809473425036382">"Diese Warnung schließen?"</string>
@@ -560,7 +558,7 @@
     <string name="safety_status_preference_title_and_summary_content_description" msgid="3511373256505058464">"Sicherheits- und Datenschutzstatus. <xliff:g id="OVERALL_SAFETY_STATUS">%1$s</xliff:g>. <xliff:g id="SUMMARY_OF_DEVICE_STATUS">%2$s</xliff:g>"</string>
     <string name="security_settings" msgid="3808106921175271317">"Sicherheitseinstellungen"</string>
     <string name="sensor_permissions_qs" msgid="1022267900031317472">"Berechtigungen"</string>
-    <string name="safety_privacy_qs_tile_title" msgid="727301867710374052">"Sicherheit &amp; Datenschutz"</string>
+    <string name="safety_privacy_qs_tile_title" msgid="727301867710374052">"Datenschutz &amp; Sicherheit"</string>
     <string name="safety_privacy_qs_tile_subtitle" msgid="3621544532041936749">"Status prüfen"</string>
     <string name="privacy_controls_qs" msgid="5780144882040591169">"Datenschutzeinstellungen"</string>
     <string name="security_settings_button_label_qs" msgid="8280343822465962330">"Weitere Einstellungen"</string>

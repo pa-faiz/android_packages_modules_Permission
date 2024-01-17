@@ -24,6 +24,7 @@ import android.app.AppOpsManager.MODE_FOREGROUND
 import android.app.AppOpsManager.MODE_IGNORED
 import android.app.AppOpsManager.permissionToOp
 import android.app.Application
+import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.FLAG_PERMISSION_AUTO_REVOKED
 import android.content.pm.PackageManager.FLAG_PERMISSION_ONE_TIME
@@ -41,11 +42,13 @@ import android.os.Build
 import android.os.UserHandle
 import android.permission.PermissionManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.modules.utils.build.SdkLevel
 import com.android.permissioncontroller.permission.model.livedatatypes.LightAppPermGroup
 import com.android.permissioncontroller.permission.model.livedatatypes.LightPackageInfo
 import com.android.permissioncontroller.permission.model.livedatatypes.LightPermGroupInfo
 import com.android.permissioncontroller.permission.model.livedatatypes.LightPermInfo
 import com.android.permissioncontroller.permission.model.livedatatypes.LightPermission
+import com.android.permissioncontroller.permission.utils.ContextCompat
 import com.android.permissioncontroller.permission.utils.KotlinUtils
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -104,6 +107,8 @@ class GrantRevokeTests {
 
     @Mock val app: Application = mock(Application::class.java)
 
+    @Mock val context: Context = mock(Context::class.java)
+
     /**
      * Create a mock Application object, with a mock packageManager, AppOpsManager, and
      * ActivityManager.
@@ -114,6 +119,13 @@ class GrantRevokeTests {
         `when`(app.packageManager).thenReturn(mock(PackageManager::class.java))
 
         val aom: AppOpsManager = mock(AppOpsManager::class.java)
+
+        if (SdkLevel.isAtLeastU()) {
+            `when`(context.deviceId).thenReturn(ContextCompat.DEVICE_ID_DEFAULT)
+        }
+        `when`(context.packageManager).thenReturn(mock(PackageManager::class.java))
+        `when`(context.getSystemService(PermissionManager::class.java))
+            .thenReturn(mock(PermissionManager::class.java))
         // Return an invalid app op state, so setOpMode will always attempt to change the op state
         `when`(aom.unsafeCheckOpRaw(anyString(), anyInt(), nullable(String::class.java)))
             .thenReturn(-1)
@@ -124,6 +136,7 @@ class GrantRevokeTests {
 
         `when`(app.getSystemService(PermissionManager::class.java))
             .thenReturn(mock(PermissionManager::class.java))
+        `when`(app.applicationContext).thenReturn(context)
     }
 
     /**
@@ -168,7 +181,8 @@ class GrantRevokeTests {
             0L,
             0L,
             false,
-            emptyMap()
+            emptyMap(),
+            ContextCompat.DEVICE_ID_DEFAULT
         )
     }
 
@@ -312,7 +326,7 @@ class GrantRevokeTests {
         expectedFlags: Int = NO_FLAGS,
         originalFlags: Int = NO_FLAGS
     ) {
-        val pm = app.packageManager
+        val pm = context.packageManager
         if (expectPermChange) {
             if (expectPermGranted) {
                 verify(pm).grantRuntimePermission(TEST_PACKAGE_NAME, permName, TEST_USER)

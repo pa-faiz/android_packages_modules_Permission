@@ -73,6 +73,10 @@
     <!-- Title for the dialog button to allow access to all of a resource always. [CHAR LIMIT=60] -->
     <string name="grant_dialog_button_always_allow_all">Always allow all</string>
 
+    <!-- Title for the dialog button to allow limited access. [CHAR LIMIT=60] -->
+    <string name="grant_dialog_button_allow_limited_access">Allow limited access</string>
+    <!-- TODO: b/310657469 add app_permission version of this string -->
+
     <!-- Title for the dialog button to allow access to select photos to be shared. [CHAR LIMIT=60] -->
     <string name="grant_dialog_button_allow_selected_photos">Select photos and videos</string>
 
@@ -332,11 +336,6 @@
 
    <!-- Title of the permission dialog for accessibility purposes- spoken to the user. [CHAR LIMIT=none] -->
    <string name="permission_request_title">Permission request</string>
-
-    <!-- Title of dialog telling users that Install/Uninstall action is not supported on Android Wear. [CHAR LIMIT=30] -->
-    <string name="wear_not_allowed_dlg_title">Android Wear</string>
-    <!-- Title of dialog telling users that Install/Uninstall action is not supported on Android Wear. [CHAR LIMIT=none] -->
-    <string name="wear_not_allowed_dlg_text">Install/Uninstall actions not supported on Wear.</string>
 
     <!-- Review of runtime permissions for legacy apps -->
 

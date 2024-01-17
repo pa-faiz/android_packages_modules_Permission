@@ -35,6 +35,7 @@ import com.android.role.controller.model.AppOpPermissions;
 import com.android.role.controller.model.Permissions;
 import com.android.role.controller.model.Role;
 import com.android.role.controller.model.RoleBehavior;
+import com.android.role.controller.model.VisibilityMixin;
 import com.android.role.controller.util.UserUtils;
 
 import java.util.Arrays;
@@ -113,7 +114,7 @@ public class HomeRoleBehavior implements RoleBehavior {
     /**
      * Check if the application is a settings application
      */
-    public static boolean isSettingsApplicationAsUser(@NonNull ApplicationInfo applicationInfo,
+    private static boolean isSettingsApplicationAsUser(@NonNull ApplicationInfo applicationInfo,
             @NonNull UserHandle user, @NonNull Context context) {
         Context userContext = UserUtils.getUserContext(context, user);
         PackageManager userPackageManager = userContext.getPackageManager();
@@ -140,56 +141,61 @@ public class HomeRoleBehavior implements RoleBehavior {
     }
 
     @Override
-    public void grant(@NonNull Role role, @NonNull String packageName, @NonNull Context context) {
+    public void grantAsUser(@NonNull Role role, @NonNull String packageName,
+            @NonNull UserHandle user, @NonNull Context context) {
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
-            Permissions.grant(packageName, AUTOMOTIVE_PERMISSIONS,
-                    true, false, true, false, false, context);
+            Permissions.grantAsUser(packageName, AUTOMOTIVE_PERMISSIONS,
+                    true, false, true, false, false, user, context);
         }
 
         // Before T, ALLOW_SLIPPERY_TOUCHES may either not exist, or may not be a role permission
         if (isRolePermission(android.Manifest.permission.ALLOW_SLIPPERY_TOUCHES, context)) {
-            Permissions.grant(packageName,
+            Permissions.grantAsUser(packageName,
                     Arrays.asList(android.Manifest.permission.ALLOW_SLIPPERY_TOUCHES),
-                    true, false, true, false, false, context);
+                    true, false, true, false, false, user, context);
         }
 
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)) {
             if (SdkLevel.isAtLeastT()) {
-                Permissions.grant(packageName, WEAR_PERMISSIONS_T,
-                        true, false, true, false, false, context);
+                Permissions.grantAsUser(packageName, WEAR_PERMISSIONS_T,
+                        true, false, true, false, false, user, context);
                 for (String permission : WEAR_APP_OP_PERMISSIONS) {
-                    AppOpPermissions.grant(packageName, permission, true, context);
+                    AppOpPermissions.grantAsUser(packageName, permission, true, user, context);
                 }
             }
             if (SdkLevel.isAtLeastV()) {
-                Permissions.grant(packageName, WEAR_PERMISSIONS_V,
-                        true, false, true, false, false, context);
+                Permissions.grantAsUser(packageName, WEAR_PERMISSIONS_V,
+                        true, false, true, false, false, user, context);
             }
         }
     }
 
     @Override
-    public void revoke(@NonNull Role role, @NonNull String packageName, @NonNull Context context) {
+    public void revokeAsUser(@NonNull Role role, @NonNull String packageName,
+            @NonNull UserHandle user, @NonNull Context context) {
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
-            Permissions.revoke(packageName, AUTOMOTIVE_PERMISSIONS, true, false, false, context);
+            Permissions.revokeAsUser(packageName, AUTOMOTIVE_PERMISSIONS, true, false, false,
+                    user, context);
         }
 
         // Before T, ALLOW_SLIPPERY_TOUCHES may either not exist, or may not be a role permission
         if (isRolePermission(android.Manifest.permission.ALLOW_SLIPPERY_TOUCHES, context)) {
-            Permissions.revoke(packageName,
+            Permissions.revokeAsUser(packageName,
                     Arrays.asList(android.Manifest.permission.ALLOW_SLIPPERY_TOUCHES),
-                    true, false, false, context);
+                    true, false, false, user, context);
         }
 
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)) {
             if (SdkLevel.isAtLeastT()) {
-                Permissions.revoke(packageName, WEAR_PERMISSIONS_T, true, false, false, context);
+                Permissions.revokeAsUser(packageName, WEAR_PERMISSIONS_T, true, false, false,
+                        user, context);
                 for (String permission : WEAR_APP_OP_PERMISSIONS) {
-                    AppOpPermissions.revoke(packageName, permission, context);
+                    AppOpPermissions.revokeAsUser(packageName, permission, user, context);
                 }
             }
             if (SdkLevel.isAtLeastV()) {
-                Permissions.revoke(packageName, WEAR_PERMISSIONS_V, true, false, false, context);
+                Permissions.revokeAsUser(packageName, WEAR_PERMISSIONS_V, true, false, false,
+                        user, context);
             }
         }
     }
@@ -207,5 +213,18 @@ public class HomeRoleBehavior implements RoleBehavior {
         }
         final int flags = permissionInfo.getProtectionFlags();
         return (flags & PermissionInfo.PROTECTION_FLAG_ROLE) == PermissionInfo.PROTECTION_FLAG_ROLE;
+    }
+
+    @Override
+    public boolean isVisibleAsUser(@NonNull Role role, @NonNull UserHandle user,
+            @NonNull Context context) {
+        return VisibilityMixin.isVisible("config_showDefaultHome", false, user, context);
+    }
+
+    @Override
+    public boolean isApplicationVisibleAsUser(@NonNull Role role,
+            @NonNull ApplicationInfo applicationInfo, @NonNull UserHandle user,
+            @NonNull Context context) {
+        return !isSettingsApplicationAsUser(applicationInfo, user, context);
     }
 }

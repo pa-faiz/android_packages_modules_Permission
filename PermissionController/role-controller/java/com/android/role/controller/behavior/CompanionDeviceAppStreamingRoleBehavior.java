@@ -17,7 +17,6 @@
 package com.android.role.controller.behavior;
 
 import android.content.Context;
-import android.os.Process;
 import android.os.UserHandle;
 
 import androidx.annotation.NonNull;
@@ -25,6 +24,7 @@ import androidx.annotation.NonNull;
 import com.android.role.controller.model.Role;
 import com.android.role.controller.model.RoleBehavior;
 import com.android.role.controller.util.NotificationUtils;
+import com.android.role.controller.util.UserUtils;
 
 /**
  * Class for behavior of the "App Streaming" Companion device profile role.
@@ -32,14 +32,18 @@ import com.android.role.controller.util.NotificationUtils;
 public class CompanionDeviceAppStreamingRoleBehavior implements RoleBehavior {
 
     @Override
-    public void grant(@NonNull Role role, @NonNull String packageName, @NonNull Context context) {
-        UserHandle user = Process.myUserHandle();
-        NotificationUtils.grantNotificationAccessForPackageAsUser(packageName, user, context);
+    public void grantAsUser(@NonNull Role role, @NonNull String packageName,
+            @NonNull UserHandle user, @NonNull Context context) {
+        if (!UserUtils.isManagedProfile(user, context)) {
+            NotificationUtils.grantNotificationAccessForPackageAsUser(packageName, user, context);
+        }
     }
 
     @Override
-    public void revoke(@NonNull Role role, @NonNull String packageName, @NonNull Context context) {
-        UserHandle user = Process.myUserHandle();
-        NotificationUtils.revokeNotificationAccessForPackageAsUser(packageName, user, context);
+    public void revokeAsUser(@NonNull Role role, @NonNull String packageName,
+            @NonNull UserHandle user, @NonNull Context context) {
+        if (!UserUtils.isManagedProfile(user, context)) {
+            NotificationUtils.revokeNotificationAccessForPackageAsUser(packageName, user, context);
+        }
     }
 }

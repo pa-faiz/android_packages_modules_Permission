@@ -19,16 +19,14 @@ package {
 }
 
 android_test_helper_app {
-    name: "CtsUsePermissionAppStreaming",
+    name: "CtsAccessRemoteDeviceCamera",
     srcs: [
-        ":CtsUsePermissionAppSrc",
         "src/**/*.kt",
     ],
     static_libs: [
         "kotlin-stdlib",
         "compatibility-device-util-axt",
     ],
-    certificate: ":cts-testkey2",
     min_sdk_version: "34",
-    target_sdk_version: "34",
+    target_sdk_version: "35",
 }
