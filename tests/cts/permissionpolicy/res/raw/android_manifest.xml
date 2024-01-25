@@ -2881,7 +2881,7 @@
          <p>Protection level: signature
          @SystemApi
          @hide
-         @FlaggedApi("com.android.internal.telephony.flags.ap_domain_selection_enabled")
+         @FlaggedApi("com.android.internal.telephony.flags.use_oem_domain_selection_service")
     -->
     <permission android:name="android.permission.BIND_DOMAIN_SELECTION_SERVICE"
         android:protectionLevel="signature" />
@@ -3667,6 +3667,13 @@
     <permission android:name="android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
                 android:protectionLevel="internal|role" />
 
+    <!-- Allows an application to access EnhancedConfirmationManager.
+        @SystemApi
+        @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled")
+        @hide This is not a third-party API (intended for OEMs and system apps). -->
+    <permission android:name="android.permission.MANAGE_ENHANCED_CONFIRMATION_STATES"
+                android:protectionLevel="signature|installer" />
+
     <!-- @SystemApi @hide Allows an application to set a device owner on retail demo devices.-->
     <permission android:name="android.permission.PROVISION_DEMO_DEVICE"
                 android:protectionLevel="signature|setup|knownSigner"
@@ -3888,6 +3895,14 @@
                 android:label="@string/permlab_useDataInBackground"
                 android:description="@string/permdesc_useDataInBackground"
                 android:protectionLevel="normal" />
+
+    <!-- Allows an application to subscribe to notifications about the nearby devices' presence
+         status change base on the UUIDs.
+         <p>Not for use by third-party applications.</p>
+         @FlaggedApi("android.companion.flags.device_uuid_presence")
+    -->
+    <permission android:name="android.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE"
+                android:protectionLevel="signature|privileged" />
 
     <!-- Allows app to request to be associated with a device via
          {@link android.companion.CompanionDeviceManager}
@@ -7761,11 +7776,11 @@
 
     <!-- @SystemApi Allows an application to read the system grammatical gender.
          @FlaggedApi("android.app.system_terms_of_address_enabled")
-         <p>Protection level: signature|privileged|appop
+         <p>Protection level: signature|privileged
          @hide
     -->
     <permission android:name="android.permission.READ_SYSTEM_GRAMMATICAL_GENDER"
-                android:protectionLevel="signature|privileged|appop"/>
+                android:protectionLevel="signature|privileged"/>
 
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
