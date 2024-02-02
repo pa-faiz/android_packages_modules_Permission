@@ -1,13 +1,6 @@
 package: "com.android.permission.flags"
 
 flag {
-    name: "voice_activation_op_enabled"
-    namespace: "permissions"
-    description: "This flag is used to support hotword activation events in privacy dashboard"
-    bug: "287264308"
-}
-
-flag {
     name: "device_aware_permission_grant"
     namespace: "permissions"
     description: "Enables device aware grant permission flow"
@@ -22,8 +15,9 @@ flag {
 }
 
 flag {
-    name: "archiving"
+    name: "archiving_read_only"
     namespace: "permissions"
     description: "Feature flag to enable the archiving feature."
     bug: "278553670"
+    is_fixed_read_only: true
 }

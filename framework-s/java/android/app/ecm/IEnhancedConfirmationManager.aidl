@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.permission.flags;
+package android.app.ecm;
 
-/** Class used for flags that do not work with aconfig tooling */
-public final class PermissionsFlags {}
+import android.os.RemoteCallback;
+
+/**
+ * @hide
+ */
+interface IEnhancedConfirmationManager {
+
+    boolean isRestricted(in String packageName, in String settingIdentifier, int userId);
+
+    void clearRestriction(in String packageName, int userId);
+
+    boolean isClearRestrictionAllowed(in String packageName, int userId);
+
+    void setClearRestrictionAllowed(in String packageName, int userId);
+}

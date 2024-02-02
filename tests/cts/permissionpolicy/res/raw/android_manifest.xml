@@ -2876,6 +2876,16 @@
     <permission android:name="android.permission.MANAGE_SENSORS"
         android:protectionLevel="signature" />
 
+    <!-- Must be required by a DomainSelectionService to ensure that only the
+         system can bind to it.
+         <p>Protection level: signature
+         @SystemApi
+         @hide
+         @FlaggedApi("com.android.internal.telephony.flags.use_oem_domain_selection_service")
+    -->
+    <permission android:name="android.permission.BIND_DOMAIN_SELECTION_SERVICE"
+        android:protectionLevel="signature" />
+
     <!-- Must be required by an ImsService to ensure that only the
          system can bind to it.
          <p>Protection level: signature|privileged|vendorPrivileged
@@ -3451,6 +3461,13 @@
     <permission android:name="android.permission.MANAGE_DEVICE_POLICY_NEARBY_COMMUNICATION"
                 android:protectionLevel="internal|role" />
 
+    <!-- Allows an application to set policy related to <a
+    href="https://www.threadgroup.org">Thread</a> network.
+        @FlaggedApi("com.android.net.thread.flags.thread_user_restriction_enabled")
+    -->
+    <permission android:name="android.permission.MANAGE_DEVICE_POLICY_THREAD_NETWORK"
+                android:protectionLevel="internal|role" />
+
     <!-- Allows an application to set policy related to windows.
         <p>{@link Manifest.permission#MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL} is
         required to call APIs protected by this permission on users different to the calling user.
@@ -3649,6 +3666,13 @@
             permissions across all users on the device.-->
     <permission android:name="android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
                 android:protectionLevel="internal|role" />
+
+    <!-- Allows an application to access EnhancedConfirmationManager.
+        @SystemApi
+        @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled")
+        @hide This is not a third-party API (intended for OEMs and system apps). -->
+    <permission android:name="android.permission.MANAGE_ENHANCED_CONFIRMATION_STATES"
+                android:protectionLevel="signature|installer" />
 
     <!-- @SystemApi @hide Allows an application to set a device owner on retail demo devices.-->
     <permission android:name="android.permission.PROVISION_DEMO_DEVICE"
@@ -3871,6 +3895,14 @@
                 android:label="@string/permlab_useDataInBackground"
                 android:description="@string/permdesc_useDataInBackground"
                 android:protectionLevel="normal" />
+
+    <!-- Allows an application to subscribe to notifications about the nearby devices' presence
+         status change base on the UUIDs.
+         <p>Not for use by third-party applications.</p>
+         @FlaggedApi("android.companion.flags.device_uuid_presence")
+    -->
+    <permission android:name="android.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE"
+                android:protectionLevel="signature|privileged" />
 
     <!-- Allows app to request to be associated with a device via
          {@link android.companion.CompanionDeviceManager}
@@ -4790,7 +4822,7 @@
          <p>Protection level: signature
     -->
     <permission android:name="android.permission.BIND_NFC_SERVICE"
-        android:protectionLevel="signature" />
+        android:protectionLevel="signature|module" />
 
     <!-- Must be required by a {@link android.service.quickaccesswallet.QuickAccessWalletService}
          to ensure that only the system can bind to it.
@@ -6456,9 +6488,23 @@
     <permission android:name="android.permission.USE_BIOMETRIC_INTERNAL"
         android:protectionLevel="signature" />
 
+    <!-- Allows privileged apps to access the background face authentication.
+        @SystemApi
+        @FlaggedApi("android.hardware.biometrics.face_background_authentication")
+        @hide -->
+    <permission android:name="android.permission.USE_BACKGROUND_FACE_AUTHENTICATION"
+        android:protectionLevel="signature|privileged" />
+
     <!-- Allows the system to control the BiometricDialog (SystemUI). Reserved for the system. @hide -->
     <permission android:name="android.permission.MANAGE_BIOMETRIC_DIALOG"
         android:protectionLevel="signature" />
+
+    <!-- Allows an application to set the BiometricDialog (SystemUI) logo .
+     <p>Not for use by third-party applications.
+     @FlaggedApi("android.hardware.biometrics.custom_biometric_prompt")
+-->
+    <permission android:name="android.permission.SET_BIOMETRIC_DIALOG_LOGO"
+                android:protectionLevel="signature" />
 
     <!-- Allows an application to control keyguard.  Only allowed for system processes.
         @hide -->
@@ -7538,6 +7584,16 @@
     <permission android:name="android.permission.RUN_USER_INITIATED_JOBS"
                 android:protectionLevel="normal"/>
 
+    <!-- @FlaggedApi("android.app.job.backup_jobs_exemption")
+         Gives applications whose <b>primary use case</b> is to backup or sync content increased
+         job execution allowance in order to complete the related work. The jobs must have a valid
+         content URI trigger and network constraint set.
+         <p>This is a special access permission that can be revoked by the system or the user.
+         <p>Protection level: signature|privileged|appop
+     -->
+    <permission android:name="android.permission.RUN_BACKUP_JOBS"
+                android:protectionLevel="signature|privileged|appop"/>
+
     <!-- Allows a browser to invoke the set of credential candidate query apis.
          <p>Protection level: normal
     -->
@@ -7549,7 +7605,7 @@
      -->
     <permission android:name="android.permission.CREDENTIAL_MANAGER_SET_ORIGIN"
       android:protectionLevel="normal"/>
-      
+
     <!-- Allows specifying candidate credential providers to be queried in Credential Manager
     get flows, or to be preferred as a default in the Credential Manager create flows.
      <p>Protection level: normal -->
@@ -7737,11 +7793,21 @@
 
     <!-- @SystemApi Allows an application to read the system grammatical gender.
          @FlaggedApi("android.app.system_terms_of_address_enabled")
-         <p>Protection level: signature|privileged|appop
+         <p>Protection level: signature|privileged
          @hide
     -->
     <permission android:name="android.permission.READ_SYSTEM_GRAMMATICAL_GENDER"
-                android:protectionLevel="signature|privileged|appop"/>
+                android:protectionLevel="signature|privileged"/>
+
+    <!-- @SystemApi
+        @FlaggedApi("android.content.pm.emergency_install_permission")
+        Allows each app store in the system image to designate another app in the system image to
+        update the app store
+        <p>Protection level: signature|privileged
+        @hide
+    -->
+    <permission android:name="android.permission.EMERGENCY_INSTALL_PACKAGES"
+                android:protectionLevel="signature|privileged" />
 
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
