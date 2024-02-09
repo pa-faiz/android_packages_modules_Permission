@@ -54,6 +54,9 @@ java_library {
     installable: false,
     min_sdk_version: "30",
     sdk_version: "module_current",
+    lint: {
+        baseline_filename: "lint-baseline.xml",
+    },
 }
 
 platform_compat_config {
@@ -89,13 +92,11 @@ java_sdk_library {
     ],
     installable: true,
     jarjar_rules: "jarjar-rules.txt",
-    lint: {
-        strict_updatability_linting: true,
-    },
     min_sdk_version: "31",
     permitted_packages: [
         "android.permission",
         "android.app.role",
+        "android.app.ecm",
         "android.safetycenter",
         "android.safetylabel",
     ],

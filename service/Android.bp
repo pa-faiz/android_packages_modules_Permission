@@ -124,7 +124,7 @@ java_sdk_library {
         "-Xno-receiver-assertions",
     ],
     lint: {
-        strict_updatability_linting: true,
+        baseline_filename: "lint-baseline.xml",
     },
     min_sdk_version: "30",
     sdk_version: "system_server_current",
@@ -149,8 +149,8 @@ genrule {
     name: "statslog-service-permission-java-gen",
     tools: ["stats-log-api-gen"],
     cmd: "$(location stats-log-api-gen) --java $(out) --module permissioncontroller" +
-         " --javaPackage com.android.permission" +
-         " --javaClass PermissionStatsLog --minApiLevel 29",
+        " --javaPackage com.android.permission" +
+        " --javaClass PermissionStatsLog --minApiLevel 29",
     out: ["com/android/permission/PermissionStatsLog.java"],
 }
 

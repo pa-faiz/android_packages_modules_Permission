@@ -1020,6 +1020,13 @@
     <permission android:name="android.permission.BIND_SATELLITE_GATEWAY_SERVICE"
                 android:protectionLevel="signature" />
 
+    <!-- @SystemApi @hide Required for an application in order to access the last known cell id.
+         @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") -->
+    <permission android:name="android.permission.ACCESS_LAST_KNOWN_CELL_ID"
+                android:protectionLevel="signature"
+                android:label="@string/permlab_accessLastKnownCellId"
+                android:description="@string/permdesc_accessLastKnownCellId"/>
+
     <!-- ====================================================================== -->
     <!-- Permissions for accessing external storage                             -->
     <!-- ====================================================================== -->
@@ -3056,7 +3063,7 @@
          types of interactions
          @hide -->
     <permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL"
-        android:protectionLevel="signature|installer|role" />
+        android:protectionLevel="signature|installer|module|role" />
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
     <!-- Allows interaction across profiles in the same profile group. -->
@@ -4925,7 +4932,7 @@
          <p>Intended for use by ROLE_ASSISTANT and signature apps only.
     -->
     <permission android:name="android.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE"
-                android:protectionLevel="signature|role"/>
+                android:protectionLevel="signature|module|role"/>
 
     <!-- Must be required by a {@link android.service.credentials.CredentialProviderService},
          to ensure that only the system can bind to it.
@@ -5069,6 +5076,13 @@
          @hide -->
     <permission android:name="android.permission.BIND_REMOTE_DISPLAY"
         android:protectionLevel="signature" />
+
+    <!-- Must be required by a android.media.tv.ad.TvAdService to ensure that only the system can
+         bind to it.
+         <p>Protection level: signature|privileged
+    -->
+    <permission android:name="android.permission.BIND_TV_AD_SERVICE"
+                android:protectionLevel="signature|privileged" />
 
     <!-- Must be required by a {@link android.media.tv.TvInputService}
          to ensure that only the system can bind to it.
@@ -5230,6 +5244,13 @@
          <p>Not for use by third-party applications.
          @hide -->
     <permission android:name="android.permission.MONITOR_KEYBOARD_BACKLIGHT"
+                android:protectionLevel="signature" />
+
+    <!-- Allows low-level access for monitoring changes to sticky modifier state, when A11y
+         Sitcky keys feature is enabled.
+         <p>Not for use by third-party applications.
+         @hide -->
+    <permission android:name="android.permission.MONITOR_STICKY_MODIFIER_STATE"
                 android:protectionLevel="signature" />
 
     <!-- Allows an app to schedule a prioritized alarm that can be used to perform
@@ -5517,7 +5538,7 @@
     <!-- @SystemApi Allows an application to manage the holders of a role.
          @hide -->
     <permission android:name="android.permission.MANAGE_ROLE_HOLDERS"
-                android:protectionLevel="signature|installer" />
+                android:protectionLevel="signature|installer|module" />
 
     <!-- @SystemApi Allows an application to manage the holders of roles associated with default
          applications.
@@ -5537,7 +5558,7 @@
     <!-- @SystemApi Allows an application to observe role holder changes.
          @hide -->
     <permission android:name="android.permission.OBSERVE_ROLE_HOLDERS"
-                android:protectionLevel="signature|installer" />
+                android:protectionLevel="signature|installer|module" />
 
     <!-- Allows an application to manage the companion devices.
          @hide -->
@@ -6967,6 +6988,16 @@
         android:label="@string/permlab_foregroundServiceFileManagement"
         android:protectionLevel="normal|instant" />
 
+    <!-- @FlaggedApi("android.content.pm.introduce_media_processing_type")
+         Allows a regular application to use {@link android.app.Service#startForeground
+         Service.startForeground} with the type "mediaProcessing".
+         <p>Protection level: normal|instant
+    -->
+    <permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING"
+                android:description="@string/permdesc_foregroundServiceMediaProcessing"
+                android:label="@string/permlab_foregroundServiceMediaProcessing"
+                android:protectionLevel="normal|instant" />
+
     <!-- Allows a regular application to use {@link android.app.Service#startForeground
          Service.startForeground} with the type "specialUse".
          <p>Protection level: normal|appop|instant
@@ -7691,6 +7722,26 @@
     -->
     <permission android:name="android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS"
         android:protectionLevel="signature|role" />
+
+    <!-- @SystemApi
+     @FlaggedApi("android.app.bic_client")
+     Allows app to call BackgroundInstallControlManager API to retrieve silently installed apps
+     for all users on device.
+     <p>Apps with a BackgroundInstallControlManager client will not be able to call any API without
+     this permission.
+     <p>Protection level: signature|role
+     @hide
+    -->
+    <permission android:name="android.permission.GET_BACKGROUND_INSTALLED_PACKAGES"
+        android:protectionLevel="signature|role" />
+
+    <!-- @SystemApi Allows an application to read the system grammatical gender.
+         @FlaggedApi("android.app.system_terms_of_address_enabled")
+         <p>Protection level: signature|privileged|appop
+         @hide
+    -->
+    <permission android:name="android.permission.READ_SYSTEM_GRAMMATICAL_GENDER"
+                android:protectionLevel="signature|privileged|appop"/>
 
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
