@@ -16,9 +16,12 @@
 
 package android.app.ecm;
 
+import static android.annotation.SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION;
+
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.RequiresPermission;
+import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TargetApi;
@@ -37,6 +40,7 @@ import android.util.ArraySet;
 import androidx.annotation.NonNull;
 
 import java.lang.annotation.Retention;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class provides the core API for ECM (Enhanced Confirmation Mode). ECM is a feature that
@@ -192,6 +196,13 @@ public final class EnhancedConfirmationManager {
      * appropriate RequiresPermission annotation.
      */
 
+    /**
+     * Shows the "Restricted setting" dialog. Opened when a setting is blocked.
+     */
+    @SdkConstant(BROADCAST_INTENT_ACTION)
+    public static final String ACTION_SHOW_ECM_RESTRICTED_SETTING_DIALOG =
+            "android.app.ecm.action.SHOW_ECM_RESTRICTED_SETTING_DIALOG";
+
     /** A map of ECM states to their corresponding app op states */
     @Retention(java.lang.annotation.RetentionPolicy.SOURCE)
     @IntDef(prefix = {"ECM_STATE_"}, value = {EcmState.ECM_STATE_NOT_GUARDED,
@@ -218,6 +229,8 @@ public final class EnhancedConfirmationManager {
 
     private final @NonNull IEnhancedConfirmationManager mService;
 
+    private final @NonNull AtomicInteger mNextRequestCode;
+
     /**
      * @hide
      */
@@ -226,6 +239,7 @@ public final class EnhancedConfirmationManager {
         mContext = context;
         mPackageManager = context.getPackageManager();
         mService = service;
+        mNextRequestCode = new AtomicInteger(1);
     }
 
     /**
@@ -307,7 +321,6 @@ public final class EnhancedConfirmationManager {
      *
      * @param packageName package name of the application which should be considered acknowledged
      * @throws NameNotFoundException if the provided package was not found
-     * @hide
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ENHANCED_CONFIRMATION_STATES)
     public void setClearRestrictionAllowed(@NonNull String packageName)
@@ -331,12 +344,13 @@ public final class EnhancedConfirmationManager {
      * @param packageName package name of the application to open the dialog for
      * @throws NameNotFoundException if the provided package was not found
      */
-    public @NonNull PendingIntent getRestrictedSettingDialogIntent(@NonNull String packageName)
-            throws NameNotFoundException {
+    public @NonNull PendingIntent getRestrictedSettingDialogIntent(@NonNull String packageName,
+            @NonNull String settingIdentifier) throws NameNotFoundException {
         Intent intent = new Intent(Settings.ACTION_SHOW_RESTRICTED_SETTING_DIALOG);
         intent.putExtra(Intent.EXTRA_PACKAGE_NAME, packageName);
         intent.putExtra(Intent.EXTRA_UID, getPackageUid(packageName));
-        return PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        return PendingIntent.getActivity(mContext, mNextRequestCode.getAndIncrement(),
+                intent, PendingIntent.FLAG_IMMUTABLE);
     }
 
     private int getPackageUid(String packageName) throws NameNotFoundException {
