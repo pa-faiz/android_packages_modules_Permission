@@ -16,17 +16,24 @@
 
 package com.android.permissioncontroller.role.ui;
 
+import android.os.UserHandle;
+
 import androidx.annotation.NonNull;
-import androidx.preference.TwoStatePreference;
+import androidx.annotation.Nullable;
 
 /**
- * Preference for application being a candidate or holding a role.
+ * Preference that is aware of restrictions that can block them.
  */
-public interface RoleApplicationPreference extends RestrictionAwarePreference {
+public interface RestrictionAwarePreference {
 
     /**
-     * Get instance of {@code this} as {@link TwoStatePreference}.
+     * Specifies user restriction that blocks this preference.
      */
-    @NonNull
-    TwoStatePreference asTwoStatePreference();
+    void setUserRestriction(@Nullable String userRestriction, @NonNull UserHandle user);
+
+    /**
+     * Specifies enhanced confirmation restrictions that block this preference.
+     */
+    void setEnhancedConfirmationRestriction(@Nullable String packageName,
+            @Nullable String settingIdentifier, @NonNull UserHandle user);
 }
