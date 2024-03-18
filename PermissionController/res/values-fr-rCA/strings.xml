@@ -110,7 +110,7 @@
     <!-- no translation found for background_access_chooser_dialog_choices:1 (9127301153688725448) -->
     <!-- no translation found for background_access_chooser_dialog_choices:2 (4305536986042401191) -->
     <string name="permission_access_always" msgid="1474641821883823446">"Toujours autoriser"</string>
-    <string name="permission_access_only_foreground" msgid="7801170728159326195">"Autoriser si l\'application est utilisée"</string>
+    <string name="permission_access_only_foreground" msgid="7801170728159326195">"Autoriser uniquement lorsque l\'application est utilisée"</string>
     <string name="permission_access_never" msgid="4647014230217936900">"Ne pas autoriser"</string>
     <string name="loading" msgid="4789365003890741082">"Chargement en cours…"</string>
     <string name="all_permissions" msgid="6911125611996872522">"Toutes les autorisations"</string>
@@ -187,7 +187,7 @@
     <string name="app_permission_button_allow_all_files" msgid="1792232272599018825">"Autoriser à gérer tous les fichiers"</string>
     <string name="app_permission_button_allow_media_only" msgid="2834282724426046154">"Autoriser à accéder aux éléments multimédias seulement"</string>
     <string name="app_permission_button_allow_always" msgid="4573292371734011171">"Toujours autoriser"</string>
-    <string name="app_permission_button_allow_foreground" msgid="1991570451498943207">"Autoriser uniquement lorsque l\'appli est en cours d\'utilisation"</string>
+    <string name="app_permission_button_allow_foreground" msgid="1991570451498943207">"Autoriser uniquement lorsque l\'application est utilisée"</string>
     <string name="app_permission_button_always_allow_all" msgid="4905699259378428855">"Toujours tout autoriser"</string>
     <string name="app_permission_button_ask" msgid="3342950658789427">"Toujours demander"</string>
     <string name="app_permission_button_deny" msgid="6016454069832050300">"Ne pas autoriser"</string>
@@ -403,16 +403,11 @@
     <string name="role_notes_short_label" msgid="8796604147546125285">"Application de prise de notes"</string>
     <string name="role_notes_description" msgid="8496852798616883551">"Applications qui vous permettent de prendre des notes sur votre appareil"</string>
     <string name="role_notes_search_keywords" msgid="7710756695666744631">"remarques"</string>
-    <!-- no translation found for role_wallet_label (3719419175656204207) -->
-    <skip />
-    <!-- no translation found for role_wallet_short_label (6521288403762457452) -->
-    <skip />
-    <!-- no translation found for role_wallet_description (3726535836165949838) -->
-    <skip />
-    <!-- no translation found for role_wallet_request_title (4770217108262737093) -->
-    <skip />
-    <!-- no translation found for role_wallet_request_description (6305487425777483053) -->
-    <skip />
+    <string name="role_wallet_label" msgid="3719419175656204207">"Appli portefeuille par défaut"</string>
+    <string name="role_wallet_short_label" msgid="6521288403762457452">"Application de portefeuille"</string>
+    <string name="role_wallet_description" msgid="3726535836165949838">"Les applications de portefeuille peuvent stocker vos cartes de crédit et de fidélité, vos clés de voiture et d\'autres données pour faciliter différentes modalités de transaction."</string>
+    <string name="role_wallet_request_title" msgid="4770217108262737093">"Définir <xliff:g id="APP_NAME">%1$s</xliff:g> comme application de portefeuille par défaut?"</string>
+    <string name="role_wallet_request_description" msgid="6305487425777483053">"Aucune autorisation nécessaire"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"Application par défaut actuelle"</string>
     <string name="request_role_dont_ask_again" msgid="3556017886029520306">"Ne plus me demander"</string>
     <string name="request_role_set_as_default" msgid="4253949643984172880">"Définir par défaut"</string>

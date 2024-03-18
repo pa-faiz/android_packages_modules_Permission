@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_android_permissions",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -110,6 +111,7 @@ java_sdk_library {
         "service-permission-statsd",
         "service-permission-proto-stream",
         "android.permission.flags-aconfig-java",
+        "permissions-aconfig-flags-lib",
     ],
     errorprone: {
         javacflags: ["-Xep:GuardedBy:ERROR"],
@@ -135,6 +137,7 @@ java_sdk_library {
     installable: true,
     permitted_packages: [
         "com.android.access",
+        "com.android.ecm",
         "com.android.permission",
         "com.android.role",
         "com.android.safetycenter",
@@ -160,6 +163,7 @@ java_library {
         ":statslog-service-permission-java-gen",
     ],
     libs: [
+        "androidx.annotation_annotation",
         "framework-statsd.stubs.module_lib",
     ],
     apex_available: [

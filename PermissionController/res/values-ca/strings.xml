@@ -206,7 +206,7 @@
     <string name="unused_apps_label_v2" msgid="7058776770056517980">"Activitat a l\'app en pausa si no s\'usa"</string>
     <string name="unused_apps_label_v3" msgid="693340578642156657">"Gestiona l\'aplicació si no s\'utilitza"</string>
     <string name="unused_apps_summary" msgid="8839466950318403115">"Suprimeix els permisos i els fitxers temporals, i atura les notificacions"</string>
-    <string name="unused_apps_summary_v2" msgid="5011313200815115802">"Suprimeix els permisos i els fitxers temporals, atura les notificacions i arxiva l\'aplicació"</string>
+    <string name="unused_apps_summary_v2" msgid="5011313200815115802">"Suprimeix els permisos, elimina els fitxers temporals, atura les notificacions i arxiva l\'aplicació"</string>
     <string name="auto_revoke_summary" msgid="5867548789805911683">"Per protegir les teves dades, els permisos d\'aquesta aplicació se suprimiran si no la utilitzes durant uns mesos."</string>
     <string name="auto_revoke_summary_with_permissions" msgid="389712086597285013">"Si l\'aplicació no s\'utilitza durant uns mesos, se suprimiran els permisos següents per protegir les teves dades: <xliff:g id="PERMS">%1$s</xliff:g>"</string>
     <string name="auto_revoked_apps_page_summary" msgid="6594753657893756536">"Per protegir les teves dades, s\'han suprimit els permisos de les aplicacions que no has utilitzat durant els darrers mesos."</string>
@@ -403,16 +403,11 @@
     <string name="role_notes_short_label" msgid="8796604147546125285">"Aplicació de notes"</string>
     <string name="role_notes_description" msgid="8496852798616883551">"Aplicacions que et permeten prendre notes al dispositiu"</string>
     <string name="role_notes_search_keywords" msgid="7710756695666744631">"notes"</string>
-    <!-- no translation found for role_wallet_label (3719419175656204207) -->
-    <skip />
-    <!-- no translation found for role_wallet_short_label (6521288403762457452) -->
-    <skip />
-    <!-- no translation found for role_wallet_description (3726535836165949838) -->
-    <skip />
-    <!-- no translation found for role_wallet_request_title (4770217108262737093) -->
-    <skip />
-    <!-- no translation found for role_wallet_request_description (6305487425777483053) -->
-    <skip />
+    <string name="role_wallet_label" msgid="3719419175656204207">"App de cartera predeterminada"</string>
+    <string name="role_wallet_short_label" msgid="6521288403762457452">"Aplicació de cartera"</string>
+    <string name="role_wallet_description" msgid="3726535836165949838">"Les aplicacions de cartera poden emmagatzemar les targetes de crèdit i de fidelització, les claus del cotxe i altres elements per ajudar-te amb diverses formes de transaccions."</string>
+    <string name="role_wallet_request_title" msgid="4770217108262737093">"Vols definir <xliff:g id="APP_NAME">%1$s</xliff:g> com l\'aplicació de cartera predeterminada?"</string>
+    <string name="role_wallet_request_description" msgid="6305487425777483053">"No calen permisos"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"Predeterminada actualment"</string>
     <string name="request_role_dont_ask_again" msgid="3556017886029520306">"No m\'ho tornis a preguntar"</string>
     <string name="request_role_set_as_default" msgid="4253949643984172880">"Estableix com a predeterminada"</string>

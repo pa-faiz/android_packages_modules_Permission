@@ -32,6 +32,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil.eventually
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -112,26 +113,27 @@ class EnhancedConfirmationManagerTest : BaseUsePermissionTest() {
         installPackageWithInstallSourceAndMetadataFromDownloadedFile(apkName)
         runWithShellPermissionIdentity {
             eventually { assertTrue(ecm.isRestricted(APP_PACKAGE_NAME, PROTECTED_SETTING)) }
-            setClearRestrictionAllowed(context, APP_PACKAGE_NAME)
+            ecm.setClearRestrictionAllowed(APP_PACKAGE_NAME)
             eventually { assertTrue(ecm.isClearRestrictionAllowed(APP_PACKAGE_NAME)) }
             ecm.clearRestriction(APP_PACKAGE_NAME)
             eventually { assertFalse(ecm.isRestricted(APP_PACKAGE_NAME, PROTECTED_SETTING)) }
         }
     }
 
+    @RequiresFlagsEnabled(Flags.FLAG_ENHANCED_CONFIRMATION_MODE_APIS_ENABLED)
+    @Test
+    fun createRestrictedSettingDialogIntentReturnsIntent() {
+        installPackageWithInstallSourceAndMetadataFromDownloadedFile(apkName)
+
+        val intent = ecm.createRestrictedSettingDialogIntent(APP_PACKAGE_NAME, PROTECTED_SETTING)
+
+        assertNotNull(intent)
+    }
+
     companion object {
         private const val NON_PROTECTED_SETTING = "example_setting_which_is_not_protected"
         private const val PROTECTED_SETTING = "android:bind_accessibility_service"
-        private const val MODE_IGNORED = 1
         private const val MODE_ERRORED = 2
-
-        // TODO(b/320517290): Since setClearRestrictionAllowed is not API, we're currently
-        // simulating its behavior. We should instead actually invoke this method on
-        // EnhancedConfirmationManager.
-        @Throws(PackageManager.NameNotFoundException::class)
-        private fun setClearRestrictionAllowed(context: Context, packageName: String) {
-            setAppEcmState(context, packageName, MODE_IGNORED)
-        }
 
         @Throws(PackageManager.NameNotFoundException::class)
         private fun setAppEcmState(context: Context, packageName: String, mode: Int) {

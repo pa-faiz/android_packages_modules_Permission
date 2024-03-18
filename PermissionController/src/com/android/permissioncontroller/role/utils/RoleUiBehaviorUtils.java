@@ -20,16 +20,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.UserHandle;
-import android.os.UserManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.modules.utils.build.SdkLevel;
 import com.android.permissioncontroller.role.ui.RoleApplicationPreference;
 import com.android.permissioncontroller.role.ui.RolePreference;
-import com.android.permissioncontroller.role.ui.UserRestrictionAwarePreference;
 import com.android.permissioncontroller.role.ui.behavior.RoleUiBehavior;
 import com.android.role.controller.model.Role;
 
@@ -82,8 +79,6 @@ public final class RoleUiBehaviorUtils {
     public static void preparePreferenceAsUser(@NonNull Role role,
             @NonNull List<ApplicationInfo> applicationInfos, @NonNull RolePreference preference,
             @NonNull UserHandle user, @NonNull Context context) {
-        prepareUserRestrictionAwarePreferenceAsUser(role, preference, user, context);
-
         RoleUiBehavior uiBehavior = getUiBehavior(role);
         if (uiBehavior == null) {
             return;
@@ -98,8 +93,6 @@ public final class RoleUiBehaviorUtils {
             @NonNull RoleApplicationPreference preference,
             @NonNull ApplicationInfo applicationInfo, @NonNull UserHandle user,
             @NonNull Context context) {
-        prepareUserRestrictionAwarePreferenceAsUser(role, preference, user, context);
-
         RoleUiBehavior uiBehavior = getUiBehavior(role);
         if (uiBehavior == null) {
             return;
@@ -107,18 +100,6 @@ public final class RoleUiBehaviorUtils {
         uiBehavior.prepareApplicationPreferenceAsUser(
                 role, preference.asTwoStatePreference(), applicationInfo, user,
                 context);
-    }
-
-    private static void prepareUserRestrictionAwarePreferenceAsUser(@NonNull Role role,
-            @NonNull UserRestrictionAwarePreference preference, @NonNull UserHandle user,
-            @NonNull Context context) {
-        if (SdkLevel.isAtLeastU() && role.isExclusive()) {
-            UserManager userManager = context.getSystemService(UserManager.class);
-            boolean hasDisallowConfigDefaultApps = userManager.hasUserRestrictionForUser(
-                    UserManager.DISALLOW_CONFIG_DEFAULT_APPS, user);
-            preference.setUserRestriction(hasDisallowConfigDefaultApps
-                    ? UserManager.DISALLOW_CONFIG_DEFAULT_APPS : null);
-        }
     }
 
     /**

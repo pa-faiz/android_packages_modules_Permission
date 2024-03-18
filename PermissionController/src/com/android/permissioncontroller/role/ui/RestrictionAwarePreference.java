@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 
-package android.permission;
+package com.android.permissioncontroller.role.ui;
+
+import android.content.Intent;
+
+import androidx.annotation.Nullable;
 
 /**
- * @hide
+ * Preference that is aware of restrictions that can block them.
  */
-public class PermissionState {}
+public interface RestrictionAwarePreference {
+
+    /**
+     * Set the restriction intent that blocks this preference.
+     */
+    void setRestrictionIntent(@Nullable Intent restrictionIntent);
+}

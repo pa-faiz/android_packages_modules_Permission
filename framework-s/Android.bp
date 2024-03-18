@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_android_permissions",
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
@@ -79,6 +80,7 @@ java_sdk_library {
         "framework-permission-s-shared",
         "modules-utils-build",
         "android.permission.flags-aconfig-java",
+        "permissions-aconfig-flags-lib",
     ],
     apex_available: [
         "com.android.permission",
@@ -99,14 +101,5 @@ java_sdk_library {
         "android.app.ecm",
         "android.safetycenter",
         "android.safetylabel",
-    ],
-}
-
-java_api_contribution {
-    name: "framework-permission-s-public-stubs",
-    api_surface: "public",
-    api_file: "api/current.txt",
-    visibility: [
-        "//build/orchestrator/apis",
     ],
 }

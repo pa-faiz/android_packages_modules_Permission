@@ -200,7 +200,7 @@
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"查看「<xliff:g id="APP">%1$s</xliff:g>」的所有權限"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"查看擁有此權限的所有應用程式"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"顯示「Google 助理」麥克風使用情況"</string>
-    <string name="unused_apps_category_title" msgid="2988455616845243901">"未使用的應用程式設定"</string>
+    <string name="unused_apps_category_title" msgid="2988455616845243901">"不使用的應用程式設定"</string>
     <string name="auto_revoke_label" msgid="5068393642936571656">"如不使用應用程式，即移除權限"</string>
     <string name="unused_apps_label" msgid="2595428768404901064">"移除權限並騰出空間"</string>
     <string name="unused_apps_label_v2" msgid="7058776770056517980">"暫停未使用應用程式的活動"</string>
@@ -403,16 +403,11 @@
     <string name="role_notes_short_label" msgid="8796604147546125285">"筆記應用程式"</string>
     <string name="role_notes_description" msgid="8496852798616883551">"讓你可以在裝置上寫筆記的應用程式"</string>
     <string name="role_notes_search_keywords" msgid="7710756695666744631">"筆記"</string>
-    <!-- no translation found for role_wallet_label (3719419175656204207) -->
-    <skip />
-    <!-- no translation found for role_wallet_short_label (6521288403762457452) -->
-    <skip />
-    <!-- no translation found for role_wallet_description (3726535836165949838) -->
-    <skip />
-    <!-- no translation found for role_wallet_request_title (4770217108262737093) -->
-    <skip />
-    <!-- no translation found for role_wallet_request_description (6305487425777483053) -->
-    <skip />
+    <string name="role_wallet_label" msgid="3719419175656204207">"預設錢包應用程式"</string>
+    <string name="role_wallet_short_label" msgid="6521288403762457452">"錢包應用程式"</string>
+    <string name="role_wallet_description" msgid="3726535836165949838">"錢包應用程式可存放信用卡、會員卡、車匙和其他資料，助你完成各種形式的交易。"</string>
+    <string name="role_wallet_request_title" msgid="4770217108262737093">"要將「<xliff:g id="APP_NAME">%1$s</xliff:g>」設定為預設錢包應用程式嗎？"</string>
+    <string name="role_wallet_request_description" msgid="6305487425777483053">"無需任何權限"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"目前預設"</string>
     <string name="request_role_dont_ask_again" msgid="3556017886029520306">"不要再詢問"</string>
     <string name="request_role_set_as_default" msgid="4253949643984172880">"設定為預設"</string>
