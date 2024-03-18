@@ -16,6 +16,7 @@
 
 package com.android.ecm;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.UserIdInt;
@@ -114,7 +115,26 @@ public class EnhancedConfirmationService extends SystemService {
         private static final ArraySet<String> PROTECTED_SETTINGS = new ArraySet<>();
 
         static {
+            // Runtime permissions
+            // TODO(b/310654818): Construct this list by permission group instead of by permission
+            PROTECTED_SETTINGS.add(Manifest.permission.READ_PHONE_STATE);
+            PROTECTED_SETTINGS.add(Manifest.permission.READ_PHONE_NUMBERS);
+            PROTECTED_SETTINGS.add(Manifest.permission.CALL_PHONE);
+            PROTECTED_SETTINGS.add(Manifest.permission.ADD_VOICEMAIL);
+            PROTECTED_SETTINGS.add(Manifest.permission.USE_SIP);
+            PROTECTED_SETTINGS.add(Manifest.permission.ANSWER_PHONE_CALLS);
+            PROTECTED_SETTINGS.add(Manifest.permission.ACCEPT_HANDOVER);
+
+            PROTECTED_SETTINGS.add(Manifest.permission.SEND_SMS);
+            PROTECTED_SETTINGS.add(Manifest.permission.RECEIVE_SMS);
+            PROTECTED_SETTINGS.add(Manifest.permission.READ_SMS);
+            PROTECTED_SETTINGS.add(Manifest.permission.RECEIVE_MMS);
+            PROTECTED_SETTINGS.add(Manifest.permission.RECEIVE_WAP_PUSH);
+            PROTECTED_SETTINGS.add(Manifest.permission.READ_CELL_BROADCASTS);
+            // TODO(b/310654818): Add other explicitly protected runtime permissions
+            // App ops
             PROTECTED_SETTINGS.add(AppOpsManager.OPSTR_BIND_ACCESSIBILITY_SERVICE);
+            PROTECTED_SETTINGS.add(AppOpsManager.OPSTR_ACCESS_NOTIFICATIONS);
             // Default application roles.
             PROTECTED_SETTINGS.add(RoleManager.ROLE_ASSISTANT);
             PROTECTED_SETTINGS.add(RoleManager.ROLE_BROWSER);
@@ -124,6 +144,8 @@ public class EnhancedConfirmationService extends SystemService {
             PROTECTED_SETTINGS.add(RoleManager.ROLE_HOME);
             PROTECTED_SETTINGS.add(RoleManager.ROLE_SMS);
             PROTECTED_SETTINGS.add(RoleManager.ROLE_WALLET);
+            // Other settings
+            PROTECTED_SETTINGS.add(AppOpsManager.OPSTR_BIND_ACCESSIBILITY_SERVICE);
             // TODO(b/310654015): Add other explicitly protected settings
         }
 
@@ -257,10 +279,13 @@ public class EnhancedConfirmationService extends SystemService {
                 return true;
             }
 
+            // If applicable, trust packages installed via non-allowlisted installers
+            if (trustPackagesInstalledViaNonAllowlistedInstallers()) return false;
+
             // ECM doesn't consider a transitive chain of trust for install sources.
             // If this package hasn't been explicitly handled by this point
             // then it is exempt from ECM if the immediate parent is a trusted installer
-            return isAllowlistedInstaller(installSource.getInstallingPackageName());
+            return !isAllowlistedInstaller(installSource.getInstallingPackageName());
         }
 
         private boolean isAllowlistedPackage(String packageName) {
@@ -284,6 +309,10 @@ public class EnhancedConfirmationService extends SystemService {
                 }
             }
             return false;
+        }
+
+        private boolean trustPackagesInstalledViaNonAllowlistedInstallers() {
+            return true; // TODO(b/327469700): Make this configurable
         }
 
         private boolean isPackagePreinstalled(@NonNull String packageName, @UserIdInt int userId) {
@@ -323,10 +352,15 @@ public class EnhancedConfirmationService extends SystemService {
         }
 
         private boolean isSettingEcmProtected(@NonNull String settingIdentifier) {
+            if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+                    || mPackageManager.hasSystemFeature(PackageManager.FEATURE_WATCH)
+                    || mPackageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
+                return false;
+            }
+
             if (PROTECTED_SETTINGS.contains(settingIdentifier)) {
                 return true;
             }
-            // TODO(b/310654818): If this is a permission, coerce it into a PermissionGroup.
             // TODO(b/310218979): Add role selections as protected settings
             return false;
         }
