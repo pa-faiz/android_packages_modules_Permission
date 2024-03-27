@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.permissioncontroller.role.ui.behavior;
+package com.android.permissioncontroller.role.ui.behavior.v35;
 
 import android.content.Context;
 import android.content.Intent;
@@ -38,6 +38,7 @@ import androidx.core.util.Pair;
 import androidx.preference.Preference;
 
 import com.android.permissioncontroller.role.ui.TwoTargetPreference;
+import com.android.permissioncontroller.role.ui.behavior.RoleUiBehavior;
 import com.android.role.controller.model.Role;
 import com.android.role.controller.util.UserUtils;
 
@@ -104,10 +105,12 @@ public class WalletRoleUiBehavior implements RoleUiBehavior {
         offHostApduIntent.setPackage(packageName);
         List<ResolveInfo> hostApduServices = packageManager.queryIntentServicesAsUser(
                 hostApduIntent,
-                PackageManager.ResolveInfoFlags.of(PackageManager.GET_META_DATA), user);
+                PackageManager.ResolveInfoFlags.of(PackageManager.GET_META_DATA
+                        | PackageManager.MATCH_DISABLED_COMPONENTS), user);
         List<ResolveInfo> offHostApduServices = packageManager.queryIntentServicesAsUser(
                 offHostApduIntent,
-                PackageManager.ResolveInfoFlags.of(PackageManager.GET_META_DATA), user);
+                PackageManager.ResolveInfoFlags.of(PackageManager.GET_META_DATA
+                        | PackageManager.MATCH_DISABLED_COMPONENTS), user);
         List<ApduServiceInfo> nfcServices = new ArrayList<>();
         int apduServiceInfoSize = hostApduServices.size();
         for (int i = 0; i < apduServiceInfoSize; i++) {

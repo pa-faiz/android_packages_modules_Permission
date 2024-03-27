@@ -193,7 +193,7 @@
     <string name="app_permission_button_deny" msgid="6016454069832050300">"Запретить"</string>
     <string name="precise_image_description" msgid="6349638632303619872">"Точное местоположение"</string>
     <string name="approximate_image_description" msgid="938803699637069884">"Приблизительное местоположение"</string>
-    <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Использовать точное местоположение"</string>
+    <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Точное местоположение"</string>
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Если определение точного местоположения отключено, приложения могут использовать данные о примерном местоположении устройства"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Разрешение \"<xliff:g id="PERM">%1$s</xliff:g>\""</string>
     <string name="app_permission_header" msgid="2951363137032603806">"<xliff:g id="PERM">%1$s</xliff:g>: доступ для этого приложения"</string>
@@ -656,4 +656,11 @@
     <string name="wear_app_perms_24h_access" msgid="8668121661337328895">"Последний доступ: <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_24h_access_yest" msgid="7069312481704735679">"Последний доступ вчера: <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_7d_access" msgid="4608069019194676432">"Последний доступ: <xliff:g id="TIME_DATE_0">%1$s</xliff:g>, <xliff:g id="TIME_DATE_1">%2$s</xliff:g>"</string>
+    <string name="test_otp_msg" msgid="7559110574222727550">"Ваш одноразовый код: 132435"</string>
+    <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Настройки с ограниченным доступом"</string>
+    <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"В целях безопасности эти настройки пока недоступны."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Разрешение \"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>\" не предоставлено"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Приложение запросило разрешение \"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>\", доступ к которому ограничен, так как его использование может представлять угрозу для вашей безопасности и конфиденциальности. Без этого разрешения приложение может не работать."</string>
+    <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Подробнее"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"ОК"</string>
 </resources>

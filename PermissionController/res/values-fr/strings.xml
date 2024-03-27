@@ -193,7 +193,7 @@
     <string name="app_permission_button_deny" msgid="6016454069832050300">"Ne pas autoriser"</string>
     <string name="precise_image_description" msgid="6349638632303619872">"Position exacte"</string>
     <string name="approximate_image_description" msgid="938803699637069884">"Position approximative"</string>
-    <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Utiliser la position exacte"</string>
+    <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Position exacte"</string>
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Si la position exacte est désactivée, les applis ont accès à votre position approximative"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Autorisation d\'accès à \"<xliff:g id="PERM">%1$s</xliff:g>\""</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Accès à \"<xliff:g id="PERM">%1$s</xliff:g>\" pour cette appli"</string>
@@ -656,4 +656,11 @@
     <string name="wear_app_perms_24h_access" msgid="8668121661337328895">"Dernière consultation : <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_24h_access_yest" msgid="7069312481704735679">"Dernière consultation : hier, à <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_7d_access" msgid="4608069019194676432">"Dernière consultation : <xliff:g id="TIME_DATE_0">%1$s</xliff:g><xliff:g id="TIME_DATE_1">%2$s</xliff:g>"</string>
+    <string name="test_otp_msg" msgid="7559110574222727550">"Votre mot de passe à usage unique est le suivant : 132435"</string>
+    <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Paramètre restreint"</string>
+    <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Pour votre sécurité, ce paramètre est actuellement indisponible."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"L\'autorisation d\'utiliser <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> a été refusée"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Cette application a demandé l\'autorisation de<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> qui est un paramètre restreint, car il peut présenter des risques en matière de sécurité et de confidentialité. La restriction de cette autorisation peut empêcher le fonctionnement de cette application."</string>
+    <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"En savoir plus"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"OK"</string>
 </resources>
