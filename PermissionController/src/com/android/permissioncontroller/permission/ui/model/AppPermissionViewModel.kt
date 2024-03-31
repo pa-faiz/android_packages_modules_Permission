@@ -52,7 +52,7 @@ import com.android.permissioncontroller.R
 import com.android.permissioncontroller.permission.data.FullStoragePermissionAppsLiveData
 import com.android.permissioncontroller.permission.data.FullStoragePermissionAppsLiveData.FullStoragePackageState
 import com.android.permissioncontroller.permission.data.LightAppPermGroupLiveData
-import com.android.permissioncontroller.permission.data.PackagePermissionsVirtualDeviceLiveData
+import com.android.permissioncontroller.permission.data.PackagePermissionsExternalDeviceLiveData
 import com.android.permissioncontroller.permission.data.SmartUpdateMediatorLiveData
 import com.android.permissioncontroller.permission.data.get
 import com.android.permissioncontroller.permission.data.v34.SafetyLabelInfoLiveData
@@ -99,8 +99,7 @@ import kotlin.collections.component2
  * @param permGroupName The name of the permission group this ViewModel represents
  * @param user The user of the package
  * @param sessionId A session ID used in logs to identify this particular session
- * @param persistentDeviceId Indicates the device in the context of virtual devices, can be null
- *   indicating default device
+ * @param persistentDeviceId The external device identifier
  */
 class AppPermissionViewModel(
     private val app: Application,
@@ -108,7 +107,7 @@ class AppPermissionViewModel(
     private val permGroupName: String,
     private val user: UserHandle,
     private val sessionId: Long,
-    private val persistentDeviceId: String?
+    private val persistentDeviceId: String
 ) : ViewModel() {
     companion object {
         private val LOG_TAG = AppPermissionViewModel::class.java.simpleName
@@ -258,6 +257,8 @@ class AppPermissionViewModel(
                 LightAppPermGroupLiveData[packageName, permGroupName, user]
             private val mediaStorageSupergroupLiveData =
                 mutableMapOf<String, LightAppPermGroupLiveData>()
+            private val packagePermissionsExternalDeviceLiveData =
+                PackagePermissionsExternalDeviceLiveData[packageName, user]
 
             init {
                 addSource(appPermGroupLiveData) { appPermGroup ->
@@ -293,6 +294,8 @@ class AppPermissionViewModel(
                 }
 
                 addSource(showPermissionRationaleLiveData) { update() }
+
+                addSource(packagePermissionsExternalDeviceLiveData) { update() }
             }
 
             private fun onMediaPermGroupUpdate(
@@ -309,7 +312,7 @@ class AppPermissionViewModel(
             }
 
             // TODO: b/328839130 (Merge this with default device implementation)
-            private fun getVirtualDeviceButtonStates(): Map<ButtonType, ButtonState> {
+            private fun getButtonStatesForExternalDevicePermission(): Map<ButtonType, ButtonState> {
                 val allowedForegroundState = ButtonState()
                 allowedForegroundState.isShown = true
 
@@ -319,10 +322,7 @@ class AppPermissionViewModel(
                 val deniedState = ButtonState()
                 deniedState.isShown = true
 
-                val virtualDeviceGrantInfoList =
-                    PackagePermissionsVirtualDeviceLiveData[packageName, user].value
-
-                virtualDeviceGrantInfoList!!
+                packagePermissionsExternalDeviceLiveData.value!!
                     .filter {
                         it.groupName == permGroupName && it.persistentDeviceId == persistentDeviceId
                     }
@@ -354,7 +354,7 @@ class AppPermissionViewModel(
 
             override fun onUpdate() {
                 if (!MultiDeviceUtils.isDefaultDeviceId(persistentDeviceId)) {
-                    value = getVirtualDeviceButtonStates()
+                    value = getButtonStatesForExternalDevicePermission()
                     return
                 }
 
@@ -473,7 +473,10 @@ class AppPermissionViewModel(
                     askOneTimeState.isChecked = group.foreground.isGranted && group.isOneTime
                     askOneTimeState.isShown = askOneTimeState.isChecked
                     deniedState.isChecked = !group.foreground.isGranted && !group.isOneTime
-
+                    if (Utils.getApplicationEnhancedConfirmationRestrictedIntentAsUser(
+                            user, app, packageName, permGroupName) != null) {
+                        allowedState.isEnabled = false
+                    }
                     if (group.foreground.isPolicyFixed || group.foreground.isSystemFixed) {
                         allowedState.isEnabled = false
                         askState.isEnabled = false
@@ -556,6 +559,15 @@ class AppPermissionViewModel(
                     )
             }
         }
+
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.VANILLA_ICE_CREAM, codename = "VanillaIceCream")
+    fun handleDisabledAllowButton(fragment: Fragment) {
+        if (lightAppPermGroup!!.foreground.isSystemFixed ||
+            lightAppPermGroup!!.foreground.isPolicyFixed) return
+        val restrictionIntent = Utils.getApplicationEnhancedConfirmationRestrictedIntentAsUser(
+            user, app, packageName, permGroupName) ?: return
+        fragment.startActivity(restrictionIntent)
+    }
 
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE, codename = "UpsideDownCake")
     private fun shouldShowPhotoPickerPromptForApp(group: LightAppPermGroup): Boolean {
@@ -761,6 +773,11 @@ class AppPermissionViewModel(
         val group = lightAppPermGroup ?: return
         val wasForegroundGranted = group.foreground.isGranted
         val wasBackgroundGranted = group.background.isGranted
+
+        if (!MultiDeviceUtils.isDefaultDeviceId(persistentDeviceId)) {
+            handleChangeForExternalDevice(group.permissions.keys, changeRequest, setOneTime)
+            return
+        }
 
         if (LocationUtils.isLocationGroupAndProvider(context, permGroupName, packageName)) {
             val packageLabel = KotlinUtils.getPackageLabel(app, packageName, user)
@@ -981,6 +998,42 @@ class AppPermissionViewModel(
 
             fullStorageStateLiveData.value?.let { FullStoragePermissionAppsLiveData.recalculate() }
         }
+    }
+
+    /**
+     * Handles the permission change for external devices. The original method that handles
+     * permission change for the default device makes use of LightAppPermGroup. This data class is
+     * not available for external devices, hence this implementation makes use of persistentDeviceId
+     * specific methods.
+     *
+     * TODO: b/328839130
+     */
+    private fun handleChangeForExternalDevice(
+        permissions: Set<String>,
+        changeRequest: ChangeRequest,
+        setOneTime: Boolean
+    ) {
+        when (changeRequest) {
+            ChangeRequest.GRANT_FOREGROUND_ONLY ->
+                KotlinUtils.grantRuntimePermissionsWithPersistentDeviceId(
+                    app,
+                    persistentDeviceId,
+                    packageName,
+                    permissions,
+                    true
+                )
+            ChangeRequest.REVOKE_BOTH ->
+                KotlinUtils.revokeRuntimePermissionsWithPersistentDeviceId(
+                    app,
+                    persistentDeviceId,
+                    packageName,
+                    permissions,
+                    !setOneTime,
+                    setOneTime
+                )
+            else -> Log.e(LOG_TAG, "Unsupported changeRequest=$changeRequest")
+        }
+        PackagePermissionsExternalDeviceLiveData[packageName, user].update()
     }
 
     private fun shouldClearOneTimeRevokedCompat(group: LightAppPermGroup): Boolean {
