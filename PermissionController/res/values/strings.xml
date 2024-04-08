@@ -624,6 +624,9 @@
     <!-- Description for showing an app's permission [CHAR LIMIT=60] -->
     <string name="app_permission_header"><xliff:g id="perm" example="location">%1$s</xliff:g> access for this app</string>
 
+    <!-- Description for showing an app's permission along with device name [CHAR LIMIT=NONE] -->
+    <string name="app_permission_header_with_device_name"><xliff:g id="perm" example="camera">%1$s</xliff:g> access for this app on <xliff:g id="device_name" example="tablet">%2$s</xliff:g></string>
+
     <!-- Text for linking to the page that shows an app's permissions [CHAR LIMIT=none] -->
     <string name="app_permission_footer_app_permissions_link">See all <xliff:g id="app" example="Maps">%1$s</xliff:g> permissions</string>
 
@@ -798,6 +801,9 @@
 
     <!-- Header for denied permissions/apps [CHAR LIMIT=40] -->
     <string name="denied_header">Not allowed</string>
+
+    <!-- Header to display the Permission group name along with corresponding device name [CHAR LIMIT=None] -->
+    <string name="permission_group_name_with_device_name"><xliff:g id="perm_group_name" example="camera">%1$s</xliff:g> on <xliff:g id="device_name" example="tablet">%2$s</xliff:g></string>
 
     <!-- Text of hyperlink shown in storage_footer [CHAR LIMIT=60] -->
     <string name="storage_footer_hyperlink_text">See more apps that can access all files</string>
@@ -1959,4 +1965,33 @@ Allow <xliff:g id="app_name" example="Gmail">%4$s</xliff:g> to upload a bug repo
     <!-- Summary for showing the last access text for 7 days for Wear [CHAR LIMIT=50] -->
     <string name="wear_app_perms_7d_access">Accessed <xliff:g id="time_date" example="Jan 3">%1$s</xliff:g> <xliff:g id="time_date" example="12:42 PM">%2$s</xliff:g></string>
 
+    <!-- A string representing a message (sms, email, etc.) telling the user about a one time password. Used for testing [CHAR LIMIT=NONE] -->
+    <string name="test_otp_msg">Your one time password is 132435</string>
+
+    <!-- START ENHANCED CONFIRMATION DIALOG -->
+
+    <!--Title for dialog displayed to tell user that settings are blocked by setting restrictions [CHAR LIMIT=50] -->
+    <string name="enhanced_confirmation_dialog_title">Restricted setting</string>
+    <!--Content for dialog displayed to tell user that settings are blocked by setting restrictions [CHAR LIMIT=NONE] -->
+    <string name="enhanced_confirmation_dialog_desc">For your security, this setting is currently unavailable.</string>
+
+    <!--Title for dialog displayed to tell user that permissions are blocked by setting restrictions [CHAR LIMIT=50] -->
+    <string name="enhanced_confirmation_dialog_title_permission">Permission to use <xliff:g id="permission_name" example="contacts">%1$s</xliff:g> has been denied</string>
+    <!--Content for dialog displayed to tell user that settings are blocked by setting restrictions [CHAR LIMIT=NONE] -->
+    <string name="enhanced_confirmation_dialog_desc_permission">This app has requested the <xliff:g id="permission_name" example="contacts">%1$s</xliff:g> permission, which is a restricted setting because it can put your security &amp; privacy at risk. Restriction to this permission may prevent this app from working.</string>
+
+    <!-- Button label to allow the user to view additional information [CHAR LIMIT=NONE] -->
+    <string name="enhanced_confirmation_dialog_learn_more">Learn more</string>
+    <!-- Button label of the ok button [CHAR LIMIT=NONE] -->
+    <string name="enhanced_confirmation_dialog_ok">Got it</string>
+    <!-- Help URI, action disabled by restricted settings [DO NOT TRANSLATE] -->
+    <string name="help_url_action_disabled_by_restricted_settings" translatable="false"></string>
+
+    <!-- END ENHANCED CONFIRMATION DIALOG -->
+
+    <!-- Title for the warning dialog that shows when permission grant dialog is blocked from streaming to a remote device [CHAR LIMIT=70]-->
+    <string name="permission_grant_dialog_streaming_blocked_title">Permission request suppressed</string>
+
+    <!-- Descriptions for the warning dialog that shows when permission grant dialog is blocked from streaming to a remote device [CHAR LIMIT=200] -->
+    <string name="permission_grant_dialog_streaming_blocked_description">This app is requesting additional permissions, but permissions can’t be granted in a streaming session. Grant the permission on your phone first.</string>
 </resources>

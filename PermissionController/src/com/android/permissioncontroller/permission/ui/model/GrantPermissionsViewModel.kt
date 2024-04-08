@@ -1021,7 +1021,8 @@ class GrantPermissionsViewModel(
             permission,
             isImplicit,
             result,
-            isPermissionRationaleShown
+            isPermissionRationaleShown,
+            /* TODO: 324254847 use real ECM value */ false
         )
     }
 
@@ -1371,6 +1372,7 @@ class GrantPermissionsViewModel(
     companion object {
         const val APP_PERMISSION_REQUEST_CODE = 1
         const val PHOTO_PICKER_REQUEST_CODE = 2
+        const val ECM_REQUEST_CODE = 3
         const val SAVED_REQUEST_CODE_KEY = "saved_request_code"
         private const val STATE_UNKNOWN = 0
         private const val STATE_GRANTED = 1

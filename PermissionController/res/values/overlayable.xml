@@ -24,6 +24,7 @@
             <!-- START HELP LINKS -->
             <item type="string" name="help_app_permissions" />
             <item type="string" name="data_sharing_help_center_link" />
+            <item type="string" name="help_url_action_disabled_by_restricted_settings" />
             <!-- END HELP LINKS -->
 
             <!-- START PERMISSION GRANT DIALOG -->
@@ -377,6 +378,35 @@
             <item type="style" name="AppDataSharingUpdateSettingsIconFrame" />
             <item type="style" name="AppDataSharingUpdateSettingsIcon" />
             <!-- END SAFETY LABELS STYLE -->
+
+            <!--START WEAR SPECIFIC FONT STRINGS -->
+            <item type="string" name="wear_material_compose_display_1_font_family" />
+            <item type="string" name="wear_material_compose_display_2_font_family" />
+            <item type="string" name="wear_material_compose_display_3_font_family" />
+            <item type="string" name="wear_material_compose_title_1_font_family" />
+            <item type="string" name="wear_material_compose_title_2_font_family" />
+            <item type="string" name="wear_material_compose_title_3_font_family" />
+            <item type="string" name="wear_material_compose_body_1_font_family" />
+            <item type="string" name="wear_material_compose_body_2_font_family" />
+            <item type="string" name="wear_material_compose_button_font_family" />
+            <item type="string" name="wear_material_compose_caption_1_font_family" />
+            <item type="string" name="wear_material_compose_caption_2_font_family" />
+            <item type="string" name="wear_material_compose_caption_3_font_family" />
+            <!--END WEAR SPECIFIC FONT STRINGS -->
+
+            <!-- START ENHANCED CONFIRMATION DIALOG -->
+            <item type="style" name="Theme.EnhancedConfirmationDialog" />
+            <item type="style" name="Theme.EnhancedConfirmationDialogFragment" />
+            <item type="style" name="EnhancedConfirmationDialog" />
+            <item type="style" name="EnhancedConfirmationDialogHeader" />
+            <item type="style" name="EnhancedConfirmationDialogIcon" />
+            <item type="style" name="EnhancedConfirmationDialogTitle" />
+            <item type="style" name="EnhancedConfirmationDialogScrollView" />
+            <item type="style" name="EnhancedConfirmationDialogBody" />
+            <item type="style" name="EnhancedConfirmationDialogDesc" />
+            <item type="style" name="EnhancedConfirmationDialogButtonBar" />
+            <item type="style" name="EnhancedConfirmationDialogButton" />
+            <!-- END ENHANCED CONFIRMATION DIALOG -->
 
         </policy>
 

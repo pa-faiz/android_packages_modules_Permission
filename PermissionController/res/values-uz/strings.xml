@@ -197,6 +197,8 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Aniq joylashuv yoqilmasa, ilovalar taxminiy joylashuvingiz axborotidan foydalanadi"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"<xliff:g id="PERM">%1$s</xliff:g> ruxsati"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Bu ilova uchun <xliff:g id="PERM">%1$s</xliff:g> ruxsati"</string>
+    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
+    <skip />
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"<xliff:g id="APP">%1$s</xliff:g> uchun berilgan barcha ruxsatlar"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Bu ruxsatga ega barcha ilovalar"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Assistent uchun mikrofondan foydalanishni koʻrsatish"</string>
@@ -254,6 +256,8 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Barcha fayllarga ruxsati bor"</string>
     <string name="ask_header" msgid="2633816846459944376">"Har safar soʻralsin"</string>
     <string name="denied_header" msgid="903209608358177654">"Ruxsat berilmagan"</string>
+    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
+    <skip />
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Barcha fayllarga kirish uchun koʻproq ilovalarni koʻring"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 kun}other{# kun}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# soat}other{# soat}}"</string>
@@ -403,10 +407,10 @@
     <string name="role_notes_short_label" msgid="8796604147546125285">"Qaydlar ilovasi"</string>
     <string name="role_notes_description" msgid="8496852798616883551">"Qurilmangizda qaydlar olish imkonini beruvchi ilovalar"</string>
     <string name="role_notes_search_keywords" msgid="7710756695666744631">"qaydlar"</string>
-    <string name="role_wallet_label" msgid="3719419175656204207">"Standart hamyon ilovasi"</string>
+    <string name="role_wallet_label" msgid="3719419175656204207">"Birlamchi hamyon ilovasi"</string>
     <string name="role_wallet_short_label" msgid="6521288403762457452">"Hamyon ilovasi"</string>
-    <string name="role_wallet_description" msgid="3726535836165949838">"Hamyon ilovasi kredit, sodiqlik va avtomobil kalitlari hamda boshqa raqamli mahsulotlarni saqlashi mumkin. Bu har xil turdagi operatsiyalarni amalga oshirishni yanada qulaylashtiradi."</string>
-    <string name="role_wallet_request_title" msgid="4770217108262737093">"<xliff:g id="APP_NAME">%1$s</xliff:g> standart hamyon ilovasi sifatida sozlansinmi?"</string>
+    <string name="role_wallet_description" msgid="3726535836165949838">"Hamyon ilovalarda kredit va sodiqlik kartalari, avtomobil kalitlari hamda boshqa raqamli mahsulotlarni saqlash mumkin. Bu har xil turdagi amaliyotlarni bajarishni yanada qulaylashtiradi."</string>
+    <string name="role_wallet_request_title" msgid="4770217108262737093">"<xliff:g id="APP_NAME">%1$s</xliff:g> birlamchi hamyon ilovasi sifatida belgilansinmi?"</string>
     <string name="role_wallet_request_description" msgid="6305487425777483053">"Hech qanday ruxsat zarur emas"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"Hozirda asosiy ilova"</string>
     <string name="request_role_dont_ask_again" msgid="3556017886029520306">"Boshqa soʻralmasin"</string>
@@ -656,4 +660,11 @@
     <string name="wear_app_perms_24h_access" msgid="8668121661337328895">"Kirilgan: <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_24h_access_yest" msgid="7069312481704735679">"Kecha kirilgan: <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_7d_access" msgid="4608069019194676432">"Kirilgan: <xliff:g id="TIME_DATE_0">%1$s</xliff:g> <xliff:g id="TIME_DATE_1">%2$s</xliff:g>"</string>
+    <string name="test_otp_msg" msgid="7559110574222727550">"Bir martalik parolingiz: 132435"</string>
+    <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Cheklangan sozlama"</string>
+    <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Xavfsizlik maqsadida bu sozlama hozir ishlamaydi."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> ishaltish soʻrovi rad etildi"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Bu ilova <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> ruxsatini soʻradi, bu cheklangan sozlama, chunki u xavfsizlik va maxfiylikni xavf ostiga qoʻyadi. Bu ruxsat cheklansa, ushbu ilovaning ishlashiga xalaqit berishi mumkin."</string>
+    <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Batafsil"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"OK"</string>
 </resources>

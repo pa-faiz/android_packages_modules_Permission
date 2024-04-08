@@ -197,6 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"正確な位置情報がオフの場合、アプリはおおよその位置情報にアクセスできます"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"<xliff:g id="PERM">%1$s</xliff:g>の権限"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"このアプリによる<xliff:g id="PERM">%1$s</xliff:g>へのアクセス"</string>
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"<xliff:g id="DEVICE_NAME">%2$s</xliff:g> でこのアプリに <xliff:g id="PERM">%1$s</xliff:g> へのアクセス権が付与されています"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"「<xliff:g id="APP">%1$s</xliff:g>」アプリの権限をすべて表示"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"この権限があるアプリをすべて表示"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"アシスタントのマイクの使用を表示"</string>
@@ -254,6 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"すべてのファイルの管理が許可されたアプリ"</string>
     <string name="ask_header" msgid="2633816846459944376">"毎回確認する"</string>
     <string name="denied_header" msgid="903209608358177654">"許可しない"</string>
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g>（<xliff:g id="DEVICE_NAME">%2$s</xliff:g>）"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"すべてのファイルにアクセスできるアプリをもっと見る"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 日}other{# 日}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# 時間}other{# 時間}}"</string>
@@ -656,4 +658,11 @@
     <string name="wear_app_perms_24h_access" msgid="8668121661337328895">"<xliff:g id="TIME_DATE">%1$s</xliff:g> にアクセス"</string>
     <string name="wear_app_perms_24h_access_yest" msgid="7069312481704735679">"昨日の <xliff:g id="TIME_DATE">%1$s</xliff:g> にアクセス"</string>
     <string name="wear_app_perms_7d_access" msgid="4608069019194676432">"<xliff:g id="TIME_DATE_0">%1$s</xliff:g> <xliff:g id="TIME_DATE_1">%2$s</xliff:g> にアクセス"</string>
+    <string name="test_otp_msg" msgid="7559110574222727550">"ワンタイム パスワードは 132435 です"</string>
+    <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"制限付き設定"</string>
+    <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"セキュリティ保護のため、この設定は現在利用できません。"</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> を使用する権限が拒否されました"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"このアプリが <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> 権限をリクエストしました。ユーザーのセキュリティやプライバシーが危険にさらされるおそれがあるため、この設定には制限があります。この権限に対する制限により、このアプリが稼働しなくなる可能性があります。"</string>
+    <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"詳細"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"OK"</string>
 </resources>

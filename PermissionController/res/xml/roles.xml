@@ -142,7 +142,7 @@
             <permission name="android.permission.EXECUTE_APP_ACTION"
                 minSdkVersion="34" />
             <permission name="android.permission.MANAGE_CONTENT_SUGGESTIONS"
-                minSdkVersion="34" />
+                minSdkVersion="35" optionalMinSdkVersion="34" />
             <permission name="android.permission.EMBED_ANY_APP_IN_UNTRUSTED_MODE"
                 minSdkVersion="35" />
         </permissions>
@@ -448,8 +448,9 @@
             </preferred-activity>
         </preferred-activities>
         <permissions>
-            <permission name="android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS" minSdkVersion="35"/>
-            <permission name="android.permission.READ_HOME_APP_SEARCH_DATA" minSdkVersion="33"/>
+            <permission name="android.permission.READ_HOME_APP_SEARCH_DATA" minSdkVersion="33" />
+            <permission name="android.permission.ALLOW_SLIPPERY_TOUCHES" minSdkVersion="33" optionalMinSdkVersion="30" />
+            <permission name="android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS" minSdkVersion="35" />
         </permissions>
     </role>
 
@@ -521,7 +522,7 @@
 
     <role
         name="android.app.role.SYSTEM_AUTOMOTIVE_CLUSTER"
-        behavior="AutomotiveRoleBehavior"
+        behavior="v31.AutomotiveRoleBehavior"
         defaultHolders="config_systemAutomotiveCluster"
         exclusive="true"
         minSdkVersion="31"
@@ -538,7 +539,7 @@
 
     <role
         name="android.app.role.COMPANION_DEVICE_WATCH"
-        behavior="CompanionDeviceWatchRoleBehavior"
+        behavior="v31.CompanionDeviceWatchRoleBehavior"
         description="@string/role_watch_description"
         exclusive="false"
         minSdkVersion="31"
@@ -597,7 +598,7 @@
 
     <role
         name="android.app.role.SYSTEM_SHELL"
-        behavior="SystemShellRoleBehavior"
+        behavior="v31.SystemShellRoleBehavior"
         defaultHolders="config_systemShell"
         exclusive="true"
         minSdkVersion="31"
@@ -770,7 +771,7 @@
       -->
     <role
         name="android.app.role.SYSTEM_TELEVISION_NOTIFICATION_HANDLER"
-        behavior="TelevisionRoleBehavior"
+        behavior="v31.TelevisionRoleBehavior"
         defaultHolders="config_systemTelevisionNotificationHandler"
         exclusive="true"
         minSdkVersion="31"
@@ -1073,7 +1074,7 @@
     -->
     <role
         name="android.app.role.SYSTEM_DOCUMENT_MANAGER"
-        behavior="DocumentManagerRoleBehavior"
+        behavior="v33.DocumentManagerRoleBehavior"
         exclusive="true"
         minSdkVersion="33"
         static="true"
@@ -1146,7 +1147,7 @@
       -->
     <role
         name="android.app.role.SYSTEM_TELEVISION_REMOTE_SERVICE"
-        behavior="TelevisionRoleBehavior"
+        behavior="v31.TelevisionRoleBehavior"
         defaultHolders="config_systemTelevisionRemoteService"
         exclusive="true"
         minSdkVersion="31"
@@ -1165,7 +1166,7 @@
     <role
         name="android.app.role.COMPANION_DEVICE_APP_STREAMING"
         allowBypassingQualification="true"
-        behavior="CompanionDeviceAppStreamingRoleBehavior"
+        behavior="v33.CompanionDeviceAppStreamingRoleBehavior"
         description="@string/role_app_streaming_description"
         exclusive="false"
         minSdkVersion="33"
@@ -1191,7 +1192,7 @@
     <role
         name="android.app.role.COMPANION_DEVICE_COMPUTER"
         allowBypassingQualification="true"
-        behavior="CompanionDeviceComputerRoleBehavior"
+        behavior="v33.CompanionDeviceComputerRoleBehavior"
         description="@string/role_companion_device_computer_description"
         exclusive="false"
         minSdkVersion="33"
@@ -1208,7 +1209,7 @@
 
     <role
         name="android.app.role.COMPANION_DEVICE_GLASSES"
-        behavior="CompanionDeviceGlassesRoleBehavior"
+        behavior="v34.CompanionDeviceGlassesRoleBehavior"
         exclusive="false"
         minSdkVersion="34"
         systemOnly="false"
@@ -1267,7 +1268,7 @@
       -->
     <role
         name="android.app.role.DEVICE_POLICY_MANAGEMENT"
-        behavior="DevicePolicyManagementRoleBehavior"
+        behavior="v33.DevicePolicyManagementRoleBehavior"
         defaultHolders="config_devicePolicyManagement"
         exclusive="true"
         minSdkVersion="33"
@@ -1365,7 +1366,7 @@
             <permission name="android.permission.MANAGE_DEVICE_POLICY_BLOCK_UNINSTALL" minSdkVersion="35" />
             <permission name="android.permission.MANAGE_DEVICE_POLICY_CAMERA_TOGGLE" minSdkVersion="35" />
             <permission name="android.permission.MANAGE_DEVICE_POLICY_MICROPHONE_TOGGLE" minSdkVersion="35" />
-            <permission name="android.permission.MANAGE_DEVICE_POLICY_THEFT_DETECTION" minSdkVersion="35" />
+            <permission name="android.permission.QUERY_DEVICE_STOLEN_STATE" minSdkVersion="35" />
             <permission name="android.permission.MANAGE_DEVICE_POLICY_AUDIT_LOGGING" minSdkVersion="35" />
         </permissions>
     </role>
@@ -1381,6 +1382,8 @@
         <permissions>
             <permission-set name="notifications" />
             <permission name="android.permission.GET_HISTORICAL_APP_OPS_STATS" />
+            <permission name="android.permission.READ_SMS" />
+            <permission name="android.permission.RECEIVE_SMS" />
             <permission name="android.permission.GET_BACKGROUND_INSTALLED_PACKAGES" minSdkVersion="35" />
         </permissions>
     </role>
@@ -1391,7 +1394,7 @@
       -->
     <role
         name="android.app.role.SYSTEM_AUTOMOTIVE_CALENDAR_SYNC_MANAGER"
-        behavior="AutomotiveRoleBehavior"
+        behavior="v31.AutomotiveRoleBehavior"
         defaultHolders="config_systemAutomotiveCalendarSyncManager"
         exclusive="true"
         minSdkVersion="33"
@@ -1411,7 +1414,7 @@
       -->
     <role
         name="android.app.role.AUTOMOTIVE_NAVIGATION"
-        behavior="AutomotiveRoleBehavior"
+        behavior="v31.AutomotiveRoleBehavior"
         defaultHolders="config_defaultAutomotiveNavigation"
         description="@string/role_automotive_navigation_description"
         exclusive="true"
@@ -1568,7 +1571,7 @@
     -->
     <role
         name="android.app.role.SYSTEM_WEAR_HEALTH_SERVICE"
-        behavior="SystemWearHealthServiceRoleBehavior"
+        behavior="v33.SystemWearHealthServiceRoleBehavior"
         defaultHolders="config_systemWearHealthService"
         exclusive="true"
         minSdkVersion="33"
@@ -1588,7 +1591,7 @@
     -->
     <role
         name="android.app.role.NOTES"
-        behavior="NotesRoleBehavior"
+        behavior="v34.NotesRoleBehavior"
         defaultHolders="config_defaultNotes"
         description="@string/role_notes_description"
         exclusive="true"
@@ -1652,7 +1655,7 @@
 
     <role
         name="android.app.role.RETAIL_DEMO"
-        behavior="RetailDemoRoleBehavior"
+        behavior="v35.RetailDemoRoleBehavior"
         defaultHolders="config_defaultRetailDemo"
         exclusive="true"
         minSdkVersion="35"
@@ -1677,7 +1680,7 @@
 
     <role
         name="android.app.role.WALLET"
-        behavior="WalletRoleBehavior"
+        behavior="v35.WalletRoleBehavior"
         defaultHolders="config_defaultWallet"
         description="@string/role_wallet_description"
         exclusive="true"
@@ -1689,7 +1692,7 @@
         requestTitle="@string/role_wallet_request_title"
         showNone="true"
         shortLabel="@string/role_wallet_short_label"
-        uiBehavior="WalletRoleUiBehavior"/>
+        uiBehavior="v35.WalletRoleUiBehavior"/>
 
 
 </roles>

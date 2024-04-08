@@ -193,10 +193,12 @@
     <string name="app_permission_button_deny" msgid="6016454069832050300">"No permitir"</string>
     <string name="precise_image_description" msgid="6349638632303619872">"Ubicación precisa"</string>
     <string name="approximate_image_description" msgid="938803699637069884">"Ubicación aproximada"</string>
-    <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Usar la ubicación precisa"</string>
+    <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Ubicación precisa"</string>
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Cuando la ubicación precisa está desactivada, las apps acceden a la ubicación aproximada"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Permiso de <xliff:g id="PERM">%1$s</xliff:g>"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Acceso a <xliff:g id="PERM">%1$s</xliff:g> para esta app"</string>
+    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
+    <skip />
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Ver todos los permisos de <xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Ver todas las apps que tienen este permiso"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Mostrar el uso del micrófono del Asistente"</string>
@@ -254,6 +256,8 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Pueden administrar todos los archivos"</string>
     <string name="ask_header" msgid="2633816846459944376">"Preguntar siempre"</string>
     <string name="denied_header" msgid="903209608358177654">"Sin permiso"</string>
+    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
+    <skip />
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Ver más apps que pueden acceder a todos los archivos"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 día}many{# días}other{# días}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# hora}many{# horas}other{# horas}}"</string>
@@ -403,7 +407,7 @@
     <string name="role_notes_short_label" msgid="8796604147546125285">"App de notas"</string>
     <string name="role_notes_description" msgid="8496852798616883551">"Apps que te permiten tomar notas en tu dispositivo"</string>
     <string name="role_notes_search_keywords" msgid="7710756695666744631">"notas"</string>
-    <string name="role_wallet_label" msgid="3719419175656204207">"App de billetera predet."</string>
+    <string name="role_wallet_label" msgid="3719419175656204207">"Billetera predeterminada"</string>
     <string name="role_wallet_short_label" msgid="6521288403762457452">"App de billetera"</string>
     <string name="role_wallet_description" msgid="3726535836165949838">"Las apps de billetera pueden almacenar tus tarjetas de crédito y lealtad, las llaves de tu vehículo y otros elementos para ayudarte con los diferentes tipos de transacciones."</string>
     <string name="role_wallet_request_title" msgid="4770217108262737093">"¿Quieres configurar <xliff:g id="APP_NAME">%1$s</xliff:g> como tu app de billetera predeterminada?"</string>
@@ -453,7 +457,7 @@
     <string name="incident_report_dialog_text" msgid="5675553296891757523">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> solicita subir un informe de errores de este dispositivo generado el <xliff:g id="DATE">%2$s</xliff:g> a las <xliff:g id="TIME">%3$s</xliff:g>. Los informes de errores pueden incluir información personal sobre tu dispositivo o registrada por apps, como nombres de usuario, datos de ubicación, identificadores del dispositivo y datos de red. Solo debes compartir los informes de errores con personas y apps de confianza. ¿Permitir que <xliff:g id="APP_NAME_1">%4$s</xliff:g> suba un informe de errores?"</string>
     <string name="incident_report_error_dialog_text" msgid="4189647113387092272">"Se produjo un error al procesar el informe de errores para <xliff:g id="APP_NAME">%1$s</xliff:g>. Por lo tanto, no es posible compartir los datos detallados de depuración. Lamentamos la interrupción."</string>
     <string name="incident_report_dialog_allow_label" msgid="2970242967721155239">"Permitir"</string>
-    <string name="incident_report_dialog_deny_label" msgid="3535314290677579383">"Denegar"</string>
+    <string name="incident_report_dialog_deny_label" msgid="3535314290677579383">"Rechazar"</string>
     <string name="adjust_user_sensitive_title" msgid="4196724451314280527">"Configuración avanzada"</string>
     <string name="menu_adjust_user_sensitive" msgid="6497923610654425780">"Configuración avanzada"</string>
     <string name="adjust_user_sensitive_globally_title" msgid="8649190949066029174">"Mostrar uso de las apps del sistema"</string>
@@ -508,7 +512,7 @@
     <string name="permgroupupgraderequestdetail_microphone" msgid="2870497719571464239">"Esta app quiere grabar audio todo el tiempo, incluso cuando no la uses. "<annotation id="link">"Permite el acceso en Configuración."</annotation></string>
     <string name="permgrouprequest_activityRecognition" msgid="5415121592794230330">"¿Quieres permitir que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; acceda a tu actividad física?"</string>
     <string name="permgrouprequest_device_aware_activityRecognition" msgid="3408326850847755759">"¿Permitir que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; acceda a la actividad física en tu &lt;b&gt;<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
-    <string name="permgrouprequest_camera" msgid="5123097035410002594">"¿Permitir que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; tome fotos y grabe videos?"</string>
+    <string name="permgrouprequest_camera" msgid="5123097035410002594">"¿Quieres permitir que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; tome fotos y grabe videos?"</string>
     <string name="permgrouprequest_device_aware_camera" msgid="3525106924487608868">"¿Permitir que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; tome fotos y grabe videos en tu &lt;b&gt;<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="permgrouprequestdetail_camera" msgid="9085323239764667883">"La app solo podrá tomar fotos y grabar videos cuando esté en uso"</string>
     <string name="permgroupbackgroundrequest_camera" msgid="1274286575704213875">"¿Permitir que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; tome fotos y grabe videos?"</string>
@@ -619,7 +623,7 @@
     <string name="show_clip_access_notification_title" msgid="5168467637351109096">"Mostrar acceso a portapapeles"</string>
     <string name="show_clip_access_notification_summary" msgid="3532020182782112687">"Muestra un mensaje cuando las apps accedan a texto, imágenes y otro contenido que hayas copiado"</string>
     <string name="show_password_title" msgid="2877269286984684659">"Mostrar contraseñas"</string>
-    <string name="show_password_summary" msgid="1110166488865981610">"Mostrar caracteres brevemente mientras escribes"</string>
+    <string name="show_password_summary" msgid="1110166488865981610">"Muestra los caracteres brevemente mientras escribes"</string>
     <string name="permission_rationale_message_location" msgid="2153841534298068414">"Esta app indicó que podría compartir datos de ubicación con terceros"</string>
     <string name="permission_rationale_location_title" msgid="2404797182678793506">"Uso compartido de datos y ubicación"</string>
     <string name="permission_rationale_data_sharing_source_title" msgid="6874604543125814316">"De dónde proviene la información de uso compartido de datos"</string>
@@ -656,4 +660,11 @@
     <string name="wear_app_perms_24h_access" msgid="8668121661337328895">"Último acceso: <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_24h_access_yest" msgid="7069312481704735679">"Último acceso: ayer a la(s) <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_7d_access" msgid="4608069019194676432">"Último acceso: <xliff:g id="TIME_DATE_0">%1$s</xliff:g> a la(s) <xliff:g id="TIME_DATE_1">%2$s</xliff:g>"</string>
+    <string name="test_otp_msg" msgid="7559110574222727550">"Tu contraseña de un solo uso es 132435"</string>
+    <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Parámetro restringido"</string>
+    <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Por seguridad, este parámetro de configuración no está disponible actualmente."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Se rechazó el permiso para usar <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Esta app solicitó el permiso <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>, que es un parámetro de configuración restringido porque puede poner en peligro tu seguridad y privacidad. La restricción de este permiso puede hacer que la app deje de funcionar."</string>
+    <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Más información"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"Entendido"</string>
 </resources>

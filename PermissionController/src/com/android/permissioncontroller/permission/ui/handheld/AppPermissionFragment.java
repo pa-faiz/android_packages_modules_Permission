@@ -58,6 +58,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Switch;
@@ -82,6 +83,7 @@ import com.android.permissioncontroller.permission.ui.model.AppPermissionViewMod
 import com.android.permissioncontroller.permission.ui.model.AppPermissionViewModelFactory;
 import com.android.permissioncontroller.permission.ui.v33.AdvancedConfirmDialogArgs;
 import com.android.permissioncontroller.permission.utils.KotlinUtils;
+import com.android.permissioncontroller.permission.utils.MultiDeviceUtils;
 import com.android.permissioncontroller.permission.utils.Utils;
 import com.android.settingslib.RestrictedLockUtils;
 import com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
@@ -106,10 +108,12 @@ public class AppPermissionFragment extends SettingsWithLargeHeader
     private static final long EDIT_PHOTOS_BUTTON_ANIMATION_LENGTH_MS = 200L;
 
     static final String GRANT_CATEGORY = "grant_category";
+    static final String PERSISTENT_DEVICE_ID = "persistent_device_id";
 
     private @NonNull AppPermissionViewModel mViewModel;
     private @NonNull ViewGroup mAppPermissionRationaleContainer;
     private @NonNull ViewGroup mAppPermissionRationaleContent;
+    private @NonNull FrameLayout mAllowButtonFrame;
     private @NonNull RadioButton mAllowButton;
     private @NonNull RadioButton mAllowAlwaysButton;
     private @NonNull RadioButton mAllowForegroundButton;
@@ -135,6 +139,7 @@ public class AppPermissionFragment extends SettingsWithLargeHeader
     // This prevents the user from clicking the photo picker button multiple times in succession
     private boolean mPhotoPickerTriggered;
     private long mSessionId;
+    private String mPersistentDeviceId;
 
     private @NonNull String mPackageLabel;
     private @NonNull String mPermGroupLabel;
@@ -198,8 +203,12 @@ public class AppPermissionFragment extends SettingsWithLargeHeader
                 mPackageName, mUser);
         mSessionId = getArguments().getLong(EXTRA_SESSION_ID, INVALID_SESSION_ID);
 
+        mPersistentDeviceId = getArguments().getString(PERSISTENT_DEVICE_ID,
+                MultiDeviceUtils.getDefaultDevicePersistentDeviceId());
+
         AppPermissionViewModelFactory factory = new AppPermissionViewModelFactory(
-                getActivity().getApplication(), mPackageName, mPermGroupName, mUser, mSessionId);
+                getActivity().getApplication(), mPackageName, mPermGroupName, mUser, mSessionId,
+                mPersistentDeviceId);
         mViewModel = new ViewModelProvider(this, factory).get(AppPermissionViewModel.class);
         Handler delayHandler = new Handler(Looper.getMainLooper());
         mViewModel.getButtonStateLiveData().observe(this, buttonState -> {
@@ -230,8 +239,15 @@ public class AppPermissionFragment extends SettingsWithLargeHeader
         setHeader(mPackageIcon, mPackageLabel, null, null, false);
         updateHeader(root.requireViewById(R.id.large_header));
 
-        ((TextView) root.requireViewById(R.id.permission_message)).setText(
-                context.getString(R.string.app_permission_header, mPermGroupLabel));
+        String text = null;
+        if (MultiDeviceUtils.isDefaultDeviceId(mPersistentDeviceId)) {
+            text = context.getString(R.string.app_permission_header, mPermGroupLabel);
+        } else {
+            final String deviceName = MultiDeviceUtils.getDeviceName(context, mPersistentDeviceId);
+            text = context.getString(R.string.app_permission_header_with_device_name,
+                    mPermGroupLabel, deviceName);
+        }
+        ((TextView) root.requireViewById(R.id.permission_message)).setText(text);
 
         String caller = getArguments().getString(EXTRA_CALLER_NAME);
 
@@ -258,6 +274,7 @@ public class AppPermissionFragment extends SettingsWithLargeHeader
             footerInfoText.setVisibility(View.GONE);
         }
 
+        mAllowButtonFrame = root.requireViewById(R.id.allow_radio_button_frame);
         mAllowButton = root.requireViewById(R.id.allow_radio_button);
         mAllowAlwaysButton = root.requireViewById(R.id.allow_always_radio_button);
         mAllowForegroundButton = root.requireViewById(R.id.allow_foreground_only_radio_button);
@@ -389,12 +406,7 @@ public class AppPermissionFragment extends SettingsWithLargeHeader
         } else if (states == null) {
             return;
         }
-
-        mAllowButton.setOnClickListener((v) -> {
-            mViewModel.requestChange(false, this, this, ChangeRequest.GRANT_FOREGROUND,
-                    APP_PERMISSION_FRAGMENT_ACTION_REPORTED__BUTTON_PRESSED__ALLOW);
-            setResult(GRANTED_ALWAYS);
-        });
+        mAllowButtonFrame.setOnClickListener((v) -> allowButtonFrameClickListener());
         mAllowAlwaysButton.setOnClickListener((v) -> {
             if (mIsStorageGroup) {
                 showConfirmDialog(ChangeRequest.GRANT_ALL_FILE_ACCESS,
@@ -496,6 +508,17 @@ public class AppPermissionFragment extends SettingsWithLargeHeader
 
         if (mViewModel.getFullStorageStateLiveData().isInitialized()) {
             setSpecialStorageState(mViewModel.getFullStorageStateLiveData().getValue());
+        }
+    }
+
+    private void allowButtonFrameClickListener() {
+        if (!mAllowButton.isEnabled()) {
+            mViewModel.handleDisabledAllowButton(this);
+        } else {
+            mAllowButton.setChecked(true);
+            mViewModel.requestChange(false, this, this, ChangeRequest.GRANT_FOREGROUND,
+                    APP_PERMISSION_FRAGMENT_ACTION_REPORTED__BUTTON_PRESSED__ALLOW);
+            setResult(GRANTED_ALWAYS);
         }
     }
 

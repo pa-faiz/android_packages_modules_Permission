@@ -34,21 +34,25 @@ import static com.android.permissioncontroller.permission.ui.GrantPermissionsVie
 import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.LINKED_TO_PERMISSION_RATIONALE;
 import static com.android.permissioncontroller.permission.ui.GrantPermissionsViewHandler.LINKED_TO_SETTINGS;
 import static com.android.permissioncontroller.permission.ui.model.GrantPermissionsViewModel.APP_PERMISSION_REQUEST_CODE;
+import static com.android.permissioncontroller.permission.ui.model.GrantPermissionsViewModel.ECM_REQUEST_CODE;
 import static com.android.permissioncontroller.permission.ui.model.GrantPermissionsViewModel.PHOTO_PICKER_REQUEST_CODE;
+import static com.android.permissioncontroller.permission.utils.MultiDeviceUtils.isDeviceAwarePermissionSupported;
 import static com.android.permissioncontroller.permission.utils.Utils.getRequestMessage;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.KeyguardManager;
+import android.app.ecm.EnhancedConfirmationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Icon;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
+import android.permission.flags.Flags;
 import android.text.Annotation;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -63,6 +67,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -104,6 +110,13 @@ public class GrantPermissionsActivity extends SettingsActivity
 
     private static final String KEY_SESSION_ID = GrantPermissionsActivity.class.getName()
             + "_REQUEST_ID";
+    public static final String KEY_RESTRICTED_REQUESTED_PERMISSIONS =
+            GrantPermissionsActivity.class.getName() + "_RESTRICTED_REQUESTED_PERMISSIONS";
+    public static final String KEY_UNRESTRICTED_REQUESTED_PERMISSIONS =
+            GrantPermissionsActivity.class.getName() + "_UNRESTRICTED_REQUESTED_PERMISSIONS";
+    public static final String KEY_ORIGINAL_REQUESTED_PERMISSIONS =
+            GrantPermissionsActivity.class.getName() + "_ORIGINAL_REQUESTED_PERMISSIONS";
+
     public static final String ANNOTATION_ID = "link";
 
     public static final int NEXT_BUTTON = 15;
@@ -158,6 +171,17 @@ public class GrantPermissionsActivity extends SettingsActivity
     /** The current list of permissions requested, across all current requests for this app */
     private List<String> mRequestedPermissions = new ArrayList<>();
 
+    /**
+     * If any requested permissions are considered restricted by ECM, they will be stored here.
+     */
+    private ArrayList<String> mRestrictedRequestedPermissionGroups = null;
+
+    /**
+     * If any requested permissions are considered restricted by ECM, the non-restricted
+     * permissions will be stored here.
+     */
+    private List<String> mUnrestrictedRequestedPermissions = null;
+
     /** A list of permissions requested on an app's behalf by the system. Usually Implicitly
      * requested, although this isn't necessarily always the case.
      */
@@ -199,6 +223,16 @@ public class GrantPermissionsActivity extends SettingsActivity
     /** Which device the permission will affect. Default is the primary device. */
     private int mTargetDeviceId = ContextCompat.DEVICE_ID_DEFAULT;
 
+    private ActivityResultLauncher<Intent> mShowWarningDialog =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        int resultCode = result.getResultCode();
+                        if (resultCode == RESULT_OK) {
+                            finishAfterTransition();
+                        }
+                    });
+
     @Override
     public void onCreate(Bundle icicle) {
         if (DeviceUtils.isAuto(this)) {
@@ -218,7 +252,6 @@ public class GrantPermissionsActivity extends SettingsActivity
             getWindow().addFlags(FLAG_ALT_FOCUSABLE_IM);
         }
 
-        int permissionsSdkLevel;
         if (PackageManager.ACTION_REQUEST_PERMISSIONS_FOR_OTHER.equals(getIntent().getAction())) {
             mIsSystemTriggered = true;
             mTargetPackage = getIntent().getStringExtra(Intent.EXTRA_PACKAGE_NAME);
@@ -228,9 +261,6 @@ public class GrantPermissionsActivity extends SettingsActivity
                 finishAfterTransition();
                 return;
             }
-            // We don't want to do any filtering in this case.
-            // These calls are coming from the system on behalf of the app.
-            permissionsSdkLevel = Build.VERSION_CODES.CUR_DEVELOPMENT;
         } else {
             // Cache this as this can only read on onCreate, not later.
             mTargetPackage = getCallingPackage();
@@ -242,7 +272,6 @@ public class GrantPermissionsActivity extends SettingsActivity
             }
             try {
                 PackageInfo packageInfo = getPackageManager().getPackageInfo(mTargetPackage, 0);
-                permissionsSdkLevel = packageInfo.applicationInfo.targetSdkVersion;
             } catch (PackageManager.NameNotFoundException e) {
                 Log.e(LOG_TAG, "Unable to get package info for the calling package.", e);
                 finishAfterTransition();
@@ -258,8 +287,49 @@ public class GrantPermissionsActivity extends SettingsActivity
         }
 
         mRequestedPermissions = removeNullOrEmptyPermissions(requestedPermissionsArray);
-        if (mIsSystemTriggered) {
-            mSystemRequestedPermissions.addAll(mRequestedPermissions);
+        mOriginalRequestedPermissions = mRequestedPermissions.toArray(new String[0]);
+
+        // Do validation if permissions are requested for a remote device or the dialog is being
+        // streamed to a remote device.
+        if (isDeviceAwarePermissionSupported(getApplicationContext())) {
+            mTargetDeviceId = getIntent().getIntExtra(
+                    PackageManager.EXTRA_REQUEST_PERMISSIONS_DEVICE_ID,
+                    ContextCompat.DEVICE_ID_DEFAULT);
+
+            // When the dialog is streamed to a remote device, verify requested permissions are all
+            // device aware and target device is the same as the remote device. Otherwise show a
+            // warning dialog.
+            if (getDeviceId() != ContextCompat.DEVICE_ID_DEFAULT) {
+                boolean showWarningDialog = mTargetDeviceId != getDeviceId();
+
+                for (String permission : mRequestedPermissions) {
+                    if (!MultiDeviceUtils.isPermissionDeviceAware(
+                            getApplicationContext(), mTargetDeviceId, permission)) {
+                        showWarningDialog = true;
+                    }
+                }
+
+                if (showWarningDialog) {
+                    mShowWarningDialog.launch(
+                            new Intent(this, PermissionDialogStreamingBlockedActivity.class));
+                    return;
+                }
+            } else if (mTargetDeviceId != ContextCompat.DEVICE_ID_DEFAULT) {
+                // On the default device, when requested permissions are for a remote device,
+                // filter out non-device aware permissions.
+                for (int i = mRequestedPermissions.size() - 1; i >= 0; i--) {
+                    if (!MultiDeviceUtils.isPermissionDeviceAware(
+                            getApplicationContext(),
+                            mTargetDeviceId,
+                            mRequestedPermissions.get(i))) {
+                        Log.e(
+                                LOG_TAG,
+                                "non-device aware permission is requested for a remote device: "
+                                        + mRequestedPermissions.get(i));
+                        mRequestedPermissions.remove(i);
+                    }
+                }
+            }
         }
 
         if (mRequestedPermissions.isEmpty()) {
@@ -267,35 +337,66 @@ public class GrantPermissionsActivity extends SettingsActivity
             return;
         }
 
-        if (MultiDeviceUtils.isDeviceAwareGrantFlowEnabled()) {
-            mTargetDeviceId =
-                    getIntent()
-                            .getIntExtra(
-                                    PackageManager.EXTRA_REQUEST_PERMISSIONS_DEVICE_ID,
-                                    ContextCompat.DEVICE_ID_DEFAULT);
+        if (mIsSystemTriggered) {
+            mSystemRequestedPermissions.addAll(mRequestedPermissions);
         }
 
-        // If the permissions requested are for a remote device, check if each permission is device
-        // aware.
-        if (mTargetDeviceId != ContextCompat.DEVICE_ID_DEFAULT) {
-            if (!MultiDeviceUtils.isDeviceAwareGrantFlowEnabled()) {
-                Log.e(LOG_TAG, "targetDeviceId should be the default device if device aware grant"
-                        + " flow is not enabled");
-                finishAfterTransition();
-                return;
-            }
+        if (SdkLevel.isAtLeastV() && Flags.enhancedConfirmationModeApisEnabled()) {
+            EnhancedConfirmationManager ecm = getEnhancedConfirmationManager();
 
-            for (String permission : mRequestedPermissions) {
-                if (!MultiDeviceUtils.isPermissionDeviceAware(permission)) {
-                    Log.e(LOG_TAG, "When target device is external, permission " + permission
-                            + " needs to be device aware.");
-                    finishAfterTransition();
-                    return;
+            // Retrieve ECM-related persisted permission lists
+            if (icicle != null) {
+                mOriginalRequestedPermissions = icicle.getStringArray(
+                        KEY_ORIGINAL_REQUESTED_PERMISSIONS);
+                mRestrictedRequestedPermissionGroups = icicle.getStringArrayList(
+                        KEY_RESTRICTED_REQUESTED_PERMISSIONS);
+                mUnrestrictedRequestedPermissions = icicle.getStringArrayList(
+                        KEY_UNRESTRICTED_REQUESTED_PERMISSIONS);
+            }
+            // If these lists aren't persisted yet, it means we haven't yet divided
+            // mRequestedPermissions into restricted-vs-unrestricted, so do so.
+            if (mRestrictedRequestedPermissionGroups == null) {
+                ArraySet<String> restrictedPermGroups = new ArraySet<>();
+                ArrayList<String> unrestrictedPermissions = new ArrayList<>();
+
+                for (String requestedPermission : mRequestedPermissions) {
+                    String requestedPermGroup =
+                            PermissionMapping.getGroupOfPlatformPermission(requestedPermission);
+                    if (restrictedPermGroups.contains(requestedPermGroup)) {
+                        continue;
+                    }
+                    if (isPermissionEcmRestricted(ecm, requestedPermission, mTargetPackage)) {
+                        restrictedPermGroups.add(requestedPermGroup);
+                    } else {
+                        unrestrictedPermissions.add(requestedPermission);
+                    }
+                }
+                mUnrestrictedRequestedPermissions = unrestrictedPermissions;
+                // If the ECM dialog has already been shown for this app, then we don't want to
+                // show it again. To do this, we'll simply ignore all restricted permission groups.
+                if (wasEcmDialogAlreadyShown(ecm, mTargetPackage)) {
+                    mRestrictedRequestedPermissionGroups = new ArrayList<>();
+                } else {
+                    mRestrictedRequestedPermissionGroups = new ArrayList<>(restrictedPermGroups);
                 }
             }
+            // If there are remaining restricted permission groups to process, show the ECM dialog
+            // for the next one, then recreate this activity.
+            if (!mRestrictedRequestedPermissionGroups.isEmpty()) {
+                String nextRestrictedPermissionGroup = mRestrictedRequestedPermissionGroups.remove(
+                        0);
+                try {
+                    Intent intent = ecm.createRestrictedSettingDialogIntent(mTargetPackage,
+                            nextRestrictedPermissionGroup);
+                    startActivityForResult(intent, ECM_REQUEST_CODE);
+                    return;
+                } catch (PackageManager.NameNotFoundException e) {
+                    mRequestedPermissions = mUnrestrictedRequestedPermissions;
+                }
+            } else {
+                mRequestedPermissions = mUnrestrictedRequestedPermissions;
+            }
         }
-
-        mOriginalRequestedPermissions = mRequestedPermissions.toArray(new String[0]);
 
         synchronized (sCurrentGrantRequests) {
             mKey = new Pair<>(mTargetPackage, getTaskId());
@@ -387,6 +488,29 @@ public class GrantPermissionsActivity extends SettingsActivity
                 Utils.getGroupInfo(Manifest.permission_group.STORAGE, this.getApplicationContext());
         if (storageGroupInfo != null) {
             mStoragePermGroupIcon = storageGroupInfo.icon;
+        }
+    }
+
+    private EnhancedConfirmationManager getEnhancedConfirmationManager() {
+        Context userContext = Utils.getUserContext(this, Process.myUserHandle());
+        return Utils.getSystemServiceSafe(userContext, EnhancedConfirmationManager.class);
+    }
+
+    private boolean isPermissionEcmRestricted(EnhancedConfirmationManager ecm,
+            String requestedPermission, String packageName) {
+        try {
+            return ecm.isRestricted(packageName, requestedPermission);
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    private boolean wasEcmDialogAlreadyShown(EnhancedConfirmationManager ecm,
+            String packageName) {
+        try {
+            return ecm.isClearRestrictionAllowed(packageName);
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
         }
     }
 
@@ -713,6 +837,15 @@ public class GrantPermissionsActivity extends SettingsActivity
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        if (SdkLevel.isAtLeastV() && Flags.enhancedConfirmationModeApisEnabled()) {
+            outState.putStringArrayList(KEY_RESTRICTED_REQUESTED_PERMISSIONS, new ArrayList<>(
+                    mRestrictedRequestedPermissionGroups));
+            outState.putStringArrayList(KEY_UNRESTRICTED_REQUESTED_PERMISSIONS, new ArrayList<>(
+                    mUnrestrictedRequestedPermissions));
+            outState.putStringArray(KEY_ORIGINAL_REQUESTED_PERMISSIONS,
+                    mOriginalRequestedPermissions);
+        }
+
         if (mViewHandler == null || mViewModel == null) {
             return;
         }
@@ -738,6 +871,12 @@ public class GrantPermissionsActivity extends SettingsActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (SdkLevel.isAtLeastV() && Flags.enhancedConfirmationModeApisEnabled()) {
+            if (requestCode == ECM_REQUEST_CODE) {
+                recreate();
+                return;
+            }
+        }
         if (requestCode != APP_PERMISSION_REQUEST_CODE
                 && requestCode != PHOTO_PICKER_REQUEST_CODE) {
             return;

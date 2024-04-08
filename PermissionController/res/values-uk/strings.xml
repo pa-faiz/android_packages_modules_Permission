@@ -197,6 +197,8 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Якщо вимкнено доступ до точного місцезнаходження, додатки можуть отримувати дані про приблизне"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Дозвіл \"<xliff:g id="PERM">%1$s</xliff:g>\""</string>
     <string name="app_permission_header" msgid="2951363137032603806">"<xliff:g id="PERM">%1$s</xliff:g>: доступ для цього додатка"</string>
+    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
+    <skip />
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Переглянути всі дозволи додатка <xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Переглянути всі додатки з цим дозволом"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Показати статус мікрофона Асистента"</string>
@@ -254,6 +256,8 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Можуть керувати всіма файлами"</string>
     <string name="ask_header" msgid="2633816846459944376">"Запитувати щоразу"</string>
     <string name="denied_header" msgid="903209608358177654">"Заборонено"</string>
+    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
+    <skip />
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Переглянути інші додатки, які мають доступ до всіх файлів"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 день}one{# день}few{# дні}many{# днів}other{# дня}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# година}one{# година}few{# години}many{# годин}other{# години}}"</string>
@@ -656,4 +660,11 @@
     <string name="wear_app_perms_24h_access" msgid="8668121661337328895">"Доступ отримано: <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_24h_access_yest" msgid="7069312481704735679">"Доступ отримано вчора: <xliff:g id="TIME_DATE">%1$s</xliff:g>"</string>
     <string name="wear_app_perms_7d_access" msgid="4608069019194676432">"Доступ отримано: <xliff:g id="TIME_DATE_0">%1$s</xliff:g> <xliff:g id="TIME_DATE_1">%2$s</xliff:g>"</string>
+    <string name="test_otp_msg" msgid="7559110574222727550">"Ваш одноразовий пароль: 132435"</string>
+    <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Налаштування з обмеженнями"</string>
+    <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"З міркувань безпеки це налаштування наразі недоступне."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"У дозволі \"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>\" відмовлено"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Цей додаток запитує дозвіл \"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>\". Використання цього налаштування обмежено, оскільки воно може поставити під загрозу вашу безпеку й конфіденційність. Обмеження для цього дозволу може перешкоджати роботі додатка."</string>
+    <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Докладніше"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"OK"</string>
 </resources>
