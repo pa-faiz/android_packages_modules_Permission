@@ -1312,6 +1312,9 @@
     <!-- Title for category of default apps for work [CHAR LIMIT=30] -->
     <string name="default_apps_for_work">Default for work</string>
 
+    <!-- Title for category of default apps for private profile [CHAR LIMIT=50] -->
+    <string name="default_apps_for_private_profile">Default for private space</string>
+
     <!-- Summary of a default app when there is no app set [CHAR LIMIT=60] -->
     <string name="default_app_none">None</string>
 
@@ -1654,6 +1657,8 @@ Allow <xliff:g id="app_name" example="Gmail">%4$s</xliff:g> to upload a bug repo
     <string name="privdash_label_24h">Past\n24 hours</string>
     <!-- Label that describes a "past 7 days" time window, prefer two lines. [CHAR LIMIT=20] -->
     <string name="privdash_label_7d">Past\n7 days</string>
+    <!-- This information will aid accessibility applications in describing permission usage percentages to users. While the chart visually represents permission usage, accessibility tools will convey the specific percentages for those who need auditory assistance. Examples would be "Microphone 40 percent" or "Location 75 percent" [CHAR LIMIT=none] -->
+    <string name="privdash_usage_percent"><xliff:g id="permission_name" example="camera">%1$s</xliff:g> <xliff:g id="percent" example="25">%2$d</xliff:g> percent</string>
 
     <!-- Info label for status bar indicator permissions (Mic and Camera) for apps holding special exempted roles. [CHAR LIMIT=none] -->
     <string name="exempt_mic_camera_info_label"><xliff:g id="app_name" example="Gmail">%1$s</xliff:g> is protected by Android. Because your data is processed on this device, this app’s permission usage isn’t shown on the status bar or your privacy dashboard. </string>
@@ -1976,14 +1981,22 @@ Allow <xliff:g id="app_name" example="Gmail">%4$s</xliff:g> to upload a bug repo
     <string name="enhanced_confirmation_dialog_desc">For your security, this setting is currently unavailable.</string>
 
     <!--Title for dialog displayed to tell user that permissions are blocked by setting restrictions [CHAR LIMIT=50] -->
-    <string name="enhanced_confirmation_dialog_title_permission">Permission to use <xliff:g id="permission_name" example="contacts">%1$s</xliff:g> has been denied</string>
+    <string name="enhanced_confirmation_dialog_title_permission">App was denied access to <xliff:g id="permission_name" example="contacts">%1$s</xliff:g></string>
     <!--Content for dialog displayed to tell user that settings are blocked by setting restrictions [CHAR LIMIT=NONE] -->
-    <string name="enhanced_confirmation_dialog_desc_permission">This app has requested the <xliff:g id="permission_name" example="contacts">%1$s</xliff:g> permission, which is a restricted setting because it can put your security &amp; privacy at risk. Restriction to this permission may prevent this app from working.</string>
+    <string name="enhanced_confirmation_dialog_desc_permission">The app requested access to a sensitive permission which can put your personal and financial info at risk.<xliff:g>&lt;br&gt;&lt;br&gt;</xliff:g>It\'s possible the app won\'t work properly without this restricted permission. &lt;a href=&quot;<xliff:g id="learn_more_link">%1$s</xliff:g>&quot;&gt;Learn how to allow access&lt;/a&gt;</string>
+
+    <string name="enhanced_confirmation_dialog_title_role">App was denied access to be default <xliff:g id="role_name" example="phone app">%1$s</xliff:g></string>
+    <!--Content for dialog displayed to tell user that settings are blocked by setting restrictions [CHAR LIMIT=NONE] -->
+    <string name="enhanced_confirmation_dialog_desc_role">The app requested access to sensitive permissions which can put your personal and financial info at risk.<xliff:g>&lt;br&gt;&lt;br&gt;</xliff:g>It\'s possible the app won\'t work properly without these restricted permissions. &lt;a href=&quot;<xliff:g id="learn_more_link">%1$s</xliff:g>&quot;&gt;Learn how to allow access&lt;/a&gt;</string>
+
+    <string name="enhanced_confirmation_dialog_title_settings_default">App was denied access</string>
+    <!--Content for dialog displayed to tell user that settings are blocked by setting restrictions [CHAR LIMIT=NONE] -->
+    <string name="enhanced_confirmation_dialog_desc_settings_default">Access to this permission can put your personal and financial info at risk.<xliff:g>&lt;br&gt;&lt;br&gt;</xliff:g>It\'s possible the app won\'t work properly without this restricted permission. &lt;a href=&quot;<xliff:g id="learn_more_link">%1$s</xliff:g>&quot;&gt;Learn how to allow access&lt;/a&gt;</string>
 
     <!-- Button label to allow the user to view additional information [CHAR LIMIT=NONE] -->
     <string name="enhanced_confirmation_dialog_learn_more">Learn more</string>
     <!-- Button label of the ok button [CHAR LIMIT=NONE] -->
-    <string name="enhanced_confirmation_dialog_ok">Got it</string>
+    <string name="enhanced_confirmation_dialog_ok">OK</string>
     <!-- Help URI, action disabled by restricted settings [DO NOT TRANSLATE] -->
     <string name="help_url_action_disabled_by_restricted_settings" translatable="false"></string>
 

@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Když je přesná poloha vypnutá, aplikace mají přístup k vaší přibližné poloze"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Oprávnění: <xliff:g id="PERM">%1$s</xliff:g>"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Přístup této aplikace k oprávnění: <xliff:g id="PERM">%1$s</xliff:g>"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"Přístup k <xliff:g id="PERM">%1$s</xliff:g> pro tuto aplikaci v zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Zobrazit všechna oprávnění aplikace <xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Zobrazit všechny aplikace s tímto oprávněním"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Zobrazit používání mikrofonu asistentem"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Povolena správa všech souborů"</string>
     <string name="ask_header" msgid="2633816846459944376">"Pokaždé se zeptat"</string>
     <string name="denied_header" msgid="903209608358177654">"Nepovoleno"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> na <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Zobrazit další aplikace s přístupem ke všem souborům"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 den}few{# dny}many{# dne}other{# dní}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# hodinu}few{# hodiny}many{# hodiny}other{# hodin}}"</string>
@@ -619,7 +617,7 @@
     <string name="mic_toggle_title" msgid="2649991093496110162">"Přístup k mikrofonu"</string>
     <string name="perm_toggle_description" msgid="7801326363741451379">"Aplikace a služby"</string>
     <string name="mic_toggle_description" msgid="9163104307990677157">"Týká se aplikací a služeb. Pokud je toto nastavení vypnuté a zavoláte na číslo tísňového volání, data z mikrofonu se mohou stále sdílet."</string>
-    <string name="location_settings_subtitle" msgid="2328360561197430695">"Podívejte se, které aplikace a služby mají přístup k poloze"</string>
+    <string name="location_settings_subtitle" msgid="2328360561197430695">"Seznam aplikací a služeb, které mají přístup k poloze"</string>
     <string name="show_clip_access_notification_title" msgid="5168467637351109096">"Zobrazovat použití schránky"</string>
     <string name="show_clip_access_notification_summary" msgid="3532020182782112687">"Zobrazovat zprávu, když aplikace použijí text, obrázky nebo jiný obsah, který jste zkopírovali"</string>
     <string name="show_password_title" msgid="2877269286984684659">"Zobrazovat hesla"</string>
@@ -663,8 +661,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"Vaše jednorázové heslo je 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Blokované nastavení"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Z důvodu vaší bezpečnosti toto nastavení momentálně není dostupné."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Oprávnění <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> nebylo uděleno"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Tato aplikace požádala o oprávnění <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>, což je omezené nastavení, protože může ohrozit vaše soukromí a zabezpečení. Omezení tohoto oprávnění může zabránit fungování aplikace."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"Aplikaci byl odepřen přístup k oprávnění <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"Aplikace požádala o přístup k citlivému oprávnění, které může ohrozit vaše osobní a finanční údaje.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Je možné, že aplikace bez tohoto oprávnění nebude fungovat správně. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Jak povolit přístup&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"Aplikaci byla odepřena role výchozí <xliff:g id="ROLE_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Aplikace požádala o přístup k citlivým oprávněním, která mohou ohrozit vaše osobní a finanční údaje.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Je možné, že aplikace nebude bez těchto omezených oprávnění fungovat správně. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Jak povolit přístup&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"Aplikaci byl odepřen přístup"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Přístup k tomuto oprávnění může ohrozit vaše osobní a finanční údaje.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Je možné, že aplikace bez tohoto oprávnění nebude fungovat správně. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Jak povolit přístup&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Další informace"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"Rozumím"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"OK"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Žádost o oprávnění byla potlačena"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Tato aplikace požaduje další oprávnění, která ale nelze udělit během relace streamování. Oprávnění udělte nejprve na telefonu."</string>
 </resources>

@@ -16,6 +16,8 @@
 
 package com.android.permissioncontroller.role.ui;
 
+import static com.android.permissioncontroller.Constants.EXTRA_IS_ECM_IN_APP;
+
 import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.Intent;
@@ -136,7 +138,8 @@ public class RequestRoleActivity extends FragmentActivity {
             return;
         }
 
-        if (PackageUtils.getApplicationInfo(mPackageName, this) == null) {
+        ApplicationInfo applicationInfo = PackageUtils.getApplicationInfo(mPackageName, this);
+        if (applicationInfo == null) {
             Log.w(LOG_TAG, "Unknown application: " + mPackageName);
             reportRequestResult(
                     PermissionControllerStatsLog.ROLE_REQUEST_RESULT_REPORTED__RESULT__IGNORED);
@@ -162,6 +165,19 @@ public class RequestRoleActivity extends FragmentActivity {
                     + " DISALLOW_CONFIG_DEFAULT_APPS, role: " + mRoleName);
             reportRequestResult(PermissionControllerStatsLog
                     .ROLE_REQUEST_RESULT_REPORTED__RESULT__IGNORED_USER_RESTRICTION);
+            finish();
+            return;
+        }
+
+        Intent restrictionIntent = role.getApplicationRestrictionIntentAsUser(applicationInfo,
+                Process.myUserHandle(), this);
+        if (restrictionIntent != null) {
+            Log.w(LOG_TAG, "Cannot request role due to enhanced confirmation restriction"
+                    + ", role: " + mRoleName + ", package: " + mPackageName);
+            reportRequestResult(PermissionControllerStatsLog
+                    .ROLE_REQUEST_RESULT_REPORTED__RESULT__IGNORED_ENHANCED_CONFIRMATION_RESTRICTION);
+            restrictionIntent.putExtra(EXTRA_IS_ECM_IN_APP, true);
+            startActivity(restrictionIntent);
             finish();
             return;
         }

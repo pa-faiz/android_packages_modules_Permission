@@ -53,6 +53,9 @@
       "name" : "CtsPermissionMultiUserTestCases"
     },
     {
+      "name" : "CtsPermissionMultiDeviceTestCases"
+    },
+    {
       "name": "CtsBackupTestCases",
       "options": [
         {
@@ -67,6 +70,12 @@
           "include-annotation": "com.android.cts.devicepolicy.annotations.PermissionsTest"
         }
       ]
+    }
+  ],
+  "postsubmit" : [
+    {
+      // TODO(b/332974906): Replace in alltests.
+      "name" : "CtsDevicePolicyManagerTestCases_Permissions"
     }
   ]
 }
