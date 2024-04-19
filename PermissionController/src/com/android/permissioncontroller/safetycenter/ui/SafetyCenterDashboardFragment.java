@@ -19,6 +19,7 @@ package com.android.permissioncontroller.safetycenter.ui;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import static com.android.permissioncontroller.Constants.EXTRA_SESSION_ID;
+import static com.android.permissioncontroller.safetycenter.SafetyCenterConstants.PRIVACY_SOURCES_GROUP_ID;
 import static com.android.permissioncontroller.safetycenter.SafetyCenterConstants.QUICK_SETTINGS_SAFETY_CENTER_FRAGMENT;
 
 import static java.util.Collections.emptyList;
@@ -49,6 +50,7 @@ import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceGroup;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.modules.utils.build.SdkLevel;
 import com.android.permissioncontroller.R;
 import com.android.permissioncontroller.safetycenter.ui.model.SafetyCenterUiData;
 import com.android.permissioncontroller.safetycenter.ui.model.StatusUiData;
@@ -59,6 +61,7 @@ import kotlin.Unit;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** Dashboard fragment for the Safety Center. */
 @RequiresApi(TIRAMISU)
@@ -242,6 +245,17 @@ public final class SafetyCenterDashboardFragment extends SafetyCenterFragment {
             boolean isFirstElement = i == 0;
             boolean isLastElement = i == size - 1;
 
+            if (SdkLevel.isAtLeastV()
+                    && group != null
+                    && Objects.equals(group.getId(), PRIVACY_SOURCES_GROUP_ID)) {
+                // Add an extra header before the privacy sources
+                PreferenceCategory category = new ComparablePreferenceCategory(context);
+                SafetyCenterResourcesApk safetyCenterResourcesApk =
+                        new SafetyCenterResourcesApk(requireContext());
+                category.setTitle(safetyCenterResourcesApk.getStringByName("privacy_title"));
+                mEntriesGroup.addPreference(category);
+            }
+
             if (SafetyCenterUiFlags.getShowSubpages() && group != null) {
                 mEntriesGroup.addPreference(
                         new SafetyHomepageEntryPreference(
@@ -299,19 +313,31 @@ public final class SafetyCenterDashboardFragment extends SafetyCenterFragment {
         mStaticEntriesGroup.removeAll();
 
         for (SafetyCenterStaticEntryGroup group : data.getStaticEntryGroups()) {
-            PreferenceCategory category = new ComparablePreferenceCategory(context);
-            category.setTitle(group.getTitle());
-            mStaticEntriesGroup.addPreference(category);
-
-            for (SafetyCenterStaticEntry entry : group.getStaticEntries()) {
-                category.addPreference(
-                        new StaticSafetyEntryPreference(
-                                context,
-                                requireActivity().getTaskId(),
-                                entry,
-                                SafetyCenterBundles.getStaticEntryId(data, entry),
-                                getSafetyCenterViewModel()));
+            if (group.getTitle().toString().isEmpty()) {
+                // Interpret an empty title as signal to not create a titled category
+                addStaticEntriesTo(context, data, mStaticEntriesGroup, group.getStaticEntries());
+            } else {
+                PreferenceCategory category = new ComparablePreferenceCategory(context);
+                category.setTitle(group.getTitle());
+                mStaticEntriesGroup.addPreference(category);
+                addStaticEntriesTo(context, data, category, group.getStaticEntries());
             }
+        }
+    }
+
+    private void addStaticEntriesTo(
+            Context context,
+            SafetyCenterData data,
+            PreferenceGroup prefGroup,
+            List<SafetyCenterStaticEntry> entries) {
+        for (SafetyCenterStaticEntry entry : entries) {
+            prefGroup.addPreference(
+                    new StaticSafetyEntryPreference(
+                            context,
+                            requireActivity().getTaskId(),
+                            entry,
+                            SafetyCenterBundles.getStaticEntryId(data, entry),
+                            getSafetyCenterViewModel()));
         }
     }
 }
