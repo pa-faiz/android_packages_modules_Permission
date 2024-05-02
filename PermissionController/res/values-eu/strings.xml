@@ -150,7 +150,7 @@
     <string name="permission_usage_last_n_minutes" msgid="7817864229878281983">"{count,plural, =1{Azken # minutuan}other{Azken # minutuetan}}"</string>
     <string name="no_permission_usages" msgid="9119517454177289331">"Ez da eskatu baimenik"</string>
     <string name="permission_usage_list_title_any_time" msgid="8718257027381592407">"Orain arteko azken sarbidea"</string>
-    <string name="permission_usage_list_title_last_7_days" msgid="9048542342670890615">"Azken zazpi egunetako azken sarbidea"</string>
+    <string name="permission_usage_list_title_last_7_days" msgid="9048542342670890615">"Azken 7 egunetako azken sarbidea"</string>
     <string name="permission_usage_list_title_last_day" msgid="8730907824567238461">"Azken 24 orduetan erabilitakoak"</string>
     <string name="permission_usage_list_title_last_hour" msgid="6624161487623223716">"Azken ordubeteko azken sarbidea"</string>
     <string name="permission_usage_list_title_last_15_minutes" msgid="8615062016024296833">"Azken 15 minutuetako azken sarbidea"</string>
@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Kokapen zehatza desaktibatuta dagoenean, aplikazioek gutxi gorabeherako kokapena atzi dezakete"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"\"<xliff:g id="PERM">%1$s</xliff:g>\" baimena"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Aplikazio honek \"<xliff:g id="PERM">%1$s</xliff:g>\" erabiltzeko duen baimena"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"<xliff:g id="PERM">%1$s</xliff:g> erabiltzeko baimena aplikazio honetarako <xliff:g id="DEVICE_NAME">%2$s</xliff:g> gailuan"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Ikusi <xliff:g id="APP">%1$s</xliff:g> aplikazioaren baimen guztiak"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Ikusi baimen hau duten aplikazio guztiak"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Erakutsi laguntzaileak mikrofonoa erabiltzeko duen baimena"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Fitxategi guztiak kudeatzeko baimena dutenak"</string>
     <string name="ask_header" msgid="2633816846459944376">"Galdetu beti"</string>
     <string name="denied_header" msgid="903209608358177654">"Baimendu gabekoak"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> (<xliff:g id="DEVICE_NAME">%2$s</xliff:g>)"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Ikusi fitxategi guztiak atzi ditzaketen aplikazio gehiago"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 egun}other{# egun}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# ordu}other{# ordu}}"</string>
@@ -367,7 +365,7 @@
     <string name="role_dialer_request_title" msgid="5959618560705912058">"<xliff:g id="APP_NAME">%1$s</xliff:g> ezarri nahi duzu telefono-aplikazio lehenetsi gisa?"</string>
     <string name="role_dialer_request_description" msgid="6288839625724909320">"Zure kamera, kontaktuak, mikrofonoa, telefonoa eta SMSak erabiltzeko baimena emango zaio aplikazioari"</string>
     <string name="role_dialer_search_keywords" msgid="3324448983559188087">"markagailua"</string>
-    <string name="role_sms_label" msgid="8456999857547686640">"SMSetarako aplik. lehenetsia"</string>
+    <string name="role_sms_label" msgid="8456999857547686640">"SMSetarako aplikazio lehenetsia"</string>
     <string name="role_sms_short_label" msgid="4371444488034692243">"SMSetarako aplikazioa"</string>
     <string name="role_sms_description" msgid="3424020199148153513">"Telefono-zenbakiaren bidez testu-mezu laburrak, argazkiak, bideoak eta beste zenbait gauza bidaltzea eta jasotzea ahalbidetzen dizuten aplikazioak"</string>
     <string name="role_sms_request_title" msgid="7953552109601185602">"<xliff:g id="APP_NAME">%1$s</xliff:g> ezarri nahi duzu SMSetarako aplikazio lehenetsi gisa?"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"Aplikazio lehenetsi gehiago"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"Irekiko diren estekak"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"Lanerako aplikazio lehenetsiak"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"Eremu pribatuko aplikazio lehenetsiak"</string>
     <string name="default_app_none" msgid="9084592086808194457">"Bat ere ez"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(sistemaren aplikazio lehenetsia)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"Ez dago aplikaziorik"</string>
@@ -550,6 +549,8 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Bat ere ez"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Azken\n24 orduak"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Azken\nzazpi egunak"</string>
+    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
+    <skip />
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"Android-ek babesten du <xliff:g id="APP_NAME">%1$s</xliff:g>. Datuak gailuan prozesatzen direnez, aplikazioaren baimenen erabilera ez da agertzen ez egoera-barran ezta pribatutasun-panelean ere."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"Android-ek babesten du <xliff:g id="APP_NAME">%1$s</xliff:g>. Datuak gailuan prozesatzen direnez, aplikazioaren baimenen erabilera ez da agertzen pribatutasun-panelean."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Gailuaren kamera blokeatuta dago"</string>
@@ -620,7 +621,7 @@
     <string name="perm_toggle_description" msgid="7801326363741451379">"Aplikazio eta zerbitzuetarako"</string>
     <string name="mic_toggle_description" msgid="9163104307990677157">"Aplikazio eta zerbitzuetarako. Ezarpena desaktibatuta badago, baliteke mikrofonoaren bidez lortutako datuak larrialdietarako zenbaki batera deitzen duzunean partekatzea."</string>
     <string name="location_settings_subtitle" msgid="2328360561197430695">"Ikusi kokapena atzi dezaketen aplikazioak eta zerbitzuak"</string>
-    <string name="show_clip_access_notification_title" msgid="5168467637351109096">"Erakutsi arbela atzitzen denean"</string>
+    <string name="show_clip_access_notification_title" msgid="5168467637351109096">"Erakutsi arbela erabiltzen denean"</string>
     <string name="show_clip_access_notification_summary" msgid="3532020182782112687">"Erakutsi mezu bat aplikazio batek kopiatu dituzun testuak, irudiak edo edukiak atzitzen dituenean"</string>
     <string name="show_password_title" msgid="2877269286984684659">"Erakutsi pasahitzak"</string>
     <string name="show_password_summary" msgid="1110166488865981610">"Idatzi ahala, erakutsi karaktereak laburki"</string>
@@ -663,8 +664,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"Zure erabilera bakarreko pasahitza 132435 da"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Murriztapenak ditu ezarpenak"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Zure segurtasuna bermatzeko, ezarpena ez dago erabilgarri une honetan."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Ukatu egin da <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> erabiltzeko baimena"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Aplikazio honek <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> erabiltzeko baimena eskatu du. Ezarpen murriztu bat da hori, agian segurtasuna eta pribatutasuna arriskuan jarriko dituelako. Baimen hori murrizten bada, baliteke aplikazioak ez funtzionatzea."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"Aplikazioari <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> erabiltzeko baimena ukatu zaio"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"Kontuzko informazioa erabiltzeko baimen bat eskatu du aplikazioak, eta agian horrek arriskuan jarriko ditu zure informazio pertsonala eta finantzei buruzko informazioa.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Baliteke aplikazioak behar bezala ez funtzionatzea baimen murriztu hori gabe. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Lortu baimena emateko argibideak&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"Aplikazioari <xliff:g id="ROLE_NAME">%1$s</xliff:g> lehenetsia izateko baimena ukatu zaio"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Kontuzko informazioa erabiltzeko baimen batzuk eskatu ditu aplikazioak, eta agian horrek arriskuan jarriko ditu zure informazio pertsonala eta finantzei buruzko informazioa.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Baliteke aplikazioak behar bezala ez funtzionatzea baimen murriztu horiek gabe. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Lortu baimena emateko argibideak&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"Aplikazioari baimena ukatu zaio"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Baimen hau emanez gero, agian arriskuan jarriko dira zure informazio pertsonala eta finantzei buruzko informazioa.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Baliteke aplikazioak behar bezala ez funtzionatzea baimen murriztu hori gabe. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Lortu baimena emateko argibideak&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Lortu informazio gehiago"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"Ados"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"Ados"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Blokeatu da baimen-eskaera"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Baimen gehigarriak eskatzen ari da aplikazioa, baina ezin da eman baimenik igorpen-saioetan. Lehenik eta behin, eman baimena telefonoan."</string>
 </resources>

@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"แอปจะเข้าถึงตำแหน่งโดยประมาณเมื่อปิดใช้ตำแหน่งที่แน่นอน"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"สิทธิ์เข้าถึง <xliff:g id="PERM">%1$s</xliff:g>"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"สิทธิ์การเข้าถึง <xliff:g id="PERM">%1$s</xliff:g> สำหรับแอปนี้"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"สิทธิ์เข้าถึง<xliff:g id="PERM">%1$s</xliff:g>สำหรับแอปนี้บน <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"ดูสิทธิ์ทั้งหมดของ \"<xliff:g id="APP">%1$s</xliff:g>\""</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"ดูแอปทั้งหมดที่มีสิทธิ์นี้"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"แสดงการใช้ไมโครโฟนของ Assistant"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"ได้รับอนุญาตให้จัดการไฟล์ทั้งหมด"</string>
     <string name="ask_header" msgid="2633816846459944376">"ถามทุกครั้ง"</string>
     <string name="denied_header" msgid="903209608358177654">"ไม่อนุญาต"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g>ใน <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"ดูแอปอื่นๆ ที่สามารถเข้าถึงไฟล์ทั้งหมดได้"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 วัน}other{# วัน}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# ชั่วโมง}other{# ชั่วโมง}}"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"แอปเริ่มต้นเพิ่มเติม"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"การเปิดลิงก์"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"ค่าเริ่มต้นสำหรับงาน"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"ค่าเริ่มต้นสำหรับพื้นที่ส่วนตัว"</string>
     <string name="default_app_none" msgid="9084592086808194457">"ไม่มี"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(ค่าเริ่มต้นของระบบ)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"ไม่มีแอป"</string>
@@ -470,10 +469,10 @@
     <string name="permgrouprequest_contacts" msgid="8391550064551053695">"อนุญาตให้ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; เข้าถึงรายชื่อติดต่อไหม"</string>
     <string name="permgrouprequest_device_aware_contacts" msgid="2270563860206654757">"อนุญาตให้ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; เข้าถึงรายชื่อติดต่อบน&lt;b&gt;<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt;ไหม"</string>
     <string name="permgrouprequest_location" msgid="6990232580121067883">"อนุญาตให้ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; เข้าถึงตำแหน่งของอุปกรณ์นี้ไหม"</string>
-    <string name="permgrouprequest_device_aware_location" msgid="6641436550953715107">"อนุญาตให้ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; เข้าถึงตำแหน่งของ&lt;b&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/b&gt;ไหม"</string>
+    <string name="permgrouprequest_device_aware_location" msgid="6641436550953715107">"อนุญาตให้ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; เข้าถึงตำแหน่งของ &lt;b&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/b&gt; ไหม"</string>
     <string name="permgrouprequestdetail_location" msgid="2635935335778429894">"แอปจะมีสิทธิ์เข้าถึงตำแหน่งในขณะที่คุณใช้แอปเท่านั้น"</string>
     <string name="permgroupbackgroundrequest_location" msgid="1085680897265734809">"อนุญาตให้ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; เข้าถึงตำแหน่งของอุปกรณ์นี้ไหม"</string>
-    <string name="permgroupbackgroundrequest_device_aware_location" msgid="7660465507029650527">"อนุญาตให้ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; เข้าถึงตำแหน่งของ&lt;b&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>ไหม"</string>
+    <string name="permgroupbackgroundrequest_device_aware_location" msgid="7660465507029650527">"อนุญาตให้ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; เข้าถึงตำแหน่งของ &lt;b&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g> ไหม"</string>
     <string name="permgroupbackgroundrequestdetail_location" msgid="8021219324989662957">"แอปนี้อาจต้องการเข้าถึงตำแหน่งของคุณตลอดเวลา แม้ในขณะที่คุณไม่ได้ใช้แอป โปรด"<annotation id="link">"อนุญาตในการตั้งค่า"</annotation></string>
     <string name="permgroupupgraderequest_location" msgid="8328408946822691636">"เปลี่ยนการเข้าถึงตำแหน่งสำหรับ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ไหม"</string>
     <string name="permgroupupgraderequest_device_aware_location" msgid="4528266408056426513">"เปลี่ยนแปลงสิทธิ์เข้าถึงตำแหน่งของ &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; บน&lt;b&gt;<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt;ไหม"</string>
@@ -550,6 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"ไม่มี"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"24 ชั่วโมง\nที่ผ่านมา"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"7 วัน\nที่ผ่านมา"</string>
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> <xliff:g id="PERCENT">%2$d</xliff:g> เปอร์เซ็นต์"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"<xliff:g id="APP_NAME">%1$s</xliff:g> ได้รับการปกป้องโดย Android เนื่องจากมีการประมวลผลข้อมูลในอุปกรณ์ การใช้สิทธิ์ของแอปนี้จะไม่แสดงในแถบสถานะหรือแดชบอร์ดความเป็นส่วนตัว"</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"<xliff:g id="APP_NAME">%1$s</xliff:g> ได้รับการปกป้องโดย Android เนื่องจากมีการประมวลผลข้อมูลในอุปกรณ์ การใช้สิทธิ์ของแอปนี้จะไม่แสดงในแดชบอร์ดความเป็นส่วนตัว"</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"กล้องของอุปกรณ์ถูกบล็อก"</string>
@@ -619,7 +619,7 @@
     <string name="mic_toggle_title" msgid="2649991093496110162">"สิทธิ์เข้าถึงไมโครโฟน"</string>
     <string name="perm_toggle_description" msgid="7801326363741451379">"สำหรับแอปและบริการ"</string>
     <string name="mic_toggle_description" msgid="9163104307990677157">"สำหรับแอปและบริการ หากปิดการตั้งค่านี้ ระบบอาจยังคงแชร์ข้อมูลไมโครโฟนเมื่อคุณโทรหาหมายเลขฉุกเฉิน"</string>
-    <string name="location_settings_subtitle" msgid="2328360561197430695">"ดูแอปและบริการที่มีสิทธิ์เข้าถึงสถานที่ตั้ง"</string>
+    <string name="location_settings_subtitle" msgid="2328360561197430695">"ดูแอปและบริการที่มีสิทธิ์เข้าถึงตำแหน่ง"</string>
     <string name="show_clip_access_notification_title" msgid="5168467637351109096">"แสดงการเข้าถึงคลิปบอร์ด"</string>
     <string name="show_clip_access_notification_summary" msgid="3532020182782112687">"แสดงข้อความเมื่อแอปเข้าถึงข้อความ รูปภาพ หรือเนื้อหาอื่นๆ ที่คุณคัดลอก"</string>
     <string name="show_password_title" msgid="2877269286984684659">"แสดงรหัสผ่าน"</string>
@@ -663,8 +663,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"รหัสผ่านที่สามารถใช้งานได้เพียงครั้งเดียวของคุณคือ 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"การตั้งค่าที่จำกัด"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"การตั้งค่านี้ใช้ไม่ได้ในตอนนี้เพื่อความปลอดภัยของคุณ"</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"ปฏิเสธสิทธิ์ในการใช้ <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> แล้ว"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"แอปนี้ได้ขอสิทธิ์ <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> ซึ่งเป็นการตั้งค่าที่ถูกจำกัด เนื่องจากอาจทำให้ความปลอดภัยและความเป็นส่วนตัวของคุณตกอยู่ในความเสี่ยง การจำกัดสิทธิ์นี้อาจทำให้แอปนี้ไม่ทำงาน"</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"แอปถูกปฏิเสธไม่ให้เข้าถึง <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"แอปขอเข้าถึงสิทธิ์ที่มีความละเอียดอ่อนซึ่งอาจทำให้ข้อมูลส่วนบุคคลและข้อมูลทางการเงินของคุณมีความเสี่ยง<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>แอปอาจทำงานได้ไม่ถูกต้องหากไม่มีสิทธิ์ที่จำกัดนี้ &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;ดูวิธีอนุญาตให้เข้าถึง&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"แอปถูกปฏิเสธไม่ให้เข้าถึงเพื่อเป็น <xliff:g id="ROLE_NAME">%1$s</xliff:g> เริ่มต้น"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"แอปขอเข้าถึงสิทธิ์ที่มีความละเอียดอ่อนซึ่งอาจทำให้ข้อมูลส่วนบุคคลและข้อมูลทางการเงินของคุณมีความเสี่ยง<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>แอปอาจทำงานได้ไม่ถูกต้องหากไม่มีสิทธิ์ที่จำกัดเหล่านี้ &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;ดูวิธีอนุญาตให้เข้าถึง&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"แอปถูกปฏิเสธไม่ให้เข้าถึง"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"การให้สิทธิ์นี้อาจทำให้ข้อมูลส่วนบุคคลและข้อมูลทางการเงินของคุณมีความเสี่ยง<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>แอปอาจทำงานได้ไม่ถูกต้องหากไม่มีสิทธิ์ที่จำกัดนี้ &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;ดูวิธีอนุญาตให้เข้าถึง&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"ดูข้อมูลเพิ่มเติม"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"รับทราบ"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"ตกลง"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"ระงับคำขอสิทธิ์อยู่"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"แอปนี้มีการขอสิทธิ์เพิ่มเติม แต่ไม่สามารถให้สิทธิ์ในเซสชันที่กำลังสตรีมอยู่ โปรดให้สิทธิ์ในโทรศัพท์ก่อน"</string>
 </resources>

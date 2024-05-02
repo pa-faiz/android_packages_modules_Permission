@@ -34,7 +34,7 @@
     <string name="grant_dialog_button_more_info" msgid="213350268561945193">"Más información"</string>
     <string name="grant_dialog_button_allow_all" msgid="5939066403732409516">"Permitir todo"</string>
     <string name="grant_dialog_button_always_allow_all" msgid="1719900027660252167">"Permitir todo siempre"</string>
-    <string name="grant_dialog_button_allow_limited_access" msgid="5713551784422137594">"Permite el acceso limitado"</string>
+    <string name="grant_dialog_button_allow_limited_access" msgid="5713551784422137594">"Permitir el acceso limitado"</string>
     <string name="grant_dialog_button_allow_selected_photos" msgid="5497042471576153842">"Seleccionar fotos y videos"</string>
     <string name="grant_dialog_button_allow_more_selected_photos" msgid="5145657877588697709">"Seleccionar más"</string>
     <string name="grant_dialog_button_dont_select_more" msgid="6643552729129461268">"No seleccionar más"</string>
@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Cuando la ubicación precisa está desactivada, las apps acceden a la ubicación aproximada"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Permiso de <xliff:g id="PERM">%1$s</xliff:g>"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Acceso a <xliff:g id="PERM">%1$s</xliff:g> para esta app"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"Acceso a <xliff:g id="PERM">%1$s</xliff:g> para esta app en <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Ver todos los permisos de <xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Ver todas las apps que tienen este permiso"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Mostrar el uso del micrófono del Asistente"</string>
@@ -208,7 +207,7 @@
     <string name="unused_apps_label_v2" msgid="7058776770056517980">"Pausar actividad en la app si no se usa"</string>
     <string name="unused_apps_label_v3" msgid="693340578642156657">"Administrar la app si no se usa"</string>
     <string name="unused_apps_summary" msgid="8839466950318403115">"Quitar permisos, borrar archivos temporales y detener notificaciones"</string>
-    <string name="unused_apps_summary_v2" msgid="5011313200815115802">"Quita permisos, borra archivos temporales, detiene notificaciones y archiva la app"</string>
+    <string name="unused_apps_summary_v2" msgid="5011313200815115802">"Quitar permisos, borrar archivos temporales, detener notificaciones y archivar la app"</string>
     <string name="auto_revoke_summary" msgid="5867548789805911683">"Para proteger tus datos, se quitarán los permisos de esta app si no la usas durante varios meses."</string>
     <string name="auto_revoke_summary_with_permissions" msgid="389712086597285013">"Para proteger tus datos, si no usas la app durante varios meses, se quitarán los siguientes permisos: <xliff:g id="PERMS">%1$s</xliff:g>"</string>
     <string name="auto_revoked_apps_page_summary" msgid="6594753657893756536">"Para proteger tus datos, se quitaron los permisos de las apps que están en desuso hace varios meses."</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Pueden administrar todos los archivos"</string>
     <string name="ask_header" msgid="2633816846459944376">"Preguntar siempre"</string>
     <string name="denied_header" msgid="903209608358177654">"Sin permiso"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> en <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Ver más apps que pueden acceder a todos los archivos"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 día}many{# días}other{# días}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# hora}many{# horas}other{# horas}}"</string>
@@ -356,7 +354,7 @@
     <string name="role_assistant_label" msgid="4727586018198208128">"App de asistente digital pred."</string>
     <string name="role_assistant_short_label" msgid="3369003713187703399">"App de asistente digital"</string>
     <string name="role_assistant_description" msgid="6622458130459922952">"Las aplicaciones de asistencia pueden brindarte ayuda en función de la pantalla que estás viendo. Para ofrecerte asistencia integrada, algunas aplicaciones son compatibles con los servicios de selector y entrada de voz."</string>
-    <string name="role_browser_label" msgid="2877796144554070207">"Navegador predet."</string>
+    <string name="role_browser_label" msgid="2877796144554070207">"Navegador predeterminado"</string>
     <string name="role_browser_short_label" msgid="6745009127123292296">"App de navegador"</string>
     <string name="role_browser_description" msgid="3465253637499842671">"Apps que te permiten acceder a Internet y ver los vínculos que presionas"</string>
     <string name="role_browser_request_title" msgid="2895200507835937192">"¿Quieres establecer <xliff:g id="APP_NAME">%1$s</xliff:g> como tu app de navegador predeterminada?"</string>
@@ -437,8 +435,9 @@
     <string name="default_apps_more" msgid="4078194675848858093">"Más apps predeterminadas"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"Abrir vínculos"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"Predeterminadas de trabajo"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"Configuración predeterminada del espacio privado"</string>
     <string name="default_app_none" msgid="9084592086808194457">"Ninguna"</string>
-    <string name="default_app_system_default" msgid="6218386768175513760">"(Predeterminada de sistema)"</string>
+    <string name="default_app_system_default" msgid="6218386768175513760">"(Predeterminada del sistema)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"Sin apps"</string>
     <string name="car_default_app_selected" msgid="5416420830430644174">"Seleccionada"</string>
     <string name="car_default_app_selected_with_info" msgid="1932204186080593500">"Se seleccionó: <xliff:g id="ADDITIONAL_INFO">%1$s</xliff:g>"</string>
@@ -550,6 +549,8 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Ninguno"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Últimas\n24 horas"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Últimos\n7 días"</string>
+    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
+    <skip />
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"<xliff:g id="APP_NAME">%1$s</xliff:g> está protegida por Android. Tus datos se procesan en este dispositivo, por eso no se muestra el uso de permisos de esta app en la barra de estado ni en el panel de privacidad."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"<xliff:g id="APP_NAME">%1$s</xliff:g> está protegida por Android. Tus datos se procesan en este dispositivo, por eso no se muestra el uso de permisos de esta app en el panel de privacidad."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"La cámara del dispositivo está bloqueada"</string>
@@ -663,8 +664,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"Tu contraseña de un solo uso es 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Parámetro restringido"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Por seguridad, este parámetro de configuración no está disponible actualmente."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Se rechazó el permiso para usar <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Esta app solicitó el permiso <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>, que es un parámetro de configuración restringido porque puede poner en peligro tu seguridad y privacidad. La restricción de este permiso puede hacer que la app deje de funcionar."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"A la app se le negó el acceso a <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"La app solicitó acceso a un permiso sensible, lo que puede poner en riesgo tu información financiera y personal.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Es posible que la app no funcione como corresponde sin este permiso restringido. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Descubre cómo permitir el acceso&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"A la app se le negó el acceso para usarse como <xliff:g id="ROLE_NAME">%1$s</xliff:g> de forma predeterminada"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"La app solicitó acceso a permisos sensibles, lo que puede poner en riesgo tu información financiera y personal.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Es posible que la app no funcione como corresponde sin estos permisos restringidos. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Descubre cómo permitir el acceso&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"A la app se le negó el acceso"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"El acceso a este permiso puede poner en riesgo tu información financiera y personal.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Es posible que la app no funcione como corresponde sin este permiso restringido. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Descubre cómo permitir el acceso&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Más información"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"Entendido"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"Aceptar"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Se rechazó la solicitud de permiso"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Esta app solicita permisos adicionales, pero estos no se pueden otorgar durante una sesión de transmisión. Primero, otorga el permiso en el teléfono."</string>
 </resources>

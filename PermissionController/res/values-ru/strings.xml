@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Если определение точного местоположения отключено, приложения могут использовать данные о примерном местоположении устройства"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Разрешение \"<xliff:g id="PERM">%1$s</xliff:g>\""</string>
     <string name="app_permission_header" msgid="2951363137032603806">"<xliff:g id="PERM">%1$s</xliff:g>: доступ для этого приложения"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"Разрешение \"<xliff:g id="PERM">%1$s</xliff:g>\" для этого приложения на устройстве \"<xliff:g id="DEVICE_NAME">%2$s</xliff:g>\""</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Все разрешения приложения \"<xliff:g id="APP">%1$s</xliff:g>\""</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Все приложения с этим разрешением"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Показывать сведения об использовании микрофона Ассистентом"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Приложения с доступом ко всем файлам"</string>
     <string name="ask_header" msgid="2633816846459944376">"Спрашивать каждый раз"</string>
     <string name="denied_header" msgid="903209608358177654">"Запрещено"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> на устройстве \"<xliff:g id="DEVICE_NAME">%2$s</xliff:g>\""</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Ещё приложения с доступом ко всем файлам"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 день}one{# день}few{# дня}many{# дней}other{# дня}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# час}one{# час}few{# часа}many{# часов}other{# часа}}"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"Другие приложения по умолчанию"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"Переход по ссылкам"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"Стандартные для работы"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"Приложения по умолчанию для личного пространства"</string>
     <string name="default_app_none" msgid="9084592086808194457">"Нет"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(по умолчанию)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"Приложений нет"</string>
@@ -550,6 +549,9 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Нет"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Последние\n24 часа"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Последние\n7 дней"</string>
+    <!-- String.format failed for translation -->
+    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
+    <skip />
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" защищено Android. Поскольку ваши данные обрабатываются на устройстве, разрешения, используемые приложением, не показываются в строке состояния на панели управления разрешениями."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" защищено Android. Поскольку ваши данные обрабатываются на устройстве, разрешения, используемые приложением, не показываются на панели управления разрешениями."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Камера устройства заблокирована"</string>
@@ -558,7 +560,7 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"Для приложений и сервисов"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Данные микрофона могут передаваться при звонке на номер экстренной службы"</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Изменить"</string>
-    <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Защита и кон­фи­ден­циаль­ность"</string>
+    <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Безопасность и кон­фи­ден­циаль­ность"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Сканировать устройство"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Закрыть"</string>
     <string name="safety_center_issue_card_dismiss_confirmation_title" msgid="2734809473425036382">"Закрыть оповещение?"</string>
@@ -663,8 +665,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"Ваш одноразовый код: 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Настройки с ограниченным доступом"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"В целях безопасности эти настройки пока недоступны."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Разрешение \"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>\" не предоставлено"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Приложение запросило разрешение \"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>\", доступ к которому ограничен, так как его использование может представлять угрозу для вашей безопасности и конфиденциальности. Без этого разрешения приложение может не работать."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"Для приложения заблокировано разрешение \"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>\""</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"Приложение запрашивает разрешение на доступ к конфиденциальной информации. Если вы предоставите его, ваши личные и финансовые данные могут оказаться под угрозой.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Без такого разрешения приложение может работать неправильно. Узнайте, &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;как предоставить доступ к данным&lt;/a&gt;."</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"Запрещено использовать приложение в качестве стандартного в категории \"<xliff:g id="ROLE_NAME">%1$s</xliff:g>\""</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Приложение запрашивает разрешения на доступ к конфиденциальной информации. Если вы предоставите их, ваши личные и финансовые данные могут оказаться под угрозой.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Без таких разрешений приложение может работать неправильно. Узнайте, &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;как предоставить доступ к данным&lt;/a&gt;."</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"Доступ запрещен"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Если вы предоставите это разрешение, ваши личные и финансовые данные могут оказаться под угрозой.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Без него приложение может работать неправильно. Узнайте, &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;как предоставить доступ к данным&lt;/a&gt;."</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Подробнее"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"ОК"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"ОК"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Запрос разрешений заблокирован"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Это приложение запрашивает дополнительные разрешения, которые невозможно предоставить во время трансляции на устройство. Сначала откройте доступ на телефоне."</string>
 </resources>

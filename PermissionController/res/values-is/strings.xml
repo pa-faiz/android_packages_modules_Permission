@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Þegar slökkt er á nákvæmri staðsetningu hafa forrit aðgang að áætlaðri staðsetningu"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"<xliff:g id="PERM">%1$s</xliff:g> - heimild"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"<xliff:g id="PERM">%1$s</xliff:g>: Aðgangur fyrir þetta forrit"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"Aðgangur að <xliff:g id="PERM">%1$s</xliff:g> fyrir þetta forrit í <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Sjá allar heimildir fyrir „<xliff:g id="APP">%1$s</xliff:g>“"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Sjá öll forrit með þessa heimild"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Sýna hljóðnemanotkun hjálpara"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Leyfði stjórnun á öllum skrám"</string>
     <string name="ask_header" msgid="2633816846459944376">"Spyrja alltaf"</string>
     <string name="denied_header" msgid="903209608358177654">"Ekki heimilað"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> í <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Sjá fleiri forrit sem geta opnað allar skrár"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 dagur}one{# dagur}other{# dagar}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# klukkustund}one{# klukkustund}other{# klukkustundir}}"</string>
@@ -381,7 +379,7 @@
     <string name="role_emergency_search_keywords" msgid="1920007722599213358">"neyð"</string>
     <string name="role_home_label" msgid="3871847846649769412">"Sjálfgefið heimaforrit"</string>
     <string name="role_home_short_label" msgid="8544733747952272337">"Heimaforrit"</string>
-    <string name="role_home_description" msgid="7997371519626556675">"Forrit sem koma í stað heimaskjásins í Android tækinu þínu, stundum nefnd ræsiforrit, sem gefa þér aðgang að efni og eiginleikum í tækinu."</string>
+    <string name="role_home_description" msgid="7997371519626556675">"Forrit sem koma í stað heimaskjásins í Android-tækinu þínu, stundum nefnd ræsiforrit, sem gefa þér aðgang að efni og eiginleikum í tækinu."</string>
     <string name="role_home_request_title" msgid="738136983453341081">"Velja <xliff:g id="APP_NAME">%1$s</xliff:g> sem sjálfgefið heimaforrit?"</string>
     <string name="role_home_request_description" msgid="2658833966716057673">"Engra heimilda krafist"</string>
     <string name="role_home_search_keywords" msgid="3830755001192666285">"ræsiforrit"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"Fleiri sjálfgildi"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"Opnun tengla"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"Sjálfgefið fyrir vinnu"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"Sjálfgefið fyrir leynirými"</string>
     <string name="default_app_none" msgid="9084592086808194457">"Ekkert"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(Sjálfgildi kerfis)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"Engin forrit"</string>
@@ -550,6 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Ekkert"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Síðasta\nsólarhringinn"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Síðastliðna\n7 daga"</string>
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> <xliff:g id="PERCENT">%2$d</xliff:g> prósent"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"<xliff:g id="APP_NAME">%1$s</xliff:g> er verndað af Android. Unnið er úr gögnum þínum í þessu tæki og þar af leiðandi birtist heimildarnotkun þessa forrits ekki á stöðustikunni eða persónuverndarstjórnborðinu."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"<xliff:g id="APP_NAME">%1$s</xliff:g> er verndað af Android. Unnið er úr gögnum þínum í þessu tæki og þar af leiðandi birtist heimildarnotkun þessa forrits ekki á persónuverndarstjórnborðinu þínu."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Lokað er fyrir myndavél tækis"</string>
@@ -663,8 +663,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"Einnota aðgangsorðið þitt er 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Takmörkuð stilling"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Til að tryggja öryggi þitt er þessi stilling ekki tiltæk eins og er."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Leyfi til að nota <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> hefur verið hafnað"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Þetta forrit hefur krafist <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>-leyfis sem er takmörkuð stilling vegna þess að hún getur stofnað öryggi þínu og persónuvernd í hættu. Takmarkanir á þessu leyfi geta komið í veg fyrir að þetta forrit virki."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"Forritið fékk ekki aðgang að <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"Forritið bað um aðgang að heimild fyrir viðkvæmu efni sem getur sett persónu- og fjármálaupplýsingar þínar í hættu.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Forritið virkar hugsanlega ekki sem skyldi án þessarar takmörkuðu heimildar. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Kynntu þér hvernig þú leyfir aðgang&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"Forritið fékk ekki aðgang að sjálfgefnu <xliff:g id="ROLE_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Forritið bað um aðgang að heimildir fyrir viðkvæmu efni sem getur sett persónu- og fjármálaupplýsingar þínar í hættu.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Forritið virkar hugsanlega ekki sem skyldi án þessara takmörkuðu heimilda. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Kynntu þér hvernig þú leyfir aðgang&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"Forritið fékk ekki aðgang"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Aðgangur að þessari heimild getur sett persónu- og fjármálaupplýsingar þínar í hættu.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Forritið virkar hugsanlega ekki sem skyldi án þessarar takmörkuðu heimildar. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Kynntu þér hvernig þú leyfir aðgang&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Nánar"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"Ég skil"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"Í lagi"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Heimildarbeiðni hafnað"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Þetta forrit biður um viðbótarheimildir en ekki er hægt að veita heimildir í streymislotu. Veittu heimildina í símanum fyrst."</string>
 </resources>

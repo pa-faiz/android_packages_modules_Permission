@@ -51,7 +51,7 @@
     <string name="permission_revoked_none" msgid="9213345075484381180">"Lutho olukhutshaziwe"</string>
     <string name="grant_dialog_button_allow" msgid="5314677880021102550">"Vumela"</string>
     <string name="grant_dialog_button_allow_always" msgid="4485552579273565981">"Vumela sonke isikhathi"</string>
-    <string name="grant_dialog_button_allow_foreground" msgid="501896824973636533">"Ngenkathi usebenzisa uhlelo lokusebenza"</string>
+    <string name="grant_dialog_button_allow_foreground" msgid="501896824973636533">"Ngenkathi i-app"</string>
     <string name="grant_dialog_button_change_to_precise_location" msgid="3273115879467236033">"Shintshela kwindawo ngqo"</string>
     <string name="grant_dialog_button_keey_approximate_location" msgid="438025182769080011">"Gcina indawo elinganiselwayo"</string>
     <string name="grant_dialog_button_allow_one_time" msgid="2618088516449706391">"Ngalesi sikhathi kuphela"</string>
@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Uma indawo ngqo ivaliwe, ama-app angakwazi ukufinyelela indawo yakho elinganiselwayo"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"<xliff:g id="PERM">%1$s</xliff:g> imvume"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"ukufinyelela kwale app ku<xliff:g id="PERM">%1$s</xliff:g>"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"Ukufinyelela kwe-<xliff:g id="PERM">%1$s</xliff:g> kwale app kuvuliwe ku-<xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Bona zonke izimvume ze-<xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Bona zonke izinhlelo zokusebenza ngale mvume"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Bonisa ukusetshenziswa kwe-microphone kamsizi"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Kuvumelekile ukuphatha wonke amafayela"</string>
     <string name="ask_header" msgid="2633816846459944376">"Buza njalo"</string>
     <string name="denied_header" msgid="903209608358177654">"Akuvumelekile"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"I-<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> ku-<xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Bona ama-app engeziwe akwazi ukufinyelela wonke amafayela"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{usuku 1}one{izinsuku #}other{izinsuku #}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{Ihora elingu-#}one{Amahora angu-#}other{Amahora angu-#}}"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"Okuzenzakalelayo okuningi"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"Ivula amalinki"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"Okuzenzakalelayo kokusebenza"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"Okuzenzakalelayo kwendawo engasese"</string>
     <string name="default_app_none" msgid="9084592086808194457">"Lutho"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(Okuzenzakalelayo kwesistimu)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"Azikho izinhlelo zokusebenza"</string>
@@ -500,7 +499,7 @@
     <string name="permgrouprequest_read_media_visual" msgid="5548780620779729975">"Vumela i-<xliff:g id="APP_NAME">%1$s</xliff:g> ukuba ifinyelele izithombe namavidiyo kule divayisi?"</string>
     <string name="permgrouprequest_device_aware_read_media_visual" msgid="5492319750632751551">"Vumela &lt;b&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuze ufinyelele izithombe namavidiyo &lt;b&gt;ku-<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt; yakho?"</string>
     <string name="permgrouprequest_more_photos" msgid="128933814654231321">"Vumela &lt;i-<xliff:g id="APP_NAME">%1$s</xliff:g>&gt; ukuba ifinyelele izithombe namavidiyo kule divayisi?"</string>
-    <string name="permgrouprequest_device_aware_more_photos" msgid="8946782319103584021">"Vumela &lt;b&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuze ufinyelele izithombe namavidiyo engeziwe &lt;b&gt;ku-<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt; yakho?"</string>
+    <string name="permgrouprequest_device_aware_more_photos" msgid="8946782319103584021">"Vumela &lt;b&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuze ufinyelele ezithombeni namavidiyo engeziwe &lt;b&gt;ku-<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt; yakho?"</string>
     <string name="permgrouprequest_microphone" msgid="2825208549114811299">"Vumela i-&lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuthi irekhode umsindo?"</string>
     <string name="permgrouprequest_device_aware_microphone" msgid="1266843551173029370">"Vumela &lt;b&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuze urekhode umsindo &lt;b&gt;ku-<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt; yakho?"</string>
     <string name="permgrouprequestdetail_microphone" msgid="8510456971528228861">"Uhlelo lokusebenza luzokwazi ukurekhoda imisindo kuphela kuyilapho usebenzisa uhlelo lokusebenza"</string>
@@ -512,7 +511,7 @@
     <string name="permgroupupgraderequestdetail_microphone" msgid="2870497719571464239">"Lolu hlelo lokusebenza lufuna ukurekhoda imisindo ngaso sonke isikhathi, ngisho nalapho ungasebenzisi uhlelo lokusebenza. "<annotation id="link">"Vumela kumasethingi."</annotation></string>
     <string name="permgrouprequest_activityRecognition" msgid="5415121592794230330">"Vumela i-&lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuthi ifinyelele kumsebenzi wakho womzimba?"</string>
     <string name="permgrouprequest_device_aware_activityRecognition" msgid="3408326850847755759">"Vumela &lt;b&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuze ufinyelele umsebenzi wakho womzimba &lt;b&gt;ku-<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt; yakho?"</string>
-    <string name="permgrouprequest_camera" msgid="5123097035410002594">"Vumela i-&lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuthatha izithombe iphinde irekhode ividiyo?"</string>
+    <string name="permgrouprequest_camera" msgid="5123097035410002594">"Vumela i-&lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ithathe izithombe futhi irekhode ividiyo?"</string>
     <string name="permgrouprequest_device_aware_camera" msgid="3525106924487608868">"Vumela &lt;b&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuthatha izithombe nokurekhoda ividiyo &lt;b&gt;ku-<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt; yakho?"</string>
     <string name="permgrouprequestdetail_camera" msgid="9085323239764667883">"Lolu hlelo lokusebenza luzokwazi ukuthatha izithombe futhi lirekhode ividiyo kuphela kuyilapho usebenzisa uhlelo lokusebenza"</string>
     <string name="permgroupbackgroundrequest_camera" msgid="1274286575704213875">"Vumela i-&lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ukuthatha izithombe iphinde irekhode ividiyo?"</string>
@@ -550,6 +549,8 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Lutho"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Emahoreni angama-\n24 adlule"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Izinsuku ezi-\n7 ezedlule"</string>
+    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
+    <skip />
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"I-<xliff:g id="APP_NAME">%1$s</xliff:g> ivikelwe i-Android. Ngenxa yokuthi idatha yakho icutshungulwa kule divayisi, ukusetshenziswa kwemvume yale app akuboniswa kubha yesimo noma kudeshibhodi yakho yobumfihlo"</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"I-<xliff:g id="APP_NAME">%1$s</xliff:g> ivikelwe i-Android. Ngenxa yokuthi idatha yakho icutshungulwa kule divayisi, ukusetshenziswa kwemvume yale app akuboniswa kudeshibhodi yakho yobumfihlo"</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Ikhamera yedivayisi ivinjiwe"</string>
@@ -663,8 +664,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"Iphasiwedi yakho yesikhathi esisodwa ithi 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Amasethingi akhawulelwe"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Ukuze uphephe, leli sethingi okwamanje alitholakali."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Imvume yokusebenzisa i-<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> inqatshiwe"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Le app icele imvume ye-<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>, okuyisethingi ekhawulelwe ngoba ingabeka ukuphepha kwakho nobumfihlo bakho engcupheni. Ukukhawulelwa kule mvume kungase kuvimbele le-app ukuthi isebenze."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"I-app inqatshelwe ukufinyelela ku-<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"I-app icele ukufinyelela emvumweni ezwelayo okungabeka imininingwane yakho siqu neyezimali engozini.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kungenzeka ukuthi i-app ingasebenzi kahle ngaphandle kwemvume enomkhawulo. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Funda ukuthi ungakuvumela kanjani ukufinyelela&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"I-app iye yanqatshelwa ukufinyelela ukuze ibe yi-<xliff:g id="ROLE_NAME">%1$s</xliff:g> ezenzakalelayo"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"I-app icele ukufinyelela emvumweni ezwelayo engabeka ulwazi lwakho siqu nolwezimali engozini.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kungenzeka ukuthi i-app ingasebenzi kahle ngaphandle kwelezi zimvume ezinomkhawulo. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Funda ukuthi ungakuvumela kanjani ukufinyelela&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"I-app iye yanqatshelwa ukufinyelela"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Ukufinyelela kule mvume kungabeka ulwazi lwakho siqu nolwezimali engozini.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kungenzeka ukuthi i-app ingasebenzi kahle ngaphandle kwemvume enomkhawulo. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Funda ukuthi ungakuvumela kanjani ukufinyelela&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Funda kabanzi"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"Ngiyezwa"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"KULUNGILE"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Isicelo semvume sicindezelwe"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Le-app icela izimvume ezengeziwe, kodwa izimvume azikwazi ukunikezwa ngesikhathi sokusakaza-bukhoma. Nikeza imvume kufoni yakho kuqala."</string>
 </resources>

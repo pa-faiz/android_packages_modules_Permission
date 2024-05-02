@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Quan la ubicació precisa està desactivada, les aplicacions poden accedir a la teva ubicació aproximada"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Permís d\'accés a <xliff:g id="PERM">%1$s</xliff:g>"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Accés a <xliff:g id="PERM">%1$s</xliff:g> per a aquesta aplicació"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"Accés de <xliff:g id="PERM">%1$s</xliff:g> a aquesta aplicació (<xliff:g id="DEVICE_NAME">%2$s</xliff:g>)"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Mostra tots els permisos per a <xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Mostra totes les aplicacions que tenen aquest permís"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Mostra l\'ús del micròfon de l\'Assistent"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Poden gestionar tots els fitxers"</string>
     <string name="ask_header" msgid="2633816846459944376">"Pregunta sempre"</string>
     <string name="denied_header" msgid="903209608358177654">"Sense permís"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> (<xliff:g id="DEVICE_NAME">%2$s</xliff:g>)"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Mostra més aplicacions que poden accedir a tots els fitxers"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 dia}many{# dies}other{# dies}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# hora}many{# hores}other{# hores}}"</string>
@@ -361,7 +359,7 @@
     <string name="role_browser_description" msgid="3465253637499842671">"Aplicacions que et donen accés a Internet i que mostren els enllaços que toques"</string>
     <string name="role_browser_request_title" msgid="2895200507835937192">"Vols establir <xliff:g id="APP_NAME">%1$s</xliff:g> com a aplicació de navegador predeterminada?"</string>
     <string name="role_browser_request_description" msgid="5888803407905985941">"No calen permisos"</string>
-    <string name="role_dialer_label" msgid="1100224146343237968">"Aplicació Telèfon predeterminada"</string>
+    <string name="role_dialer_label" msgid="1100224146343237968">"Aplicació de telèfon predeterminada"</string>
     <string name="role_dialer_short_label" msgid="7186888549465352489">"Aplicació de telèfon"</string>
     <string name="role_dialer_description" msgid="8768708633696539612">"Aplicacions que et permeten fer i rebre trucades al dispositiu"</string>
     <string name="role_dialer_request_title" msgid="5959618560705912058">"Vols establir <xliff:g id="APP_NAME">%1$s</xliff:g> com a aplicació de telèfon predeterminada?"</string>
@@ -369,7 +367,7 @@
     <string name="role_dialer_search_keywords" msgid="3324448983559188087">"marcador"</string>
     <string name="role_sms_label" msgid="8456999857547686640">"Aplicació d\'SMS predeterminada"</string>
     <string name="role_sms_short_label" msgid="4371444488034692243">"Aplicació d\'SMS"</string>
-    <string name="role_sms_description" msgid="3424020199148153513">"Aplicacions que et permeten utilitzar el número de telèfon per enviar i rebre missatges curts de text, fotos, vídeos i més"</string>
+    <string name="role_sms_description" msgid="3424020199148153513">"Aplicacions que et permeten utilitzar el número de telèfon per enviar i rebre missatges de text, fotos, vídeos i més"</string>
     <string name="role_sms_request_title" msgid="7953552109601185602">"Vols establir <xliff:g id="APP_NAME">%1$s</xliff:g> com a aplicació d\'SMS predeterminada?"</string>
     <string name="role_sms_request_description" msgid="2691004766132144886">"Aquesta aplicació tindrà accés a la càmera, als contactes, als fitxers i contingut multimèdia, al micròfon, al telèfon i als SMS"</string>
     <string name="role_sms_search_keywords" msgid="8022048144395047352">"missatge de text, enviar missatges, missatges, missatgeria"</string>
@@ -403,7 +401,7 @@
     <string name="role_watch_description" msgid="267003778693177779">"<xliff:g id="APP_NAME">%1$s</xliff:g> tindrà permís per interaccionar amb les teves notificacions i accedir al telèfon, SMS, contactes i calendari."</string>
     <string name="role_app_streaming_description" msgid="7341638576226183992">"<xliff:g id="APP_NAME">%1$s</xliff:g> tindrà permís per interaccionar amb les teves notificacions i reproduir en continu les teves aplicacions al dispositiu connectat."</string>
     <string name="role_companion_device_computer_description" msgid="416099879217066377">"Aquest servei comparteix les fotos, el contingut multimèdia i les notificacions del telèfon amb altres dispositius."</string>
-    <string name="role_notes_label" msgid="7451627001058089536">"App de notes predeterminada"</string>
+    <string name="role_notes_label" msgid="7451627001058089536">"Aplicació de notes predeterminada"</string>
     <string name="role_notes_short_label" msgid="8796604147546125285">"Aplicació de notes"</string>
     <string name="role_notes_description" msgid="8496852798616883551">"Aplicacions que et permeten prendre notes al dispositiu"</string>
     <string name="role_notes_search_keywords" msgid="7710756695666744631">"notes"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"Més aplicacions predeterminades"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"Obertura d\'enllaços"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"Predeterminada per a la feina"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"Predeterminades per a l\'espai privat"</string>
     <string name="default_app_none" msgid="9084592086808194457">"Cap"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(Opció predeterminada del sistema)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"Cap aplicació"</string>
@@ -469,7 +468,7 @@
     <string name="permgrouprequest_device_aware_storage_isolated" msgid="5934218468708513375">"Vols permetre que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; accedeixi a les fotos i al contingut multimèdia del dispositiu &lt;b&gt;<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="permgrouprequest_contacts" msgid="8391550064551053695">"Vols permetre que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; accedeixi als contactes?"</string>
     <string name="permgrouprequest_device_aware_contacts" msgid="2270563860206654757">"Vols permetre que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; accedeixi als contactes del dispositiu &lt;b&gt;<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
-    <string name="permgrouprequest_location" msgid="6990232580121067883">"Permetre que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; accedeixi a la ubicació del dispositiu?"</string>
+    <string name="permgrouprequest_location" msgid="6990232580121067883">"Vols permetre que la &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; accedeixi a la ubicació del dispositiu?"</string>
     <string name="permgrouprequest_device_aware_location" msgid="6641436550953715107">"Vols permetre que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; accedeixi a la ubicació del dispositiu &lt;b&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="permgrouprequestdetail_location" msgid="2635935335778429894">"L\'aplicació només tindrà accés a la ubicació quan l\'estiguis utilitzant"</string>
     <string name="permgroupbackgroundrequest_location" msgid="1085680897265734809">"Vols permetre que &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; accedeixi a la ubicació del dispositiu?"</string>
@@ -550,6 +549,8 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Cap"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"24 darreres\nhores"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"7\ndarrers dies"</string>
+    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
+    <skip />
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"L\'aplicació <xliff:g id="APP_NAME">%1$s</xliff:g> està protegida per Android. Com que les teves dades es tracten en aquest dispositiu, l\'ús del permís d\'aquesta aplicació no es mostra a la barra d\'estat ni al tauler de privadesa."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"L\'aplicació <xliff:g id="APP_NAME">%1$s</xliff:g> està protegida per Android. Com que les teves dades es tracten en aquest dispositiu, l\'ús del permís d\'aquesta aplicació no es mostra al tauler de privadesa."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"La càmera del dispositiu està bloquejada"</string>
@@ -663,8 +664,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"La contrasenya d\'un sol ús és 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Opció de configuració restringida"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Per a la teva seguretat, aquesta opció de configuració no està disponible en aquests moments."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"El permís per utilitzar <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> s\'ha rebutjat"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Aquesta aplicació ha sol·licitat el permís de <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>, que és una opció de configuració restringida perquè pot posar en perill la teva seguretat i privadesa. És possible que la restricció d\'aquest permís impedeixi que aquesta aplicació funcioni."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"A l\'aplicació se li ha denegat l\'accés a <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"L\'aplicació ha demanat accés a un permís sensible, el qual pot posar en risc la teva informació personal o financera.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>És possible que l\'aplicació no funcioni correctament sense aquest permís restringit. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Més informació sobre com pots permetre l\'accés&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"A l\'aplicació se li ha denegat l\'accés per ser <xliff:g id="ROLE_NAME">%1$s</xliff:g> de manera predeterminada"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"L\'aplicació ha demanat accés a permisos sensibles, els quals poden posar en risc la teva informació personal o financera.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>És possible que l\'aplicació no funcioni correctament sense aquests permisos restringits. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Més informació sobre com pots permetre l\'accés&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"A l\'aplicació se li ha denegat l\'accés"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"L\'accés a aquest permís pot posar en risc la teva informació personal i financera.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>És possible que l\'aplicació no funcioni correctament sense aquest permís. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Més informació sobre com pots permetre l\'accés&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Més informació"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"Entesos"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"D\'acord"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"S\'ha suprimit la sol·licitud de permís"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Aquesta aplicació requereix permisos addicionals, però els permisos no es poden concedir en una sessió d\'estríming. Primer concedeix el permís al teu telèfon."</string>
 </resources>

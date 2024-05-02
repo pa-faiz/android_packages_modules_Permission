@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Apabila lokasi tepat dimatikan, apl boleh mengakses lokasi anggaran anda"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Kebenaran <xliff:g id="PERM">%1$s</xliff:g>"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Akses <xliff:g id="PERM">%1$s</xliff:g> untuk apl ini"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"akses <xliff:g id="PERM">%1$s</xliff:g> untuk apl ini pada <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Lihat semua kebenaran <xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Lihat semua apl dengan kebenaran ini"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Tunjukkan penggunaan mikrofon pembantu"</string>
@@ -251,13 +250,12 @@
     <string name="app_permission_never_accessed_denied_summary" msgid="6596000497490905146">"Ditolak / Tidak pernah mengakses"</string>
     <string name="allowed_header" msgid="7769277978004790414">"Dibenarkan"</string>
     <string name="allowed_always_header" msgid="6455903312589013545">"Dibenarkan sepanjang masa"</string>
-    <string name="allowed_foreground_header" msgid="6845655788447833353">"Dibenarkan hanya semasa dalam penggunaan"</string>
+    <string name="allowed_foreground_header" msgid="6845655788447833353">"Dibenarkan hanya semasa digunakan"</string>
     <string name="allowed_storage_scoped" msgid="5383645873719086975">"Dibenarkan mengakses media sahaja"</string>
     <string name="allowed_storage_full" msgid="5356699280625693530">"Dibenarkan mengurus semua fail"</string>
     <string name="ask_header" msgid="2633816846459944376">"Tanya setiap kali"</string>
     <string name="denied_header" msgid="903209608358177654">"Tidak dibenarkan"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> pada <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Lihat lagi apl yang boleh mengakses semua fail"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 hari}other{# hari}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# jam}other{# jam}}"</string>
@@ -381,7 +379,7 @@
     <string name="role_emergency_search_keywords" msgid="1920007722599213358">"ice"</string>
     <string name="role_home_label" msgid="3871847846649769412">"Apl skrin utama lalai"</string>
     <string name="role_home_short_label" msgid="8544733747952272337">"Apl skrin utama"</string>
-    <string name="role_home_description" msgid="7997371519626556675">"Apl, yang sering dipanggil pelancar, yang menggantikan Skrin Utama pada peranti Android anda dan memberi anda akses kepada kandungan dan ciri peranti anda"</string>
+    <string name="role_home_description" msgid="7997371519626556675">"Apl, yang sering dipanggil pelancar, yang menggantikan Skrin Utama pada peranti Android dan memberi anda akses kepada kandungan dan ciri peranti anda"</string>
     <string name="role_home_request_title" msgid="738136983453341081">"Tetapkan <xliff:g id="APP_NAME">%1$s</xliff:g> sebagai apl skrin utama lalai anda?"</string>
     <string name="role_home_request_description" msgid="2658833966716057673">"Kebenaran tidak diperlukan"</string>
     <string name="role_home_search_keywords" msgid="3830755001192666285">"pelancar"</string>
@@ -409,7 +407,7 @@
     <string name="role_notes_search_keywords" msgid="7710756695666744631">"nota"</string>
     <string name="role_wallet_label" msgid="3719419175656204207">"Apl dompet lalai"</string>
     <string name="role_wallet_short_label" msgid="6521288403762457452">"Apl dompet"</string>
-    <string name="role_wallet_description" msgid="3726535836165949838">"Apl dompet boleh menyimpan kad kredit dan kesetiaan anda, kunci kereta dan perkara lain untuk membantu pelbagai bentuk transaksi."</string>
+    <string name="role_wallet_description" msgid="3726535836165949838">"Apl dompet boleh menyimpan kad kredit dan kad kesetiaan, kunci kereta dan perkara lain untuk membantu pelbagai bentuk transaksi."</string>
     <string name="role_wallet_request_title" msgid="4770217108262737093">"Tetapkan <xliff:g id="APP_NAME">%1$s</xliff:g> sebagai apl dompet lalai anda?"</string>
     <string name="role_wallet_request_description" msgid="6305487425777483053">"Kebenaran tidak diperlukan"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"Lalai semasa"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"Lagi tetapan lalai"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"Membuka pautan"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"Lalai untuk kerja"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"Lalai untuk ruang privasi"</string>
     <string name="default_app_none" msgid="9084592086808194457">"Tiada"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(Ciri lalai sistem)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"Tiada apl"</string>
@@ -470,7 +469,7 @@
     <string name="permgrouprequest_contacts" msgid="8391550064551053695">"Benarkan &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; mengakses kenalan anda?"</string>
     <string name="permgrouprequest_device_aware_contacts" msgid="2270563860206654757">"Benarkan &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; mengakses kenalan anda pada &lt;b&gt;<xliff:g id="DEVICE">%2$s</xliff:g>&lt;/b&gt; anda?"</string>
     <string name="permgrouprequest_location" msgid="6990232580121067883">"Benarkan &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; mengakses lokasi peranti ini?"</string>
-    <string name="permgrouprequest_device_aware_location" msgid="6641436550953715107">"Benarkan &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; mengakses lokasi &lt;b&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>s&lt;/b&gt; anda?"</string>
+    <string name="permgrouprequest_device_aware_location" msgid="6641436550953715107">"Benarkan &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; mengakses lokasi &lt;b&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/b&gt; anda?"</string>
     <string name="permgrouprequestdetail_location" msgid="2635935335778429894">"Apl ini hanya dapat mengakses lokasi semasa anda menggunakan apl tersebut"</string>
     <string name="permgroupbackgroundrequest_location" msgid="1085680897265734809">"Benarkan &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; mengakses lokasi peranti ini?"</string>
     <string name="permgroupbackgroundrequest_device_aware_location" msgid="7660465507029650527">"Benarkan &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; mengakses lokasi &lt;b&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g> anda?"</string>
@@ -550,6 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Tiada"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"24 jam\nyang lalu"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"7 hari\nyang lalu"</string>
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> <xliff:g id="PERCENT">%2$d</xliff:g> peratus"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"Ini ialah <xliff:g id="APP_NAME">%1$s</xliff:g> Protected by Android. Oleh sebab data anda diproses pada peranti ini, penggunaan kebenaran apl ini tidak ditunjukkan pada bar status atau papan pemuka privasi anda."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"Ini ialah <xliff:g id="APP_NAME">%1$s</xliff:g> Protected by Android. Oleh sebab data anda diproses pada peranti ini, penggunaan kebenaran apl ini tidak ditunjukkan pada papan pemuka privasi anda."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Kamera peranti disekat"</string>
@@ -663,8 +663,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"Kata laluan sekali guna anda ialah 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Tetapan terhad"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Untuk keselamatan anda, tetapan ini tidak tersedia pada masa ini."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Kebenaran untuk menggunakan <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> telah ditolak"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Apl ini telah meminta kebenaran <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> yang merupakan tetapan yang dihadkan kerana kebenaran ini boleh merisikokan keselamatan &amp; privasi anda. Pengehadan terhadap kebenaran ini mungkin menghalang apl ini daripada berfungsi."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"Akses apl kepada <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> telah ditolak"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"Apl meminta akses kepada kebenaran sensitif yang boleh mengakibatkan risiko terhadap maklumat peribadi dan kewangan anda.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Apl tersebut mungkin tidak dapat berfungsi dengan betul tanpa kebenaran terhad ini. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Ketahui cara membenarkan akses&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"Akses apl untuk menjadi <xliff:g id="ROLE_NAME">%1$s</xliff:g> secara lalai telah ditolak"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Apl meminta akses kepada kebenaran sensitif yang boleh mengakibatkan risiko terhadap maklumat peribadi dan kewangan anda.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Apl tersebut mungkin tidak dapat berfungsi dengan betul tanpa kebenaran terhad ini. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Ketahui cara membenarkan akses&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"Akses apl telah ditolak"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Akses kepada kebenaran ini b boleh mengakibatkan risiko terhadap maklumat peribadi dan kewangan anda.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Apl tersebut mungkin tidak dapat berfungsi dengan betul tanpa kebenaran terhad ini. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Ketahui cara membenarkan akses&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Ketahui lebih lanjut"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"OK"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"OK"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Permintaan kebenaran disekat"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Apl ini meminta kebenaran tambahan tetapi kebenaran tidak boleh diberikan dalam sesi penstriman. Berikan kebenaran pada telefon anda dahulu."</string>
 </resources>

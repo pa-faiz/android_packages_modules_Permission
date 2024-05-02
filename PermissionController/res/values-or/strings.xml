@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"ଯେତେବେଳେ ସଠିକ୍ ଲୋକେସନ୍ ବନ୍ଦ ଥାଏ, ସେତେବେଳେ ଆପଗୁଡ଼ିକ ଆପଣଙ୍କ ଆନୁମାନିକ ଲୋକେସନକୁ ଆକ୍ସେସ୍ କରିପାରିବ"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"<xliff:g id="PERM">%1$s</xliff:g> ଅନୁମତି"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"ଏହି ଆପ ପାଇଁ <xliff:g id="PERM">%1$s</xliff:g>ର ଆକ୍ସେସ"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"<xliff:g id="DEVICE_NAME">%2$s</xliff:g>ରେ ଏହି ଆପ ପାଇଁ <xliff:g id="PERM">%1$s</xliff:g> ଆକ୍ସେସ ଅଛି"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"ସମସ୍ତ <xliff:g id="APP">%1$s</xliff:g> ଅନୁମତି ଦେଖନ୍ତୁ"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"ଏହି ଅନୁମତି ଥିବା ସମସ୍ତ ଆପ୍ସ ଦେଖନ୍ତୁ"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Assistant ମାଇକ୍ରୋଫୋନ୍ ବ୍ୟବହାର ଦେଖାନ୍ତୁ"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"ସମସ୍ତ ଫାଇଲ୍ ପରିଚାଳନା କରିବାକୁ ଅନୁମତି ଦିଆଯାଇଛି"</string>
     <string name="ask_header" msgid="2633816846459944376">"ପ୍ରତ୍ୟେକ ଥର ପଚାରନ୍ତୁ"</string>
     <string name="denied_header" msgid="903209608358177654">"ଅନୁମତି ନାହିଁ"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="DEVICE_NAME">%2$s</xliff:g>ର <xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g>"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"ସମସ୍ତ ଫାଇଲକୁ ଆକ୍ସେସ କରିପାରୁଥିବା ଅଧିକ ଆପ୍ସ ଦେଖନ୍ତୁ"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{1 ଦିନ}other{# ଦିନ}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{# ଘଣ୍ଟା}other{# ଘଣ୍ଟା}}"</string>
@@ -358,10 +356,10 @@
     <string name="role_assistant_description" msgid="6622458130459922952">"ଆପଣ ଦେଖୁଥିବା ସ୍କ୍ରିନ୍‌ ସୂଚନାକୁ ଆଧାର କରି ସହାୟକ ଆପ୍‌ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିପାରିବ। କେତେକ ଆପ୍‌, ଆପଣଙ୍କୁ ଉତ୍ତମ ସହାୟତା ଦେବା ପାଇଁ, ଉଭୟ ଲଞ୍ଚର୍ ଓ ଭଏସ୍‍ ଇନପୁଟ୍‍ ସେବାକୁ ସମର୍ଥନ କରେ।"</string>
     <string name="role_browser_label" msgid="2877796144554070207">"ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍‌ ଆପ୍‌"</string>
     <string name="role_browser_short_label" msgid="6745009127123292296">"ବ୍ରାଉଜର୍‌ ଆପ୍‌"</string>
-    <string name="role_browser_description" msgid="3465253637499842671">"ଆପ୍ସ ଯାହା ଆପଣଙ୍କୁ ଇଣ୍ଟର୍ନେଟ୍ ପାଇଁ ଆକ୍ସେସ୍ ଦିଏ ଏବଂ ଆପଣ ଟାପ୍ କରିଥିବା ଲିଙ୍କ୍‌ଗୁଡ଼ିକ ପ୍ରଦର୍ଶନ କରେ"</string>
+    <string name="role_browser_description" msgid="3465253637499842671">"ଆପ୍ସ ଯାହା ଆପଣଙ୍କୁ ଇଣ୍ଟର୍ନେଟ ପାଇଁ ଆକ୍ସେସ ଦିଏ ଏବଂ ଆପଣ ଟାପ କରୁଥିବା ଲିଙ୍କଗୁଡ଼ିକୁ ଡିସପ୍ଲେ କରେ"</string>
     <string name="role_browser_request_title" msgid="2895200507835937192">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ଆପଣଙ୍କ ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍ ଭାବେ ସେଟ୍ କରିବେ କି?"</string>
     <string name="role_browser_request_description" msgid="5888803407905985941">"କୌଣସି ଅନୁମତି ଆବଶ୍ୟକ ନାହିଁ"</string>
-    <string name="role_dialer_label" msgid="1100224146343237968">"ଡିଫଲ୍ଟ ଫୋନ୍‌ ଆପ୍‌"</string>
+    <string name="role_dialer_label" msgid="1100224146343237968">"ଡିଫଲ୍ଟ ଫୋନ ଆପ"</string>
     <string name="role_dialer_short_label" msgid="7186888549465352489">"ଫୋନ୍ ଆପ୍"</string>
     <string name="role_dialer_description" msgid="8768708633696539612">"ଆପ୍ସ, ଯାହା ଆପଣଙ୍କୁ ଆପଣଙ୍କର ଡିଭାଇସ୍‌ରେ ଟେଲିଫୋନ୍ କଲ୍ କରିବାକୁ ଏବଂ ଗ୍ରହଣ କରିବାକୁ ଅନୁମତି ଦିଏ"</string>
     <string name="role_dialer_request_title" msgid="5959618560705912058">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ଆପଣଙ୍କ ଡିଫଲ୍ଟ ଫୋନ୍ ଆପ୍ ଭାବରେ ସେଟ୍ କରିବେ କି?"</string>
@@ -390,7 +388,7 @@
     <string name="role_call_redirection_description" msgid="6091669882014664420">"ସେହି ଆପ୍ସ ଯାହା ଆଉଟ୍‌ଗୋଇଂ କଲ୍‍ଗୁଡ଼ିକୁ ଅନ୍ୟ ଏକ ଫୋନ୍ ନମ୍ବରକୁ ଫର୍‍ୱାର୍ଡ କରିବାକୁ ଆପଣଙ୍କୁ ଅନୁମତି ଦିଏ"</string>
     <string name="role_call_redirection_request_title" msgid="2816244455003562925">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ଆପଣଙ୍କ ଡିଫଲ୍ଟ କଲ୍ ପୁନଃନିର୍ଦ୍ଦେଶନା ଆପ୍ ଭାବରେ ସେଟ୍ କରିବେ କି?"</string>
     <string name="role_call_redirection_request_description" msgid="3118895714178527164">"କୌଣସି ଅନୁମତି ଆବଶ୍ୟକ ନାହିଁ"</string>
-    <string name="role_call_screening_label" msgid="883935222060878724">"ଡିଫଲ୍ଟ କଲର୍ ID &amp; ସ୍ପାମ୍ ଆପ୍"</string>
+    <string name="role_call_screening_label" msgid="883935222060878724">"ଡିଫଲ୍ଟ କଲର ID ଏବଂ ସ୍ପାମ ଆପ"</string>
     <string name="role_call_screening_short_label" msgid="2048465565063130834">"କଲର୍ ID &amp; ସ୍ପାମ୍ ଆପ୍"</string>
     <string name="role_call_screening_description" msgid="2349431420497468981">"ସେହି ଆପ୍ସ ଯାହା କଲଗୁଡ଼ିକୁ ଚିହ୍ନଟ କରିବା, ସ୍ପାମ୍ ଓ ରୋବୋକଲ୍ ବା ଅଦରକାରୀ ନମ୍ବରଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରିବାକୁ ଅନୁମତି ଦିଏ"</string>
     <string name="role_call_screening_request_title" msgid="7358309224566977290">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ଆପଣଙ୍କର ଡିଫଲ୍ଟ କଲର୍ ଆଇଡି &amp; ସ୍ପାମ୍ ଆପ୍ ଭାବ୍ ସେଟ୍ କରିବେ କି?"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"ଅଧିକ ଡିଫଲ୍ଟଗୁଡ଼ିକ"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"ଓପନିଂ ଲିଙ୍କ୍"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"କାର୍ଯ୍ୟ ପାଇଁ ଡିଫଲ୍ଟ ଅଛି"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"ପ୍ରାଇଭେଟ ସ୍ପେସ ପାଇଁ ଡିଫଲ୍ଟ"</string>
     <string name="default_app_none" msgid="9084592086808194457">"କିଛି ଆପ ସେଟ କରାଯାଇନାହିଁ"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(ସିଷ୍ଟମ୍ ଡିଫଲ୍ଟ)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"କୌଣସି ଆପ୍‌ ନାହିଁ"</string>
@@ -550,6 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"କିଛି ନାହିଁ"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"ଗତ\n24 ଘଣ୍ଟା"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"ଗତ\n7 ଦିନ"</string>
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> <xliff:g id="PERCENT">%2$d</xliff:g> ଶତକଡ଼ା"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ Android ଦ୍ୱାରା ସୁରକ୍ଷିତ କରାଯାଇଛି। ଏହି ଡିଭାଇସରେ ଆପଣଙ୍କ ଡାଟା ପ୍ରକ୍ରିୟାକରଣ କରାଯାଇଥିବା ଯୋଗୁଁ ଏହି ଆପର ଅନୁମତି ବ୍ୟବହାରର ସୂଚନା ଷ୍ଟାଟସ୍ ବାରରେ କିମ୍ବା ଆପଣଙ୍କ ଗୋପନୀୟତା ଡ୍ୟାସବୋର୍ଡରେ ଦେଖାଯାଉ ନାହିଁ।"</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ Android ଦ୍ୱାରା ସୁରକ୍ଷିତ କରାଯାଇଛି। ଏହି ଡିଭାଇସରେ ଆପଣଙ୍କ ଡାଟା ପ୍ରକ୍ରିୟାକରଣ କରାଯାଇଥିବା ଯୋଗୁଁ ଏହି ଆପର ଅନୁମତି ବ୍ୟବହାରର ସୂଚନା ଆପଣଙ୍କ ଗୋପନୀୟତା ଡ୍ୟାସବୋର୍ଡରେ ଦେଖାଯାଉ ନାହିଁ।"</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"ଡିଭାଇସର କ୍ୟାମେରାକୁ ବ୍ଲକ କରାଯାଇଛି"</string>
@@ -663,8 +663,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"ଆପଣଙ୍କ ଗୋଟିଏ ଥରର ପାସୱାର୍ଡ ହେଉଛି 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"ପ୍ରତିବନ୍ଧିତ ସେଟିଂ"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"ଆପଣଙ୍କ ସୁରକ୍ଷା ପାଇଁ ଏହି ସେଟିଂ ବର୍ତ୍ତମାନ ଅନୁପଲବ୍ଧ ଅଟେ।"</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> ବ୍ୟବହାର କରିବା ପାଇଁ ଅନୁମତିକୁ ଅଗ୍ରାହ୍ୟ କରାଯାଇଛି"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"ଏହି ଆପ <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> ଅନୁମତି ପାଇଁ ଅନୁରୋଧ କରିଛି, ଯାହା ଏକ ପ୍ରତିବନ୍ଧିତ ସେଟିଂସ ଅଟେ କାରଣ ଏହା ଆପଣଙ୍କ ସୁରକ୍ଷା ଏବଂ ଗୋପନୀୟତାକୁ ବିପଦରେ ପକାଇପାରେ। ଏହି ଅନୁମତି ଉପରେ ପ୍ରତିବନ୍ଧକ ଏ ଆପକୁ କାର୍ଯ୍ୟ କରିବାରୁ ପ୍ରତିରୋଧ କରିପାରେ।"</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>କୁ ଆପର ଆକ୍ସେସକୁ ଅଗ୍ରାହ୍ୟ କରାଯାଇଛି"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ଏବଂ ଆର୍ଥିକ ସୂଚନାକୁ ବିପଦରେ ପକାଇପାରୁଥିବା ଏକ ସମ୍ବେଦନଶୀଳ ଅନୁମତିକୁ ଆକ୍ସେସ କରିବା ପାଇଁ ଏହି ଆପଟି ଅନୁରୋଧ କରିଛି।<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>ଏହା ସମ୍ଭବ ଯେ ଏହି ପ୍ରତିବନ୍ଧିତ ଅନୁମତି ବିନା ଆପ ସଠିକ ଭାବେ କାର୍ଯ୍ୟ କରିବ ନାହିଁ। &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;ଆକ୍ସେସକୁ କିପରି ଅନୁମତି ଦେବେ ତାହା ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"ଡିଫଲ୍ଟ <xliff:g id="ROLE_NAME">%1$s</xliff:g> ହେବା ପାଇଁ ଆପର ଆକ୍ସେସକୁ ଅଗ୍ରାହ୍ୟ କରାଯାଇଛି"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ଏବଂ ଆର୍ଥିକ ସୂଚନାକୁ ବିପଦରେ ପକାଇପାରୁଥିବା ସମ୍ବେଦନଶୀଳ ଅନୁମତିଗୁଡ଼ିକୁ ଆକ୍ସେସ କରିବା ପାଇଁ ଏହି ଆପଟି ଅନୁରୋଧ କରିଛି।<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>ଏହା ସମ୍ଭବ ଯେ ଏହି ପ୍ରତିବନ୍ଧିତ ଅନୁମତିଗୁଡ଼ିକ ବିନା ଆପ ସଠିକ ଭାବେ କାର୍ଯ୍ୟ କରିବ ନାହିଁ। &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;ଆକ୍ସେସକୁ କିପରି ଅନୁମତି ଦେବେ ତାହା ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"ଆପର ଆକ୍ସେସକୁ ଅଗ୍ରାହ୍ୟ କରାଯାଇଛି"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"ଏହି ଅନୁମତିକୁ ଆକ୍ସେସ ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ଏବଂ ଆର୍ଥିକ ସୂଚନାକୁ ବିପଦରେ ପକାଇପାରେ।<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>ଏହା ସମ୍ଭବ ଯେ ଏହି ପ୍ରତିବନ୍ଧିତ ଅନୁମତି ବିନା ଆପ ସଠିକ ଭାବେ କାର୍ଯ୍ୟ କରିବ ନାହିଁ। &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;ଆକ୍ସେସକୁ କିପରି ଅନୁମତି ଦେବେ ତାହା ଜାଣନ୍ତୁ&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"ଅଧିକ ଜାଣନ୍ତୁ"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"ବୁଝିଗଲି"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"ଠିକ ଅଛି"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"ଅନୁମତି ଅନୁରୋଧକୁ ବନ୍ଦ କରାଯାଇଛି"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"ଏହି ଆପ ଅତିରିକ୍ତ ଅନୁମତି ପାଇଁ ଅନୁରୋଧ କରୁଛି, ଏକ ଷ୍ଟ୍ରିମିଂ ସେସନରେ ଅନୁମତି ଦିଆଯାଇପାରିବ ନାହିଁ। ପ୍ରଥମେ ଆପଣଙ୍କ ଫୋନରେ ଅନୁମତି ଦିଅନ୍ତୁ।"</string>
 </resources>

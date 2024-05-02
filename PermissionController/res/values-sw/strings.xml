@@ -197,8 +197,7 @@
     <string name="app_permission_location_accuracy_subtitle" msgid="2654077606404987210">"Wakati umezima eneo mahususi, programu zinaweza kufikia eneo lako lililokadiriwa"</string>
     <string name="app_permission_title" msgid="2090897901051370711">"Ruhusa ya <xliff:g id="PERM">%1$s</xliff:g>"</string>
     <string name="app_permission_header" msgid="2951363137032603806">"Idhini ya programu hii kufikia <xliff:g id="PERM">%1$s</xliff:g>"</string>
-    <!-- no translation found for app_permission_header_with_device_name (7193042925656173271) -->
-    <skip />
+    <string name="app_permission_header_with_device_name" msgid="7193042925656173271">"Ufikaiji wa <xliff:g id="PERM">%1$s</xliff:g> katika programu hii kwenye <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"Angalia ruhusa zote za <xliff:g id="APP">%1$s</xliff:g>"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"Angalia programu zote zenye ruhusa hii"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"Onyesha matumizi ya maikrofoni ya mratibu"</string>
@@ -256,8 +255,7 @@
     <string name="allowed_storage_full" msgid="5356699280625693530">"Zinazoruhusiwa kudhibiti faili zote"</string>
     <string name="ask_header" msgid="2633816846459944376">"Uliza kila wakati"</string>
     <string name="denied_header" msgid="903209608358177654">"Zisizoruhusiwa"</string>
-    <!-- no translation found for permission_group_name_with_device_name (8798741850536024820) -->
-    <skip />
+    <string name="permission_group_name_with_device_name" msgid="8798741850536024820">"<xliff:g id="PERM_GROUP_NAME">%1$s</xliff:g> kwenye <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="storage_footer_hyperlink_text" msgid="8873343987957834810">"Angalia programu zaidi zinazoweza kufikia faili zote"</string>
     <string name="days" msgid="609563020985571393">"{count,plural, =1{Siku moja}other{Siku #}}"</string>
     <string name="hours" msgid="7302866489666950038">"{count,plural, =1{Saa #}other{Saa #}}"</string>
@@ -437,6 +435,7 @@
     <string name="default_apps_more" msgid="4078194675848858093">"Chaguomsingi zaidi"</string>
     <string name="default_apps_manage_domain_urls" msgid="6775566451561036069">"Kufungua viungo"</string>
     <string name="default_apps_for_work" msgid="4970308943596201811">"Programu chaguomsingi kazini"</string>
+    <string name="default_apps_for_private_profile" msgid="2022024112144880785">"Programu chaguomsingi za sehemu ya faragha"</string>
     <string name="default_app_none" msgid="9084592086808194457">"Hakuna"</string>
     <string name="default_app_system_default" msgid="6218386768175513760">"(Programu chaguomsingi ya mfumo)"</string>
     <string name="default_app_no_apps" msgid="115720991680586885">"Hakuna programu"</string>
@@ -550,6 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Hamna"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Saa 24\nzilizopita"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Siku\nsaba zilizopita"</string>
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> asilimia <xliff:g id="PERCENT">%2$d</xliff:g>"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"<xliff:g id="APP_NAME">%1$s</xliff:g> inalindwa na Android. Kwa sababu data yako inachakatwa kwenye kifaa hiki, matumizi ya ruhusa ya programu hii hayaonyeshwi kwenye sehemu ya kuonyesha hali au dashibodi yako ya faragha."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"<xliff:g id="APP_NAME">%1$s</xliff:g> inalindwa na Android. Kwa sababu data yako inachakatwa kwenye kifaa hiki, matumizi ya ruhusa ya programu hii hayaonyeshwi kwenye dashibodi yako ya faragha."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Kamera ya kifaa imezuiwa"</string>
@@ -663,8 +663,14 @@
     <string name="test_otp_msg" msgid="7559110574222727550">"Nenosiri lako la wakati mmoja ni 132435"</string>
     <string name="enhanced_confirmation_dialog_title" msgid="7562437438040966351">"Mipangilio imezuiwa"</string>
     <string name="enhanced_confirmation_dialog_desc" msgid="5921240234843839219">"Ili kulinda usalama wako, mipangilio hii haipatikani kwa sasa."</string>
-    <string name="enhanced_confirmation_dialog_title_permission" msgid="8411239333012890492">"Ruhusa ya kutumia <xliff:g id="PERMISSION_NAME">%1$s</xliff:g> umekataliwa"</string>
-    <string name="enhanced_confirmation_dialog_desc_permission" msgid="9207115054288224451">"Programu hii imeomba ruhusa ya <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>, ambayo ni mipangilio iliyozuiwa kwa sababu inaweza kuweka usalama na faragha yako hatarini. Kuzuiwa kwa ruhusa hii kunaweza kuzuia programu hii isifanye kazi."</string>
+    <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"Programu haijapewa idhini ya kufikia <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
+    <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"Programu imeomba kufikia ruhusa nyeti, hali ambayo inaweza kuhatarisha maelezo yako ya kifedha na ya binafsi.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kuna uwezekano kuwa programu haitafanya kazi vizuri bila ruhusa hii inayodhibitiwa. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Pata maelezo kuhusu jinsi ya kuruhusu ufikiaji&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"Programu haijapewa idhini ya kuwa <xliff:g id="ROLE_NAME">%1$s</xliff:g> chaguomsingi"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Programu imeomba kufikia ruhusa nyeti, hali ambayo inaweza kuhatarisha maelezo yako ya kifedha na ya binafsi.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kuna uwezekano kuwa programu haitafanya kazi vizuri bila ruhusa hii inayodhibitiwa. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Pata maelezo kuhusu jinsi ya kuruhusu ufikiaji&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"Programu haijapewa idhini"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Ufikiaji wa ruhusa hii unaweza kuhatarisha maelezo yako ya kifedha na ya binafsi.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kuna uwezekano kuwa programu haitafanya kazi vizuri bila ruhusa hii inayodhibitiwa. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Pata maelezo kuhusu jinsi ya kuruhusu ufikiaji&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Pata maelezo zaidi"</string>
-    <string name="enhanced_confirmation_dialog_ok" msgid="1767075979746135617">"Nimeelewa"</string>
+    <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"Sawa"</string>
+    <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Ombi la ruhusa limezuiwa"</string>
+    <string name="permission_grant_dialog_streaming_blocked_description" msgid="838165608934085319">"Programu hii inaomba ruhusa za ziada. Hata hivyo, huwezi kutoa ruhusa ukitiririsha. Ruhusu kwenye simu yako kwanza."</string>
 </resources>

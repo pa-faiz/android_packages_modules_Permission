@@ -30,6 +30,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.Manifest;
 import android.app.admin.DevicePolicyManager;
+import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -56,6 +57,7 @@ import androidx.annotation.RequiresApi;
 
 import com.android.permissioncontroller.PermissionControllerProto.PermissionControllerDumpProto;
 import com.android.permissioncontroller.PermissionControllerStatsLog;
+import com.android.permissioncontroller.ecm.EnhancedConfirmationStatsLogUtils;
 import com.android.permissioncontroller.permission.model.AppPermissionGroup;
 import com.android.permissioncontroller.permission.model.AppPermissions;
 import com.android.permissioncontroller.permission.model.Permission;
@@ -539,6 +541,17 @@ public final class PermissionControllerServiceImpl extends PermissionControllerL
             return false;
         }
 
+        // TODO(b/333867076): Switch to !SdkLevel.isAtLeastW()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            RoleManager roleManager = getSystemService(RoleManager.class);
+            List<String> roleHolders =
+                    roleManager.getRoleHolders(RoleManager.ROLE_SYSTEM_SUPERVISION);
+            if (roleHolders.contains(callerPackageName)) {
+                canAdminGrantSensorsPermissions = true;
+            }
+        }
+
         ArrayList<String> expandedPermissions = addSplitPermissions(
                 Collections.singletonList(unexpandedPermission),
                 callerPkgInfo.applicationInfo.targetSdkVersion);
@@ -742,12 +755,14 @@ public final class PermissionControllerServiceImpl extends PermissionControllerL
                         "Permission grant result requestId=" + requestId + " callingUid="
                                 + uid + " callingPackage=" + packageName + " permission="
                                 + permName + " isImplicit=false" + " result=" + r);
-
+                boolean isPackageRestrictedByEnhancedConfirmation =
+                        EnhancedConfirmationStatsLogUtils.INSTANCE.isPackageEcmRestricted(this,
+                        packageName, uid);
                 PermissionControllerStatsLog.write(
                         PermissionControllerStatsLog.PERMISSION_GRANT_REQUEST_RESULT_REPORTED,
                         requestId, uid, packageName, permName, false, r,
                         /* permission_rationale_shown = */ false,
-                        /* TODO: 324254847 use real ECM value */ false);
+                        isPackageRestrictedByEnhancedConfirmation);
             }
         }
     }

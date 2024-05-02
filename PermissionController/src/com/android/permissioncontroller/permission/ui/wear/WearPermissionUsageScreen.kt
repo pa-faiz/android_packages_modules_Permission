@@ -30,31 +30,56 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.android.permissioncontroller.R
 import com.android.permissioncontroller.permission.ui.handheld.v31.PermissionUsageControlPreference
-import com.android.permissioncontroller.permission.ui.model.v31.PermissionUsageViewModel
+import com.android.permissioncontroller.permission.ui.viewmodel.v31.PermissionUsageViewModel
+import com.android.permissioncontroller.permission.ui.viewmodel.v31.PermissionUsagesUiState
 import com.android.permissioncontroller.permission.ui.wear.elements.Chip
 import com.android.permissioncontroller.permission.ui.wear.elements.ScrollableScreen
+import com.android.permissioncontroller.permission.ui.wear.model.WearPermissionUsageViewModel
+import com.android.permissioncontroller.permission.utils.Utils
 import java.text.Collator
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun WearPermissionUsageScreen(sessionId: Long, viewModel: PermissionUsageViewModel) {
+fun WearPermissionUsageScreen(
+    sessionId: Long,
+    viewModel: PermissionUsageViewModel,
+    wearViewModel: WearPermissionUsageViewModel
+) {
     val context = LocalContext.current
-    val permissionUsagesUiData = viewModel.permissionUsagesUiLiveData.observeAsState(null)
-    val showSystem = viewModel.showSystemAppsLiveData.observeAsState(false)
-    val show7Days = viewModel.show7DaysLiveData.observeAsState(false)
+    val permissionUsagesUiData = wearViewModel.permissionUsagesUiStateLiveData.observeAsState(null)
+    val showSystem = wearViewModel.showSystemAppsLiveData.observeAsState(false)
+    val show7Days = wearViewModel.show7DaysLiveData.observeAsState(false)
     var isLoading by remember { mutableStateOf(true) }
-
-    val hasSystemApps: Boolean = permissionUsagesUiData.value?.containsSystemAppUsages ?: false
-    val onShowSystemClick: (Boolean) -> Unit = { show -> run { viewModel.updateShowSystem(show) } }
+    val isDataLoaded = permissionUsagesUiData.value is PermissionUsagesUiState.Success
+    val hasSystemApps: Boolean =
+        if (isDataLoaded) {
+            val uiState = permissionUsagesUiData.value as PermissionUsagesUiState.Success
+            uiState.shouldShowSystemToggle
+        } else {
+            false
+        }
+    val onShowSystemClick: (Boolean) -> Unit = { show ->
+        run {
+            wearViewModel.updatePermissionUsagesUiStateLiveData(viewModel.updateShowSystem(show))
+            wearViewModel.showSystemAppsLiveData.value = viewModel.getShowSystemApps()
+        }
+    }
 
     val permissionGroupWithUsageCounts: Map<String, Int> =
-        permissionUsagesUiData.value?.permissionGroupsWithUsageCount ?: emptyMap()
+        if (isDataLoaded) {
+            val uiState = permissionUsagesUiData.value as PermissionUsagesUiState.Success
+            uiState.permissionGroupUsageCount
+        } else {
+            emptyMap()
+        }
     val permissionGroupWithUsageCountsEntries: List<Map.Entry<String, Int>> =
         ArrayList<Map.Entry<String, Int>>(permissionGroupWithUsageCounts.entries)
 
     val collator = Collator.getInstance(context.resources.configuration.locales.get(0))
     val permissionGroupPreferences =
         permissionGroupWithUsageCountsEntries
+            // Removing Health Connect from the list of permissions to fix b/331260850
+            .filterNot { Utils.isHealthPermissionGroup(it.key) }
             .map {
                 PermissionUsageControlPreference(
                     context,
@@ -82,7 +107,7 @@ fun WearPermissionUsageScreen(sessionId: Long, viewModel: PermissionUsageViewMod
         permissionGroupPreferences
     )
 
-    if (isLoading && permissionUsagesUiData.value != null) {
+    if (isLoading && isDataLoaded) {
         isLoading = false
     }
 }
