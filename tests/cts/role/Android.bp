@@ -32,12 +32,12 @@ android_test {
         "androidx.test.rules",
         "compatibility-device-util-axt",
         "ctstestrunner-axt",
+        "Harrier",
         "platform-test-annotations",
         "truth",
     ],
 
     test_suites: [
-        "cts",
         "general-tests",
         "mts-permission",
         "mcts-permission",
@@ -47,5 +47,6 @@ android_test {
         ":CtsRoleTestApp",
         ":CtsRoleTestApp28",
         ":CtsRoleTestApp33WithoutInCallService",
+        ":CtsRoleTestAppForProfile",
     ],
 }

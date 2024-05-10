@@ -116,14 +116,6 @@ class AppPermissionsTest {
 
         openAppPermissionsScreen()
 
-        val expectedGrantInfoMap =
-            mapOf(
-                "Allowed" to listOf(externalDeviceCameraText),
-                "Ask every time" to emptyList(),
-                "Not allowed" to listOf("Camera")
-            )
-        assertEquals(expectedGrantInfoMap, getGrantInfoMap())
-
         clickPermissionItem(externalDeviceCameraText)
 
         verifyPermissionMessage()
@@ -133,6 +125,15 @@ class AppPermissionsTest {
             askChecked = false,
             denyChecked = false
         )
+
+        UiAutomatorUtils2.getUiDevice().pressBack()
+        val expectedGrantInfoMap =
+            mapOf(
+                "Allowed" to listOf(externalDeviceCameraText),
+                "Ask every time" to emptyList(),
+                "Not allowed" to listOf("Camera")
+            )
+        assertEquals(expectedGrantInfoMap, getGrantInfoMap())
     }
 
     @RequiresFlagsEnabled(
@@ -380,16 +381,16 @@ class AppPermissionsTest {
     }
 
     private fun openAppPermissionsScreen() {
+        val intent =
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", APP_PACKAGE_NAME, null)
+                addCategory(Intent.CATEGORY_DEFAULT)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
         eventually(
             {
-                instrumentation.context.startActivity(
-                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", APP_PACKAGE_NAME, null)
-                        addCategory(Intent.CATEGORY_DEFAULT)
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    }
-                )
+                instrumentation.context.startActivity(intent)
                 UiAutomatorUtils2.waitFindObject(By.text("Permissions"), 12_000).click()
             },
             20_000
