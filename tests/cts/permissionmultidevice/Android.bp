@@ -38,12 +38,12 @@ android_test {
         "permission-test-util-lib",
         "permission-multidevice-test-util-lib",
         "android.permission.flags-aconfig-java",
+        "collector-device-lib",
     ],
     data: [
         ":CtsAccessRemoteDeviceCamera",
     ],
     test_suites: [
-        "cts",
         "general-tests",
         "mts-permission",
         "mcts-permission",
