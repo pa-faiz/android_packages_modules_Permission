@@ -72,7 +72,7 @@
     <string name="denied_permission_decision" msgid="5308961501779563781">"ଆପଣ <xliff:g id="PERMISSION_NAME">%2$s</xliff:g>କୁ <xliff:g id="APP_NAME">%1$s</xliff:g> ଆକ୍ସେସ ଅଗ୍ରାହ୍ୟ କରିଛନ୍ତି"</string>
     <string name="days_ago" msgid="6650359081551335629">"{count,plural, =0{ଆଜି}=1{1 ଦିନ ପୂର୍ବେ}other{# ଦିନ ପୂର୍ବେ}}"</string>
     <string name="app_disable_dlg_positive" msgid="7418444149981904940">"ଆପ୍ ଅକ୍ଷମ କରନ୍ତୁ"</string>
-    <string name="app_disable_dlg_text" msgid="3126943217146120240">"ଯଦି ଆପଣ ଏହି ଆପକୁ ଅକ୍ଷମ କରିବେ, ତେବେ Android ଓ ଅନ୍ୟ ଆପଗୁଡ଼ିକ ଆଉ ଆଶାନୁରୂପେ କାର୍ଯ୍ୟ କରିନପାରେ। ମନେରଖନ୍ତୁ ଯେ, ଏହି ଆପ୍ ଆପଣଙ୍କ ଡିଭାଇସରେ ପୂର୍ବରୁ-ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଯୋଗୁଁ ଆପଣ ଏହାକୁ ଡିଲିଟ୍ କରିପାରିବେ ନାହିଁ। ଅକ୍ଷମ କରି, ଆପଣ ଏହି ଆପକୁ ବନ୍ଦ କରିଦିଅନ୍ତି ଏବଂ ଆପଣଙ୍କ ଡିଭାଇସରେ ଲୁଚାଇଦିଅନ୍ତି।"</string>
+    <string name="app_disable_dlg_text" msgid="3126943217146120240">"ଯଦି ଆପଣ ଏହି ଆପକୁ ଅକ୍ଷମ କରିବେ, ତେବେ Android ଓ ଅନ୍ୟ ଆପ୍ସ ଆଉ ଆଶାନୁରୂପେ କାର୍ଯ୍ୟ କରିନପାରେ। ମନେରଖନ୍ତୁ ଯେ, ଏହି ଆପ ଆପଣଙ୍କ ଡିଭାଇସରେ ପୂର୍ବରୁ-ଇନଷ୍ଟଲ କରାଯାଇଥିବା ଯୋଗୁଁ ଆପଣ ଏହାକୁ ଡିଲିଟ କରିପାରିବେ ନାହିଁ। ଅକ୍ଷମ କରିବା ଫଳରେ ଆପଣ ଏହି ଆପକୁ ବନ୍ଦ କରି ଆପଣଙ୍କ ଡିଭାଇସରେ ଲୁଚାଇଦିଅନ୍ତି।"</string>
     <string name="app_permission_manager" msgid="3903811137630909550">"ଅନୁମତି ପରିଚାଳକ"</string>
     <string name="never_ask_again" msgid="4728762438198560329">"ପୁଣି ପଚାରନ୍ତୁ ନାହିଁ"</string>
     <string name="no_permissions" msgid="3881676756371148563">"କୌଣସି ଅନୁମତିଗୁଡ଼ିକ ନାହିଁ"</string>
@@ -558,6 +558,11 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"ଆପ ଓ ସେବାଗୁଡ଼ିକ ପାଇଁ"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"ଆପଣ ଏକ ଜରୁରୀକାଳୀନ ନମ୍ବରକୁ କଲ କରିବା ସମୟରେ ମାଇକ୍ରୋଫୋନ ଡାଟା ଏବେ ବି ସେୟାର କରାଯାଇପାରେ।"</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"ପରିବର୍ତ୍ତନ କରନ୍ତୁ"</string>
+    <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"କେମେରା ଆକ୍ସେସ ବନ୍ଦ ଅଛି"</string>
+    <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"ଇନଫୋଟେନମେଣ୍ଟ ଆପ୍ସ ପାଇଁ"</string>
+    <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"ଆବଶ୍ୟକୀୟ ଆପ୍ସ ପାଇଁ"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"ଏହି ଆପ ଆବଶ୍ୟକ"</string>
+    <string name="automotive_required_app_summary" msgid="6514902316658090465">"ଆପଣଙ୍କ କାରର ନିର୍ମାତାଙ୍କ ଦ୍ୱାରା ଏହି ଆପ ଆବଶ୍ୟକ"</string>
     <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"ସୁରକ୍ଷା ଏବଂ ଗୋପନୀୟତା"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"ଡିଭାଇସକୁ ସ୍କାନ କରନ୍ତୁ"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"ଖାରଜ କରନ୍ତୁ"</string>

@@ -558,6 +558,11 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"Untuk aplikasi dan layanan"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Data mikrofon mungkin tetap dibagikan saat Anda menelepon nomor darurat."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Ubah"</string>
+    <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"Akses kamera nonaktif"</string>
+    <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"Untuk aplikasi infotainmen"</string>
+    <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"Untuk aplikasi yang diperlukan"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"Aplikasi ini diperlukan"</string>
+    <string name="automotive_required_app_summary" msgid="6514902316658090465">"Aplikasi ini diperlukan produsen mobil Anda"</string>
     <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Keamanan &amp; privasi"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Pindai perangkat"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Tutup"</string>
@@ -645,7 +650,7 @@
     <string name="app_permission_rationale_message" msgid="8511466916077100713">"Keamanan data"</string>
     <string name="app_location_permission_rationale_title" msgid="925420340572401350">"Data lokasi mungkin dibagikan"</string>
     <string name="app_location_permission_rationale_subtitle" msgid="6986985722752868692">"Aplikasi ini menyatakan bahwa aplikasi mungkin membagikan data lokasi Anda kepada pihak ketiga"</string>
-    <string name="data_sharing_updates_title" msgid="7996933386875213859">"Pembaruan berbagi data untuk lokasi"</string>
+    <string name="data_sharing_updates_title" msgid="7996933386875213859">"Pembaruan berbagi data lokasi"</string>
     <string name="data_sharing_updates_summary" msgid="764113985772233889">"Tinjau aplikasi yang mengubah caranya berbagi data lokasi Anda"</string>
     <string name="data_sharing_updates_subtitle" msgid="6311537708950632329">"Aplikasi ini telah mengubah caranya berbagi data lokasi Anda. Aplikasi mungkin sebelumnya tidak membagikan data, atau mungkin kini membagikan data untuk tujuan iklan atau pemasaran."</string>
     <string name="data_sharing_updates_footer_message" msgid="1582711655172892107">"Developer aplikasi ini memberikan info tentang praktik berbagi data mereka kepada app store. Developer dapat memperbaruinya dari waktu ke waktu.\n\nPraktik berbagi data mungkin berbeda-beda berdasarkan versi aplikasi, penggunaan, wilayah, dan usia Anda."</string>

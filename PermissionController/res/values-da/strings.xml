@@ -549,8 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Ingen"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Seneste\n24 timer"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"De seneste\n7 dage"</string>
-    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
-    <skip />
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> <xliff:g id="PERCENT">%2$d</xliff:g> procent"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"<xliff:g id="APP_NAME">%1$s</xliff:g> beskyttes af Android. Da dine data behandles på denne enhed, vises denne apps anvendelse af tilladelser ikke i statusbjælken i dit privatlivspanel."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"<xliff:g id="APP_NAME">%1$s</xliff:g> beskyttes af Android. Da dine data behandles på denne enhed, vises denne apps anvendelse af tilladelser ikke i dit privatlivspanel."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Enhedens kamera er blokeret"</string>
@@ -559,6 +558,11 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"For apps og tjenester"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Mikrofondata deles muligvis stadig, når du ringer til et alarmnummer."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Skift"</string>
+    <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"Kameraadgang er deaktiveret"</string>
+    <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"Til infotainmentapps"</string>
+    <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"Til påkrævede apps"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"Denne app er påkrævet"</string>
+    <string name="automotive_required_app_summary" msgid="6514902316658090465">"Bilproducenten kræver denne app"</string>
     <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Sikkerhed og privatliv"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Scan enhed"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Afvis"</string>

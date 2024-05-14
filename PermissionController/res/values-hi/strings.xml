@@ -62,7 +62,7 @@
     <string name="app_permissions" msgid="3369917736607944781">"ऐप्लिकेशन की अनुमतियां"</string>
     <string name="unused_apps" msgid="2058057455175955094">"इस्तेमाल नहीं किए गए ऐप्लिकेशन"</string>
     <string name="edit_photos_description" msgid="5540108003480078892">"इस ऐप्लिकेशन के पास किन फ़ोटो का ऐक्सेस होगा, इसमें बदलाव करें"</string>
-    <string name="no_unused_apps" msgid="12809387670415295">"ऐसा कोई ऐप्लिकेशन नहींं है जिसका इस्तेमाल न किया गया हो"</string>
+    <string name="no_unused_apps" msgid="12809387670415295">"ऐसा कोई ऐप्लिकेशन नहींं है जो इस्तेमाल में न हो"</string>
     <string name="zero_unused_apps" msgid="9024448554157499748">"इस्तेमाल न किए जाने वाले ऐप"</string>
     <string name="review_permission_decisions" msgid="309559429150613632">"हाल ही में दी गई अनुमतियां"</string>
     <string name="review_permission_decisions_view_all" msgid="90391040431566130">"हाल ही में दी गई सभी अनुमतियां देखें"</string>
@@ -201,7 +201,7 @@
     <string name="app_permission_footer_app_permissions_link" msgid="4926890342636587393">"<xliff:g id="APP">%1$s</xliff:g> को मिली सभी अनुमतियां देखें"</string>
     <string name="app_permission_footer_permission_apps_link" msgid="3941988129992794327">"इस अनुमति वाले सभी ऐप्लिकेशन देखें"</string>
     <string name="assistant_mic_label" msgid="1011432357152323896">"असिस्टेंट माइक्रोफ़ोन के इस्तेमाल से जुड़ा डेटा दिखाएं"</string>
-    <string name="unused_apps_category_title" msgid="2988455616845243901">"इस्तेमाल न किए जाने वाले ऐप की सेटिंग"</string>
+    <string name="unused_apps_category_title" msgid="2988455616845243901">"इस्तेमाल न हो रहे ऐप के लिए सेटिंग"</string>
     <string name="auto_revoke_label" msgid="5068393642936571656">"ऐप्लिकेशन का इस्तेमाल न होने पर अनुमतियां हटाएं"</string>
     <string name="unused_apps_label" msgid="2595428768404901064">"अनुमतियां हटाएं और जगह खाली करें"</string>
     <string name="unused_apps_label_v2" msgid="7058776770056517980">"इस्तेमाल न होने पर ऐप गतिविधि रोकें"</string>
@@ -221,7 +221,7 @@
     <string name="auto_revoked_app_summary_one" msgid="7093213590301252970">"<xliff:g id="PERMISSION_NAME">%s</xliff:g> की अनुमति हटाई गई"</string>
     <string name="auto_revoked_app_summary_two" msgid="1910545340763709389">"<xliff:g id="PERMISSION_NAME_0">%1$s</xliff:g> और <xliff:g id="PERMISSION_NAME_1">%2$s</xliff:g> की अनुमतियां हटाई गईं"</string>
     <string name="auto_revoked_app_summary_many" msgid="5930976230827378798">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> और <xliff:g id="NUMBER">%2$s</xliff:g> अन्य अनुमतियां हटाई गईं"</string>
-    <string name="unused_apps_page_title" msgid="6986983535677572559">"इस्तेमाल नहीं किए गए ऐप्लिकेशन"</string>
+    <string name="unused_apps_page_title" msgid="6986983535677572559">"इस्तेमाल नहीं हो रहे ऐप्लिकेशन"</string>
     <string name="unused_apps_page_summary" msgid="1867593913217272155">"अगर किसी ऐप्लिकेशन को कुछ महीनों तक इस्तेमाल नहीं किया जाता, तो:\n\n• आपके डेटा की सुरक्षा के लिए, उस ऐप्लिकेशन को दी गई अनुमतियां हटा दी जाती हैं\n• बैटरी बचाने के लिए, सूचनाएं बंद कर दी जाती हैं\n• स्टोरेज खाली करने के लिए, डिवाइस पर कुछ समय तक रहने वाली फ़ाइलें हटा दी जाती हैं\n\nदोबारा अनुमतियां देने और सूचनाएं फिर से पाने के लिए, ऐप्लिकेशन खोलें."</string>
     <string name="unused_apps_page_tv_summary" msgid="2624911608663778308">"अगर एक महीने से किसी ऐप्लिकेशन को इस्तेमाल न किया गया हो, तो:\n\n• आपके डेटा को सुरक्षित रखने के लिए, उस ऐप्लिकेशन को दी गई अनुमतियां हटा दी जाती हैं\n• मेमोरी खाली करने के लिए, डिवाइस पर कुछ समय के लिए सेव की गई फ़ाइलें हटा दी जाती हैं\n\nअनुमतियां फिर से देने के लिए, ऐप्लिकेशन खोलें."</string>
     <string name="last_opened_category_title" msgid="8796557894614236128">"{count,plural, =1{पिछली बार इसे # महीने से भी पहले खोला गया था}one{पिछली बार इसे # महीने से भी पहले खोला गया था}other{पिछली बार इसे # महीने से भी पहले खोला गया था}}"</string>
@@ -353,10 +353,10 @@
     <string name="accessibility_service_dialog_bottom_text_multiple" msgid="7009848932395519852">"ये ऐप्लिकेशन आपकी स्क्रीन, कार्रवाइयां और इनपुट देख सकते हैं, कार्रवाई कर सकते हैं और डिसप्ले को नियंत्रित कर सकते हैं."</string>
     <string name="role_assistant_label" msgid="4727586018198208128">"डिफ़ॉल्ट डिजिटल असिस्टेंट ऐप"</string>
     <string name="role_assistant_short_label" msgid="3369003713187703399">"डिजिटल असिस्टेंट ऐप्लिकेशन"</string>
-    <string name="role_assistant_description" msgid="6622458130459922952">"आप जो स्क्रीन देख रहे हैं, उसकी जानकारी के मुताबिक सहायक ऐप्लिकेशन आपकी मदद कर सकते हैं. कुछ ऐप्लिकेशन पर आपकी पूरी मदद करने के लिए लॉन्चर और बोलकर फ़ोन को निर्देश देना, ये दोनों सेवाएं काम करती हैं."</string>
+    <string name="role_assistant_description" msgid="6622458130459922952">"स्क्रीन पर दिख रही जानकारी के आधार पर, सहायक ऐप्लिकेशन आपकी मदद कर सकते हैं. कुछ ऐप्लिकेशन हर तरह से आपकी मदद करने के लिए, लॉन्चर और फ़ोन को बोलकर निर्देश देने वाली सेवाओं, दोनों के साथ काम करते हैं."</string>
     <string name="role_browser_label" msgid="2877796144554070207">"डिफ़ॉल्ट ब्राउज़र ऐप्लिकेशन"</string>
     <string name="role_browser_short_label" msgid="6745009127123292296">"ब्राउज़र ऐप्लिकेशन"</string>
-    <string name="role_browser_description" msgid="3465253637499842671">"ऐसे ऐप्लिकेशन जिनसे आपको इंटरनेट का ऐक्सेस मिलता है. साथ ही, टैप करने के लिए डिसप्ले लिंक मिलता है"</string>
+    <string name="role_browser_description" msgid="3465253637499842671">"ऐसे ऐप्लिकेशन जो आपको इंटरनेट तक ऐक्सेस देते हैं और आपके टैप किए गए लिंक को डिसप्ले करते हैं"</string>
     <string name="role_browser_request_title" msgid="2895200507835937192">"<xliff:g id="APP_NAME">%1$s</xliff:g> को अपने डिफ़ॉल्ट ब्राउज़र ऐप्लिकेशन के तौर पर सेट करें?"</string>
     <string name="role_browser_request_description" msgid="5888803407905985941">"अनुमति की ज़रूरत नहीं है"</string>
     <string name="role_dialer_label" msgid="1100224146343237968">"डिफ़ॉल्ट फ़ोन ऐप्लिकेशन"</string>
@@ -407,7 +407,7 @@
     <string name="role_notes_search_keywords" msgid="7710756695666744631">"नोट"</string>
     <string name="role_wallet_label" msgid="3719419175656204207">"डिफ़ॉल्ट वॉलेट ऐप्लिकेशन"</string>
     <string name="role_wallet_short_label" msgid="6521288403762457452">"वॉलेट ऐप्लिकेशन"</string>
-    <string name="role_wallet_description" msgid="3726535836165949838">"वॉलेट ऐप्लिकेशन में, अलग-अलग तरह के लेन-देन में इस्तेमाल होने वाली चीज़ों को स्टोर किया जा सकता है. जैसे, क्रेडिट कार्ड, लॉयल्टी कार्ड, कार की डिजिटल कुंजी वगैरह."</string>
+    <string name="role_wallet_description" msgid="3726535836165949838">"वॉलेट ऐप्लिकेशन में, अलग-अलग तरह के लेन-देन में इस्तेमाल होने वाली चीज़ों की जानकारी को स्टोर किया जा सकता है. जैसे, क्रेडिट कार्ड, लॉयल्टी कार्ड, कार की डिजिटल कुंजी वगैरह की जानकारी."</string>
     <string name="role_wallet_request_title" msgid="4770217108262737093">"क्या <xliff:g id="APP_NAME">%1$s</xliff:g> को अपने डिफ़ॉल्ट वॉलेट ऐप्लिकेशन के तौर पर सेट करना है?"</string>
     <string name="role_wallet_request_description" msgid="6305487425777483053">"अनुमति लेना ज़रूरी नहीं है"</string>
     <string name="request_role_current_default" msgid="738722892438247184">"मौजूदा डिफ़ॉल्ट"</string>
@@ -558,6 +558,11 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"ऐप्लिकेशन और सेवाओं के लिए"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"जब आपातकालीन नंबर पर कॉल किया जाता है, तो माइक ब्लॉक होने के बावजूद माइक्रोफ़ोन का डेटा शेयर किया जा सकता है."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"बदलें"</string>
+    <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"कैमरे का ऐक्सेस बंद है"</string>
+    <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"सूचना और मनोरंजन की सुविधा देने वाले ऐप्लिकेशन के लिए"</string>
+    <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"ज़रूरी ऐप्लिकेशन के लिए"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"यह ऐप्लिकेशन ज़रूरी है"</string>
+    <string name="automotive_required_app_summary" msgid="6514902316658090465">"यह ऐप्लिकेशन आपकी कार के मैन्युफ़ैक्चरर के लिए ज़रूरी है"</string>
     <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"सुरक्षा और निजता"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"डिवाइस स्कैन करें"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"खारिज करें"</string>
@@ -646,9 +651,9 @@
     <string name="app_location_permission_rationale_title" msgid="925420340572401350">"जगह की जानकारी का डेटा शेयर किया जा सकता है"</string>
     <string name="app_location_permission_rationale_subtitle" msgid="6986985722752868692">"इस ऐप्लिकेशन में बताया गया है कि यह तीसरे पक्ष के साथ जगह की जानकारी का डेटा शेयर कर सकता है"</string>
     <string name="data_sharing_updates_title" msgid="7996933386875213859">"जगह की जानकारी का डेटा शेयर करने के तरीके के बारे में अपडेट"</string>
-    <string name="data_sharing_updates_summary" msgid="764113985772233889">"उन ऐप्लिकेशन को देखें जिन्होंने आपकी जगह की जानकारी का डेटा शेयर करने का तरीका बदल दिया है"</string>
-    <string name="data_sharing_updates_subtitle" msgid="6311537708950632329">"इन ऐप्लिकेशन ने आपकी जगह की जानकारी के डेटा को शेयर करने का तरीका बदल दिया है. ऐसा हो सकता है कि ये ऐप्लिकेशन पहले जगह की जानकारी का डेटा शेयर न करते हों या फिर अब विज्ञापन या मार्केटिंग के लिए यह डेटा शेयर किया हो."</string>
-    <string name="data_sharing_updates_footer_message" msgid="1582711655172892107">"इन ऐप्लिकेशन के डेवलपर ने किसी ऐप स्टोर पर डेटा शेयर करने के उनके तरीकों की जानकारी बताई है. वे समय-समय पर इस जानकारी को अपडेट कर सकते हैं.\n\nडेटा शेयर करने के तरीके अलग-अलग हो सकते हैं. ये आपकी जगह, उम्र, ऐप्लिकेशन के वर्शन, और उसके इस्तेमाल के हिसाब से तय किए जाते हैं."</string>
+    <string name="data_sharing_updates_summary" msgid="764113985772233889">"उन ऐप्लिकेशन को देखा जा सकता है जिन्होंने आपकी जगह की जानकारी का डेटा शेयर करने का अपना तरीका बदल दिया है"</string>
+    <string name="data_sharing_updates_subtitle" msgid="6311537708950632329">"इन ऐप्लिकेशन ने आपकी जगह की जानकारी के डेटा को शेयर करने का तरीका बदल दिया है. ऐसा हो सकता है कि ये ऐप्लिकेशन पहले जगह की जानकारी का डेटा शेयर न करते हों या फिर अब ये विज्ञापन या मार्केटिंग के लिए यह डेटा शेयर करें."</string>
+    <string name="data_sharing_updates_footer_message" msgid="1582711655172892107">"इन ऐप्लिकेशन के डेवलपरों ने, डेटा शेयर करने के अपने तरीकों के बारे में ऐप स्टोर पर जानकारी दी है. वे समय-समय पर इस जानकारी को अपडेट कर सकते हैं.\n\nडेटा शेयर करने के तरीके अलग-अलग हो सकते हैं. ये आपकी जगह, उम्र, ऐप्लिकेशन के वर्शन, और उसके इस्तेमाल के हिसाब से तय किए जाते हैं."</string>
     <string name="learn_about_data_sharing" msgid="4200480587079488045">"डेटा शेयर करने की नीतियों के बारे में जानें"</string>
     <string name="shares_location_with_third_parties" msgid="2278051743742057767">"आपकी जगह की जानकारी का डेटा अब तीसरे पक्षों के साथ शेयर किया गया है"</string>
     <string name="shares_location_with_third_parties_for_advertising" msgid="1918588064014480513">"विज्ञापन देने या मार्केटिंग करने के लिए, आपकी जगह की जानकारी को अब तीसरे पक्षों के साथ शेयर किया जा रहा है"</string>

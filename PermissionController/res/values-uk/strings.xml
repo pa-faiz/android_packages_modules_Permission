@@ -72,7 +72,7 @@
     <string name="denied_permission_decision" msgid="5308961501779563781">"Ви заборонили додатку <xliff:g id="APP_NAME">%1$s</xliff:g> такий доступ: <xliff:g id="PERMISSION_NAME">%2$s</xliff:g>"</string>
     <string name="days_ago" msgid="6650359081551335629">"{count,plural, =0{Сьогодні}=1{1 день тому}one{# день тому}few{# дні тому}many{# днів тому}other{# дня тому}}"</string>
     <string name="app_disable_dlg_positive" msgid="7418444149981904940">"Вимкнути додаток"</string>
-    <string name="app_disable_dlg_text" msgid="3126943217146120240">"Якщо вимкнути цей додаток, система Android та інші додатки можуть працювати неналежним чином. Важливо: ви не можете видалити цей додаток, оскільки він був попередньо встановлений на пристрої. Вимкнений додаток буде приховано."</string>
+    <string name="app_disable_dlg_text" msgid="3126943217146120240">"Якщо вимкнути цей додаток, система Android і інші додатки можуть працювати неналежним чином. Важливо: ви не можете видалити цей додаток, оскільки він був попередньо встановлений на пристрої. Вимкнений додаток буде приховано."</string>
     <string name="app_permission_manager" msgid="3903811137630909550">"Менеджер дозволів"</string>
     <string name="never_ask_again" msgid="4728762438198560329">"Більше не запитувати"</string>
     <string name="no_permissions" msgid="3881676756371148563">"Немає дозволів"</string>
@@ -549,8 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Немає"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Минулі\n24 години"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Останні\n7 днів"</string>
-    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
-    <skip />
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>: <xliff:g id="PERCENT">%2$d</xliff:g> відсотків"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"Додаток <xliff:g id="APP_NAME">%1$s</xliff:g> захищено системою Android. Оскільки ваші дані обробляються на цьому пристрої, дозволи, які використовує цей додаток, не відображаються на панелі керування дозволами чи в рядку стану."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"Додаток <xliff:g id="APP_NAME">%1$s</xliff:g> захищено системою Android. Оскільки ваші дані обробляються на цьому пристрої, дозволи, які використовує цей додаток, не відображаються на панелі керування дозволами."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Камеру пристрою заблоковано"</string>
@@ -559,6 +558,11 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"Для додатків і сервісів"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Дані мікрофона можуть усе одно передаватися під час виклику на екстрений номер."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Змінити"</string>
+    <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"Доступ до камери вимкнено"</string>
+    <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"Для додатків інформаційно-розважальної системи"</string>
+    <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"Для обов’язкових додатків"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"Це обов’язковий додаток"</string>
+    <string name="automotive_required_app_summary" msgid="6514902316658090465">"Це обов’язковий додаток згідно з вимогами виробника автомобіля"</string>
     <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Безпека й конфіденційність"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Сканувати пристрій"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Закрити"</string>

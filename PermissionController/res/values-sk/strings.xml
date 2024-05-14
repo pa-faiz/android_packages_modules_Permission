@@ -542,7 +542,7 @@
     <string name="not_used_permissions_description" msgid="7595514824169388718">"Povolenia používané iba systémovými aplikáciami."</string>
     <string name="additional_permissions_label" msgid="7693557637462569046">"Ďalšie povolenia"</string>
     <string name="additional_permissions_description" msgid="2186611950890732112">"Povolenia definované aplikáciami."</string>
-    <string name="privdash_label_camera" msgid="1426440033626198096">"Kamera"</string>
+    <string name="privdash_label_camera" msgid="1426440033626198096">"Fotoaparát"</string>
     <string name="privdash_label_microphone" msgid="8415035835803511693">"Mikrofón"</string>
     <string name="privdash_label_location" msgid="6882400763866489291">"Poloha"</string>
     <string name="privdash_label_other" msgid="3710394147423236033">"Iné"</string>
@@ -558,6 +558,11 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"V prípade aplikácií a služieb"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Keď zavoláte na tiesňovú linku, môžu sa stále zdieľať údaje mikrofónu."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Zmeniť"</string>
+    <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"Prístup ku kamere je vypnutý"</string>
+    <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"Pre aplikácie pre palubný systém"</string>
+    <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"Pre požadované aplikácie"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"Vyžaduje sa táto aplikácia"</string>
+    <string name="automotive_required_app_summary" msgid="6514902316658090465">"Túto aplikáciu vyžaduje výrobca vášho auta"</string>
     <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Zabezpečenie, ochrana súkromia"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Skontrolovať zariadenie"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Zavrieť"</string>

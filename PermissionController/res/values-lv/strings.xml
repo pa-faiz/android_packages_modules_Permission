@@ -549,8 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"Nav"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"Pēdējās\n24 stundās"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"Pēdējo 7 dienu\nlaikā"</string>
-    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
-    <skip />
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>: procentuālā daļa ir <xliff:g id="PERCENT">%2$d</xliff:g>"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"Lietotni <xliff:g id="APP_NAME">%1$s</xliff:g> aizsargā Android. Tā kā jūsu dati tiek apstrādāti šajā ierīcē, šīs lietotnes atļauju lietojums netiek rādīts statusa joslā vai jūsu konfidencialitātes informācijas panelī."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"Lietotni <xliff:g id="APP_NAME">%1$s</xliff:g> aizsargā Android. Tā kā jūsu dati tiek apstrādāti šajā ierīcē, šīs lietotnes atļauju lietojums netiek rādīts jūsu konfidencialitātes informācijas panelī."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"Ierīces kamera ir bloķēta"</string>
@@ -559,6 +558,11 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"Lietotnēm un pakalpojumiem"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Mikrofona dati joprojām var tikt kopīgoti, kad zvanīsiet uz ārkārtas numuru."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Mainīt"</string>
+    <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"Piekļuve kamerai ir izslēgta"</string>
+    <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"Informatīvi izklaidējošās sistēmas lietotnēm"</string>
+    <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"Nepieciešamajām lietotnēm"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"Šī lietotne ir nepieciešama"</string>
+    <string name="automotive_required_app_summary" msgid="6514902316658090465">"Jūsu automašīnas ražotājs ir noteicis šo lietotni kā nepieciešamu"</string>
     <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Drošība un konfidencialitāte"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Skenēt ierīci"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Noraidīt"</string>

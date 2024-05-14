@@ -549,8 +549,7 @@
     <string name="privdash_label_none" msgid="5991866260360484858">"कोणतेही नाही"</string>
     <string name="privdash_label_24h" msgid="1512532123865375319">"मागील\n२४ तास"</string>
     <string name="privdash_label_7d" msgid="5645301995348656931">"मागील\nसात दिवसातील"</string>
-    <!-- no translation found for privdash_usage_percent (6893824766124414127) -->
-    <skip />
+    <string name="privdash_usage_percent" msgid="6893824766124414127">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g> <xliff:g id="PERCENT">%2$d</xliff:g> टक्के"</string>
     <string name="exempt_mic_camera_info_label" msgid="6273581737010902815">"<xliff:g id="APP_NAME">%1$s</xliff:g> हे Android द्वारे सुरक्षित आहे. तुमच्या या डिव्हाइसवरील डेटावर प्रक्रिया केली जात असल्यामुळे या अ‍ॅपच्या परवानगीचा वापर तुमच्या गोपनीयता डॅशबोर्डवरील स्टेटस बारवर दाखवण्यात आलेला नाही."</string>
     <string name="exempt_info_label" msgid="6286190981253476699">"<xliff:g id="APP_NAME">%1$s</xliff:g> हे Android द्वारे सुरक्षित आहे. तुमच्या या डिव्हाइसवरील डेटावर प्रक्रिया केली जात असल्यामुळे या अ‍ॅपच्या परवानगीचा वापर तुमच्या गोपनीयता डॅशबोर्डवर दाखवण्यात आलेला नाही."</string>
     <string name="blocked_camera_title" msgid="1128510551791284384">"डिव्हाइसचा कॅमेरा ब्लॉक केला आहे"</string>
@@ -559,6 +558,11 @@
     <string name="blocked_sensor_summary" msgid="4443707628305027375">"ॲप्स आणि सेवांसाठी"</string>
     <string name="blocked_mic_summary" msgid="8960466941528458347">"तुम्ही आणीबाणी नंबरवर कॉल करता तेव्हा, मायक्रोफोन डेटा तरीही कदाचित शेअर केला जाईल."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"बदला"</string>
+    <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"कॅमेराचा ॲक्सेस बंद आहे"</string>
+    <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"इन्फोटेनमेंट ॲप्ससाठी"</string>
+    <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"आवश्यक अ‍ॅप्ससाठी"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"हे ॲप आवश्यक आहे"</string>
+    <string name="automotive_required_app_summary" msgid="6514902316658090465">"हे ॲप तुमच्या कारच्या निर्मात्यासाठी आवश्यक आहे"</string>
     <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"सुरक्षा आणि गोपनीयता"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"डिव्हाइस स्कॅन करा"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"डिसमिस करा"</string>
