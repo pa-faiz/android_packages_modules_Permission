@@ -36,8 +36,8 @@ import android.permission.cts.PermissionUtils
 import android.permission.cts.TestUtils
 import android.permissionui.cts.AppMetadata.createAppMetadataWithLocationSharingNoAds
 import android.permissionui.cts.AppMetadata.createAppMetadataWithNoSharing
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.DeviceConfig
 import android.safetylabel.SafetyLabelConstants
 import android.safetylabel.SafetyLabelConstants.SAFETY_LABEL_CHANGE_NOTIFICATIONS_ENABLED
@@ -63,7 +63,7 @@ import org.junit.Test
 class SafetyLabelChangesJobServiceTest : BaseUsePermissionTest() {
 
     @get:Rule
-    val setFlagsRule = SetFlagsRule()
+    val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @get:Rule
     val safetyLabelChangeNotificationsEnabledConfig =
@@ -332,7 +332,7 @@ class SafetyLabelChangesJobServiceTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun runNotificationJob_packageSourceUnspecified_aslInApk_doesNotShowNotification() {
         installPackageViaSession(
@@ -356,7 +356,7 @@ class SafetyLabelChangesJobServiceTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun runNotificationJob_packageSourceOther_aslInApk_doesNotShowNotification() {
         installPackageViaSession(
@@ -380,7 +380,7 @@ class SafetyLabelChangesJobServiceTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun runNotificationJob_packageSourceStore_aslInApk_doesNotShowNotification() {
         installPackageViaSession(
@@ -404,7 +404,7 @@ class SafetyLabelChangesJobServiceTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun runNotificationJob_packageSourceLocalFile_aslInApk_doesNotShowNotification() {
         installPackageViaSession(
@@ -428,7 +428,7 @@ class SafetyLabelChangesJobServiceTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun runNotificationJob_packageSourceDownloadedFile_aslInApk_doesNotShowNotification() {
         installPackageViaSession(

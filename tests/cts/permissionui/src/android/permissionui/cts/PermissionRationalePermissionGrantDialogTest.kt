@@ -20,8 +20,8 @@ import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.CAMERA
 import android.os.Build
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.DeviceConfig
 import android.safetylabel.SafetyLabelConstants.PERMISSION_RATIONALE_ENABLED
 import androidx.test.filters.FlakyTest
@@ -42,7 +42,7 @@ import org.junit.Test
 class PermissionRationalePermissionGrantDialogTest : BaseUsePermissionTest() {
 
     @get:Rule
-    val setFlagsRule = SetFlagsRule()
+    val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @get:Rule
     val deviceConfigPermissionRationaleEnabled =
@@ -250,7 +250,7 @@ class PermissionRationalePermissionGrantDialogTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun requestCoarseLocationPerm_hasAslInApk_packageSourceUnspecified() {
         installPackageWithInstallSourceAndNoMetadata(APP_APK_NAME_31_WITH_ASL)
@@ -264,7 +264,7 @@ class PermissionRationalePermissionGrantDialogTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun requestCoarseLocationPerm_hasAslInApk_packageSourceStore() {
         installPackageWithInstallSourceAndNoMetadataFromStore(APP_APK_NAME_31_WITH_ASL)
@@ -278,7 +278,7 @@ class PermissionRationalePermissionGrantDialogTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun requestCoarseLocationPerm_hasAslInApk_packageSourceLocalFile() {
         installPackageWithInstallSourceAndNoMetadataFromLocalFile(APP_APK_NAME_31_WITH_ASL)
@@ -292,7 +292,7 @@ class PermissionRationalePermissionGrantDialogTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun requestCoarseLocationPerm_hasAslInApk_packageSourceDownloadedFile() {
         installPackageWithInstallSourceAndNoMetadataFromDownloadedFile(APP_APK_NAME_31_WITH_ASL)
@@ -306,7 +306,7 @@ class PermissionRationalePermissionGrantDialogTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun requestCoarseLocationPerm_hasAslInApk_packageSourceOther() {
         installPackageWithInstallSourceAndNoMetadataFromOther(APP_APK_NAME_31_WITH_ASL)

@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.dx.mockito.inline.extended.ExtendedMockito
+import com.android.modules.utils.build.SdkLevel
 import com.android.permissioncontroller.PermissionControllerApplication
 import com.android.permissioncontroller.appops.data.model.v31.PackageAppOpUsageModel.AppOpUsageModel
 import com.android.permissioncontroller.appops.data.repository.v31.AppOpRepository
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,7 +54,7 @@ class AppOpRepositoryTest {
     @Mock private lateinit var appOpsManager: AppOpsManager
 
     private lateinit var underTest: AppOpRepository
-    private lateinit var mockitoSession: MockitoSession
+    private var mockitoSession: MockitoSession? = null
 
     private val currentUser = android.os.Process.myUserHandle()
     private val testPackageName = "test.package"
@@ -60,6 +62,7 @@ class AppOpRepositoryTest {
 
     @Before
     fun setup() {
+        Assume.assumeTrue(SdkLevel.isAtLeastS())
         MockitoAnnotations.initMocks(this)
         mockitoSession =
             ExtendedMockito.mockitoSession()
@@ -77,7 +80,7 @@ class AppOpRepositoryTest {
 
     @After
     fun finish() {
-        mockitoSession.finishMocking()
+        mockitoSession?.finishMocking()
     }
 
     @Test
