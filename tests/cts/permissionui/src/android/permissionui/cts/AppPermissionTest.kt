@@ -21,11 +21,9 @@ import android.Manifest.permission_group.PHONE
 import android.Manifest.permission_group.SMS
 import android.os.Build
 import android.permission.flags.Flags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.DeviceConfig
 import android.provider.Settings
 import android.provider.Settings.Secure.USER_SETUP_COMPLETE
@@ -57,9 +55,6 @@ class AppPermissionTest : BaseUsePermissionTest() {
 
     @get:Rule
     val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-
-    @get:Rule
-    val setFlagsRule = SetFlagsRule()
 
     @Before
     fun setup() {
@@ -130,7 +125,7 @@ class AppPermissionTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun showPermissionRationaleContainer_withInstallSourceAndNoMetadata_packageSourceUnspecified() {
         // Unspecified is the default, so no need to explicitly set it
@@ -143,7 +138,7 @@ class AppPermissionTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun showPermissionRationaleContainer_withInstallSourceAndNoMetadata_packageSourceStore() {
         installPackageWithInstallSourceAndNoMetadataFromStore(APP_APK_NAME_31_WITH_ASL)
@@ -155,7 +150,7 @@ class AppPermissionTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun showPermissionRationaleContainer_withInstallSourceAndNoMetadata_packageSourceLocalFile() {
         installPackageWithInstallSourceAndNoMetadataFromLocalFile(APP_APK_NAME_31_WITH_ASL)
@@ -167,7 +162,7 @@ class AppPermissionTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun showPermissionRationaleContainer_withInstallSourceAndNoMetadata_packageSourceDownloadedFile() {
         installPackageWithInstallSourceAndNoMetadataFromDownloadedFile(APP_APK_NAME_31_WITH_ASL)
@@ -179,7 +174,7 @@ class AppPermissionTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun showPermissionRationaleContainer_withInstallSourceAndNoMetadata_packageSourceOther() {
         installPackageWithInstallSourceAndNoMetadataFromOther(APP_APK_NAME_31_WITH_ASL)

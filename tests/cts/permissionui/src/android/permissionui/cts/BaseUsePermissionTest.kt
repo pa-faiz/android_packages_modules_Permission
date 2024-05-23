@@ -52,6 +52,7 @@ import com.android.compatibility.common.util.SystemUtil
 import com.android.compatibility.common.util.SystemUtil.callWithShellPermissionIdentity
 import com.android.compatibility.common.util.SystemUtil.eventually
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
+import com.android.compatibility.common.util.UiAutomatorUtils2
 import com.android.modules.utils.build.SdkLevel
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -130,8 +131,9 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
             "com.android.permissioncontroller:id/allow_foreground_only_radio_button"
         const val ASK_RADIO_BUTTON = "com.android.permissioncontroller:id/ask_radio_button"
         const val DENY_RADIO_BUTTON = "com.android.permissioncontroller:id/deny_radio_button"
-        const val SELECT_RADIO_BUTTON = "com.android.permissioncontroller:id/select_radio_button"
-        const val EDIT_PHOTOS_BUTTON = "com.android.permissioncontroller:id/edit_selected_button"
+        const val ALLOW_LIMITED_RADIO_BUTTON =
+            "com.android.permissioncontroller:id/allow_limited_radio_button"
+        const val SELECT_PHOTOS_BUTTON = "com.android.permissioncontroller:id/select_photos_button"
 
         const val NOTIF_TEXT = "permgrouprequest_notifications"
         const val ALLOW_BUTTON_TEXT = "grant_dialog_button_allow"
@@ -1390,6 +1392,14 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
             } catch (e: UiObjectNotFoundException) {
                 // flingToEnd() sometimes still fails despite waitForIdle() and the exists() check
                 // (b/246984354).
+                e.printStackTrace()
+            }
+            try {
+                // Try using UiAutomatorUtils2 to further strengthen the scrolling search.
+                // We are keeping the "scrollTextIntoView" method above out of abundance of caution
+                // to avoid breaking tests that used to pass.
+                UiAutomatorUtils2.waitFindObjectOrNull(By.text(viewText))
+            } catch (e: UiObjectNotFoundException) {
                 e.printStackTrace()
             }
         }

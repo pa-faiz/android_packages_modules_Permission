@@ -30,8 +30,8 @@ import android.permission.cts.PermissionUtils
 import android.permissionui.cts.AppMetadata.createAppMetadataWithLocationSharingAds
 import android.permissionui.cts.AppMetadata.createAppMetadataWithLocationSharingNoAds
 import android.permissionui.cts.AppMetadata.createAppMetadataWithNoSharing
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.DeviceConfig
 import android.safetylabel.SafetyLabelConstants.SAFETY_LABEL_CHANGE_NOTIFICATIONS_ENABLED
 import android.util.Log
@@ -62,7 +62,7 @@ class AppDataSharingUpdatesTest : BaseUsePermissionTest() {
     private var activityManager: ActivityManager? = null
 
     @get:Rule
-    val setFlagsRule = SetFlagsRule()
+    val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @get:Rule
     val deviceConfigSafetyLabelChangeNotificationsEnabled =
@@ -507,7 +507,7 @@ class AppDataSharingUpdatesTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun startActivityWithIntent_whenAppGrantedLocation_packageSourceUnspecified_asAslInApk_doesntShowUpdate() {
         installAndWaitTillPackageAdded(
@@ -533,7 +533,7 @@ class AppDataSharingUpdatesTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun startActivityWithIntent_whenAppGrantedLocation_packageSourceOther_asAslInApk_doesntShowUpdate() {
         installAndWaitTillPackageAdded(
@@ -559,7 +559,7 @@ class AppDataSharingUpdatesTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun startActivityWithIntent_whenAppGrantedLocation_packageSourceStore_asAslInApk_doesntShowUpdate() {
         installAndWaitTillPackageAdded(
@@ -585,7 +585,7 @@ class AppDataSharingUpdatesTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun startActivityWithIntent_whenAppGrantedLocation_packageSourceLocalFile_asAslInApk_doesntShowUpdate() {
         installAndWaitTillPackageAdded(
@@ -611,7 +611,7 @@ class AppDataSharingUpdatesTest : BaseUsePermissionTest() {
 
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM, codeName =
     "VanillaIceCream")
-    @EnableFlags(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_ASL_IN_APK_APP_METADATA_SOURCE)
     @Test
     fun startActivityWithIntent_whenAppGrantedLocation_packageSourceDownloaded_asAslInApk_doesntShowUpdate() {
         installAndWaitTillPackageAdded(
