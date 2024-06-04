@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.permissioncontroller.permission.ui.wear.elements
+package android.permissionui.cts.usepermission
 
-import androidx.compose.foundation.layout.height
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import android.Manifest
+import android.app.Activity
+import android.os.Bundle
+import android.os.Handler
 
-/** Adjusts height of the chip as per the font scale. */
-public fun Modifier.adjustChipHeightToFontScale(fontScale: Float, padding: Dp = 0.dp): Modifier =
-    if (fontScale > 1) {
-        this.then(Modifier.height(60.dp + padding))
-    } else {
-        this
+class Activity2 : Activity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requestPermissions(arrayOf(Manifest.permission.CALL_PHONE), 3)
+        Handler().postDelayed({ finish() }, 2000)
     }
+}

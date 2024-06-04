@@ -26,7 +26,6 @@ import org.junit.Before
 import org.junit.Test
 
 /** Runtime permission behavior tests for apps targeting API 23. */
-@FlakyTest
 class PermissionTest23 : BaseUsePermissionTest() {
     companion object {
         private const val NON_EXISTENT_PERMISSION = "permission.does.not.exist"
@@ -39,12 +38,14 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testDefault() {
         // New permission model is denied by default
         assertAppHasAllOrNoPermissions(false)
     }
 
     @Test
+    @FlakyTest
     fun testGranted() {
         grantAppPermissionsByUi(android.Manifest.permission.READ_CALENDAR)
 
@@ -55,6 +56,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testInteractiveGrant() {
         // Start out without permission
         assertAppHasPermission(android.Manifest.permission.READ_CALENDAR, false)
@@ -74,6 +76,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testRuntimeGroupGrantSpecificity() {
         // Start out without permission
         assertAppHasPermission(android.Manifest.permission.READ_CONTACTS, false)
@@ -90,6 +93,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testCancelledPermissionRequest() {
         // Make sure we don't have the permission
         assertAppHasPermission(android.Manifest.permission.WRITE_CONTACTS, false)
@@ -102,6 +106,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testRequestGrantedPermission() {
         // Make sure we don't have the permission
         assertAppHasPermission(android.Manifest.permission.WRITE_CONTACTS, false)
@@ -121,6 +126,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testDenialWithPrejudice() {
         // Make sure we don't have the permission
         assertAppHasPermission(android.Manifest.permission.WRITE_CONTACTS, false)
@@ -163,6 +169,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testGrantPreviouslyRevokedWithPrejudiceShowsPrompt() {
         // Make sure we don't have the permission
         assertAppHasPermission(android.Manifest.permission.READ_CALENDAR, false)
@@ -195,6 +202,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testRequestNonRuntimePermission() {
         // Make sure we don't have the permission
         assertAppHasPermission(android.Manifest.permission.BIND_PRINT_SERVICE, false)
@@ -208,6 +216,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testRequestNonExistentPermission() {
         // Make sure we don't have the permission
         assertAppHasPermission(NON_EXISTENT_PERMISSION, false)
@@ -221,6 +230,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testRequestPermissionFromTwoGroups() {
         // Make sure we don't have the permissions
         assertAppHasPermission(android.Manifest.permission.WRITE_CONTACTS, false)
@@ -274,6 +284,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testNullPermissionRequest() {
         val permissions: Array<String?> = arrayOf(null)
         val results: Array<Pair<String?, Boolean>> = arrayOf()
@@ -286,6 +297,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testNullAndRealPermission() {
         // Make sure we don't have the permissions
         assertAppHasPermission(android.Manifest.permission.WRITE_CONTACTS, false)
@@ -311,6 +323,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testInvalidPermission() {
         // Request the permission and allow it
         // Expect the permission is not granted
@@ -321,6 +334,7 @@ class PermissionTest23 : BaseUsePermissionTest() {
     }
 
     @Test
+    @FlakyTest
     fun testAskButtonSetsFlags() {
         Assume.assumeFalse(
             "other form factors might not support the ask button",
