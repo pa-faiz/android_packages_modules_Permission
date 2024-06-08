@@ -24,13 +24,11 @@ import android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.permission.PermissionManager
 import android.permission.flags.Flags
 import android.permissionmultidevice.cts.PermissionUtils.isCddCompliantScreenSize
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.provider.Settings
 import android.virtualdevice.cts.common.VirtualDeviceRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
@@ -38,6 +36,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiScrollable
 import androidx.test.uiautomator.UiSelector
+import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SystemUtil.eventually
 import com.android.compatibility.common.util.UiAutomatorUtils2
 import com.android.modules.utils.build.SdkLevel
@@ -72,6 +71,8 @@ class AppPermissionsTest {
 
     private val permissionManager =
         defaultDeviceContext.getSystemService(PermissionManager::class.java)!!
+
+    private val TAG = AppPermissionsTest::class.java.simpleName
 
     @Before
     fun setup() {
@@ -381,20 +382,20 @@ class AppPermissionsTest {
     }
 
     private fun openAppPermissionsScreen() {
-        val intent =
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", APP_PACKAGE_NAME, null)
-                addCategory(Intent.CATEGORY_DEFAULT)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-
-        eventually(
-            {
-                instrumentation.context.startActivity(intent)
-                UiAutomatorUtils2.waitFindObject(By.text("Permissions"), 12_000).click()
-            },
-            20_000
-        )
+        UiAutomatorUtils2.getUiDevice()
+            .performActionAndWait(
+                {
+                    defaultDeviceContext.startActivity(
+                        Intent(Intent.ACTION_MANAGE_APP_PERMISSIONS).apply {
+                            putExtra(Intent.EXTRA_PACKAGE_NAME, APP_PACKAGE_NAME)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        }
+                    )
+                },
+                Until.newWindow(),
+                NEW_WINDOW_TIMEOUT_MILLIS
+            )
     }
 
     private fun getScrollableRecyclerView(): UiScrollable {
@@ -442,5 +443,6 @@ class AppPermissionsTest {
         private const val RECYCLER_VIEW = "com.android.permissioncontroller:id/recycler_view"
         private const val PERMISSION_MESSAGE_ID =
             "com.android.permissioncontroller:id/permission_message"
+        private const val NEW_WINDOW_TIMEOUT_MILLIS: Long = 20_000
     }
 }
