@@ -191,8 +191,7 @@
     <string name="app_permission_button_always_allow_all" msgid="4905699259378428855">"ሁልጊዜ ሁሉንም ፍቀድ"</string>
     <string name="app_permission_button_ask" msgid="3342950658789427">"ሁልጊዜ ጠይቅ"</string>
     <string name="app_permission_button_deny" msgid="6016454069832050300">"አትፍቀድ"</string>
-    <!-- no translation found for app_permission_button_allow_limited_access (8824410215149764113) -->
-    <skip />
+    <string name="app_permission_button_allow_limited_access" msgid="8824410215149764113">"የተገደበ መዳረሻ ይፍቀዱ"</string>
     <string name="precise_image_description" msgid="6349638632303619872">"ትክክለኛ አካባቢ"</string>
     <string name="approximate_image_description" msgid="938803699637069884">"ግምታዊ አካባቢ"</string>
     <string name="app_permission_location_accuracy" msgid="7166912915040018669">"ትክክለኛ አካባቢን ተጠቀም"</string>
@@ -561,6 +560,8 @@
     <string name="blocked_mic_summary" msgid="8960466941528458347">"እርስዎ ወደ አንድ የአደጋ ጊዜ ቁጥር ሲደውሉ የማይክሮፎን ውሂብ አሁንም ሊጋራ ይችላል።"</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"ቀይር"</string>
     <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"የካሜራ መዳረሻ ጠፍቷል"</string>
+    <string name="automotive_blocked_microphone_title" msgid="3956311098238620220">"የማይክሮፎን መዳረሻ ጠፍቷል"</string>
+    <string name="automotive_blocked_location_title" msgid="6047574747593264689">"የአካባቢ መዳረሻ ጠፍቷል"</string>
     <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"ለአዝናኝ መረጃ መተግበሪያዎች"</string>
     <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"ለሚፈለጉ መተግበሪያዎች"</string>
     <string name="automotive_required_app_title" msgid="2992168288249988735">"ይህ መተግበሪያ ያስፈልጋል"</string>

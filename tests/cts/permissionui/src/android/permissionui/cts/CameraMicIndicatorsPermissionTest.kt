@@ -109,8 +109,6 @@ class CameraMicIndicatorsPermissionTest : StsExtraBusinessLogicTestCase {
     private val isTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
     private val isCar = packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
     private val isWatch = packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH)
-    private val safetyCenterMicLabel = getPermissionControllerString(MIC_LABEL_NAME)
-    private val safetyCenterCameraLabel = getPermissionControllerString(CAMERA_LABEL_NAME)
     private val originalCameraLabel =
         packageManager
             .getPermissionGroupInfo(Manifest.permission_group.CAMERA, 0)
@@ -272,7 +270,6 @@ class CameraMicIndicatorsPermissionTest : StsExtraBusinessLogicTestCase {
         testCameraAndMicIndicator(useMic = true, useCamera = false)
     }
 
-    // TODO b/269687722: remove once mainline presubmit uses a more recent S build
     @Test
     @AsbSecurityTest(cveBugId = [258672042])
     fun testMicIndicatorWithManualFinishOpStillShows() {
@@ -399,17 +396,17 @@ class CameraMicIndicatorsPermissionTest : StsExtraBusinessLogicTestCase {
 
             if (finishEarly) {
                 // Assert that the indicator doesn't go away
-                val indicatorGoneException: Exception? =
-                    try {
-                        // assert that the indicator goes away. This will throw an exception if
-                        // the indicator remains, which is desirable.
-                        assertIndicatorsShown(false, false, false)
-                        null
-                    } catch (e: Exception) {
-                        e
-                    }
-                // If we asserted that the indicator went away, fail the test
-                if (indicatorGoneException == null) {
+                var failed = false
+                try {
+                    // Check if the indicator has gone away. This will throw an exception if the
+                    // indicator is still present
+                    assertIndicatorsShown(false, false, false)
+                    // If we successfully asserted that the indicator went away, fail the test
+                    failed = true
+                } catch (t: Throwable) {
+                    // expected
+                }
+                if (failed) {
                     assertWithUiDump { Assert.fail("Expected the indicator to remain present") }
                 }
             }
@@ -724,6 +721,7 @@ class CameraMicIndicatorsPermissionTest : StsExtraBusinessLogicTestCase {
     }
 
     private fun assertSafetyCenterMicViewNotNull() {
+        val safetyCenterMicLabel = getPermissionControllerString(MIC_LABEL_NAME)
         val micView = waitFindObject(byOneOfText(originalMicLabel, safetyCenterMicLabel))
         assertNotNull(
             "View with text '$originalMicLabel' or '$safetyCenterMicLabel' not found",
@@ -732,6 +730,7 @@ class CameraMicIndicatorsPermissionTest : StsExtraBusinessLogicTestCase {
     }
 
     private fun assertSafetyCenterCameraViewNotNull() {
+        val safetyCenterCameraLabel = getPermissionControllerString(CAMERA_LABEL_NAME)
         val cameraView = waitFindObject(byOneOfText(originalCameraLabel, safetyCenterCameraLabel))
         assertNotNull(
             "View with text '$originalCameraLabel' or '$safetyCenterCameraLabel' not found",

@@ -70,15 +70,21 @@
     </target_preparer>
 
     <target_preparer class="com.android.tradefed.targetprep.RunCommandTargetPreparer">
+        <!-- ensure device provisioning and user setup are marked as completed -->
+        <option name="run-command" value="settings put global device_provisioned 1" />
+        <option name="run-command" value="settings put secure user_setup_complete 1" />
         <!-- disable DeprecatedAbi warning -->
         <option name="run-command" value="setprop debug.wm.disable_deprecated_abi_dialog 1" />
         <!-- disable DeprecatedTargetSdk warning -->
         <option name="run-command" value="setprop debug.wm.disable_deprecated_target_sdk_dialog 1" />
+        <option name="run-command" value="am wait-for-broadcast-barrier" />
     </target_preparer>
 
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
         <option name="package" value="android.permissionpolicy.cts" />
         <option name="runtime-hint" value="2m" />
+        <!-- This test reads hidden platform flags, allow it accessing the values. -->
+        <option name="hidden-api-checks" value="false"/>
     </test>
 
 </configuration>

@@ -191,8 +191,7 @@
     <string name="app_permission_button_always_allow_all" msgid="4905699259378428855">"Sentiasa benarkan semua"</string>
     <string name="app_permission_button_ask" msgid="3342950658789427">"Tanya setiap kali"</string>
     <string name="app_permission_button_deny" msgid="6016454069832050300">"Jangan benarkan"</string>
-    <!-- no translation found for app_permission_button_allow_limited_access (8824410215149764113) -->
-    <skip />
+    <string name="app_permission_button_allow_limited_access" msgid="8824410215149764113">"Benarkan akses terhad"</string>
     <string name="precise_image_description" msgid="6349638632303619872">"Lokasi tepat"</string>
     <string name="approximate_image_description" msgid="938803699637069884">"Lokasi anggaran"</string>
     <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Gunakan lokasi tepat"</string>
@@ -561,6 +560,8 @@
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Data mikrofon mungkin masih dikongsi apabila anda memanggil nombor kecemasan."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Tukar"</string>
     <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"Akses kamera dimatikan"</string>
+    <string name="automotive_blocked_microphone_title" msgid="3956311098238620220">"Akses mikrofon dimatikan"</string>
+    <string name="automotive_blocked_location_title" msgid="6047574747593264689">"Akses lokasi dimatikan"</string>
     <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"Untuk apl maklumat hibur"</string>
     <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"Untuk apl yang diperlukan"</string>
     <string name="automotive_required_app_title" msgid="2992168288249988735">"Apl ini diperlukan"</string>
@@ -675,7 +676,7 @@
     <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"Akses apl untuk menjadi <xliff:g id="ROLE_NAME">%1$s</xliff:g> secara lalai telah ditolak"</string>
     <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Apl meminta akses kepada kebenaran sensitif yang boleh mengakibatkan risiko terhadap maklumat peribadi dan kewangan anda.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Apl tersebut mungkin tidak dapat berfungsi dengan betul tanpa kebenaran terhad ini. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Ketahui cara membenarkan akses&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"Akses apl telah ditolak"</string>
-    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Akses kepada kebenaran ini b boleh mengakibatkan risiko terhadap maklumat peribadi dan kewangan anda.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Apl tersebut mungkin tidak dapat berfungsi dengan betul tanpa kebenaran terhad ini. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Ketahui cara membenarkan akses&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Akses kepada kebenaran ini boleh mengakibatkan risiko terhadap maklumat peribadi dan kewangan anda.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Apl tersebut mungkin tidak dapat berfungsi dengan betul tanpa kebenaran terhad ini. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Ketahui cara membenarkan akses&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Ketahui lebih lanjut"</string>
     <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"OK"</string>
     <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Permintaan kebenaran disekat"</string>

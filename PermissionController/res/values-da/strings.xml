@@ -191,8 +191,7 @@
     <string name="app_permission_button_always_allow_all" msgid="4905699259378428855">"Tillad altid alle"</string>
     <string name="app_permission_button_ask" msgid="3342950658789427">"Spørg hver gang"</string>
     <string name="app_permission_button_deny" msgid="6016454069832050300">"Tillad ikke"</string>
-    <!-- no translation found for app_permission_button_allow_limited_access (8824410215149764113) -->
-    <skip />
+    <string name="app_permission_button_allow_limited_access" msgid="8824410215149764113">"Tillad begrænset adgang"</string>
     <string name="precise_image_description" msgid="6349638632303619872">"Præcis lokation"</string>
     <string name="approximate_image_description" msgid="938803699637069884">"Omtrentlig lokation"</string>
     <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Brug præcis lokation"</string>
@@ -368,7 +367,7 @@
     <string name="role_dialer_request_description" msgid="6288839625724909320">"Denne app får adgang til Kamera, Kontakter, Mikrofon, Telefon og SMS"</string>
     <string name="role_dialer_search_keywords" msgid="3324448983559188087">"opkald"</string>
     <string name="role_sms_label" msgid="8456999857547686640">"Standardapp til sms-beskeder"</string>
-    <string name="role_sms_short_label" msgid="4371444488034692243">"Sms-app"</string>
+    <string name="role_sms_short_label" msgid="4371444488034692243">"sms-app"</string>
     <string name="role_sms_description" msgid="3424020199148153513">"Apps, der bruger dit telefonnummer til at sende og modtage sms-beskeder, billeder, videoer m.m."</string>
     <string name="role_sms_request_title" msgid="7953552109601185602">"Vil du angive <xliff:g id="APP_NAME">%1$s</xliff:g> som din standardapp til sms-beskeder?"</string>
     <string name="role_sms_request_description" msgid="2691004766132144886">"Denne app får adgang til Kamera, Kontakter, Filer og medier, Mikrofon, Telefon og SMS"</string>
@@ -561,6 +560,8 @@
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Mikrofondata deles muligvis stadig, når du ringer til et alarmnummer."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Skift"</string>
     <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"Kameraadgang er deaktiveret"</string>
+    <string name="automotive_blocked_microphone_title" msgid="3956311098238620220">"Mikrofonadgang er deaktiveret"</string>
+    <string name="automotive_blocked_location_title" msgid="6047574747593264689">"Placeringsadgang er deaktiveret"</string>
     <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"Til infotainmentapps"</string>
     <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"Til påkrævede apps"</string>
     <string name="automotive_required_app_title" msgid="2992168288249988735">"Denne app er påkrævet"</string>

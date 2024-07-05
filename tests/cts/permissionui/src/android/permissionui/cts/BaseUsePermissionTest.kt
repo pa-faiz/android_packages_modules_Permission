@@ -130,9 +130,8 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
             "com.android.permissioncontroller:id/allow_foreground_only_radio_button"
         const val ASK_RADIO_BUTTON = "com.android.permissioncontroller:id/ask_radio_button"
         const val DENY_RADIO_BUTTON = "com.android.permissioncontroller:id/deny_radio_button"
-        const val ALLOW_LIMITED_RADIO_BUTTON =
-            "com.android.permissioncontroller:id/allow_limited_radio_button"
-        const val SELECT_PHOTOS_BUTTON = "com.android.permissioncontroller:id/select_photos_button"
+        const val SELECT_RADIO_BUTTON = "com.android.permissioncontroller:id/select_radio_button"
+        const val EDIT_PHOTOS_BUTTON = "com.android.permissioncontroller:id/edit_selected_button"
 
         const val NOTIF_TEXT = "permgrouprequest_notifications"
         const val ALLOW_BUTTON_TEXT = "grant_dialog_button_allow"
@@ -386,9 +385,16 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
             return
         }
 
-        waitFindObjectOrNull(By.res("android:id/button1"), timeoutMillis)?.let {
+        val targetSdkWarningVisible =
+            uiDevice.wait(
+                Until.hasObject(
+                    By.textStartsWith("This app was built for an older version of Android")
+                ),
+                timeoutMillis
+            )
+        if (targetSdkWarningVisible) {
             try {
-                it.click()
+                uiDevice.findObject(By.res("android:id/button1")).click()
             } catch (e: StaleObjectException) {
                 // Click sometimes fails with StaleObjectException (b/280430717).
                 e.printStackTrace()
@@ -819,20 +825,20 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
      * Only for use in tests that are not testing the notification permission popup, on T devices
      */
     protected fun clickNotificationPermissionRequestAllowButtonIfAvailable() {
-        if (!SdkLevel.isAtLeastT()) {
-            return
-        }
-
-        if (
-            waitFindObjectOrNull(
-                By.text(getPermissionControllerString(NOTIF_TEXT, APP_PACKAGE_NAME)),
-                1000
-            ) != null
-        ) {
-            if (isAutomotive) {
-                click(By.text(getPermissionControllerString(ALLOW_BUTTON_TEXT)))
-            } else {
-                click(By.res(ALLOW_BUTTON))
+        if (SdkLevel.isAtLeastT() && getTargetSdk() < Build.VERSION_CODES.TIRAMISU) {
+            val notificationPermissionRequestVisible =
+                uiDevice.wait(
+                    Until.hasObject(
+                        By.text(getPermissionControllerString(NOTIF_TEXT, APP_PACKAGE_NAME))
+                    ),
+                    1000
+                )
+            if (notificationPermissionRequestVisible) {
+                if (isAutomotive) {
+                    click(By.text(getPermissionControllerString(ALLOW_BUTTON_TEXT)))
+                } else {
+                    click(By.res(ALLOW_BUTTON))
+                }
             }
         }
     }
@@ -887,6 +893,7 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
 
     protected fun clickPermissionRequestDenyButton() {
         if (isAutomotive) {
+            scrollToBottom();
             clickAndWaitForWindowTransition(
                 By.text(getPermissionControllerString(DENY_BUTTON_TEXT))
             )
@@ -966,6 +973,7 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
 
     protected fun clickPermissionRequestDenyAndDontAskAgainButton() {
         if (isAutomotive) {
+            scrollToBottom();
             clickAndWaitForWindowTransition(
                 By.text(getPermissionControllerString(DENY_AND_DONT_ASK_AGAIN_BUTTON_TEXT))
             )
@@ -1026,10 +1034,7 @@ abstract class BaseUsePermissionTest : BasePermissionTest() {
 
     private fun navigateToAppPermissionSettings() {
         if (isTv) {
-            // Dismiss DeprecatedTargetSdkVersionDialog, if present
-            if (waitFindObjectOrNull(By.text(APP_PACKAGE_NAME), 1000L) != null) {
-                pressBack()
-            }
+            clearTargetSdkWarning(1000L)
             pressHome()
         } else {
             pressBack()

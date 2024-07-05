@@ -270,7 +270,7 @@ internal fun Scaffold(
                                         MaterialTheme.typography.body2.copy(
                                             color = MaterialTheme.colors.onSurfaceVariant
                                         ),
-                                    modifier = modifier
+                                    modifier = modifier,
                                 )
                             }
                         }

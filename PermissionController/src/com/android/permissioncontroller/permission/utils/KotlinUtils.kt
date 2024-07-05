@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "LongLogTag")
 
 package com.android.permissioncontroller.permission.utils
 
@@ -638,6 +638,7 @@ object KotlinUtils {
         }
     }
 
+    @Suppress("MissingPermission")
     fun openPhotoPickerForApp(
         activity: Activity,
         uid: Int,
@@ -942,6 +943,7 @@ object KotlinUtils {
      * @return a LightPermission and boolean pair <permission with updated state (or the original
      *   state, if it wasn't changed), should kill app>
      */
+    @Suppress("MissingPermission")
     private fun grantRuntimePermission(
         app: Application,
         perm: LightPermission,
@@ -1136,6 +1138,7 @@ object KotlinUtils {
         )
     }
 
+    @Suppress("MissingPermission")
     private fun revokeRuntimePermissions(
         app: Application,
         group: LightAppPermGroup,
@@ -1231,6 +1234,7 @@ object KotlinUtils {
      * @param group Optional, the current app permission group we are examining
      * @return true if any permission in the package is granted for one time, false otherwise
      */
+    @Suppress("MissingPermission")
     private fun anyPermsOfPackageOneTimeGranted(
         app: Application,
         packageInfo: LightPackageInfo,
@@ -1256,6 +1260,7 @@ object KotlinUtils {
         }
         return false
     }
+
     /**
      * Revokes a single runtime permission.
      *
@@ -1267,6 +1272,7 @@ object KotlinUtils {
      * @return a LightPermission and boolean pair <permission with updated state (or the original
      *   state, if it wasn't changed), should kill app>
      */
+    @Suppress("MissingPermission")
     private fun revokeRuntimePermission(
         app: Application,
         perm: LightPermission,
@@ -1519,7 +1525,7 @@ object KotlinUtils {
         if (currentMode == mode) {
             return false
         }
-        manager.setUidMode(op, uid, mode)
+        @Suppress("MissingPermission") manager.setUidMode(op, uid, mode)
         return true
     }
 
@@ -1563,25 +1569,23 @@ object KotlinUtils {
             return false
         }
 
-        return try {
-            val isInSetup =
-                Settings.Secure.getInt(
-                    userContext.contentResolver,
-                    Settings.Secure.USER_SETUP_COMPLETE,
-                    user.identifier
-                ) == 0
-            val isInDeferredSetup =
-                Settings.Secure.getInt(
-                    userContext.contentResolver,
-                    Settings.Secure.USER_SETUP_PERSONALIZATION_STATE,
-                    user.identifier
-                ) == Settings.Secure.USER_SETUP_PERSONALIZATION_STARTED
-            isInSetup || isInDeferredSetup
-        } catch (e: Settings.SettingNotFoundException) {
-            Log.w(LOG_TAG, "Failed to check if the user is in restore: $e")
-            false
-        }
+        val isInSetup = getSecureInt(Settings.Secure.USER_SETUP_COMPLETE, userContext, user) == 0
+        if (isInSetup) return true
+
+        val isInDeferredSetup =
+            getSecureInt(Settings.Secure.USER_SETUP_PERSONALIZATION_STATE, userContext, user) ==
+                Settings.Secure.USER_SETUP_PERSONALIZATION_STARTED
+        return isInDeferredSetup
     }
+
+    @SuppressLint("LongLogTag")
+    private fun getSecureInt(settingName: String, userContext: Context, user: UserHandle): Int? =
+        try {
+            Settings.Secure.getInt(userContext.contentResolver, settingName, user.identifier)
+        } catch (e: Settings.SettingNotFoundException) {
+            Log.i(LOG_TAG, "Setting $settingName not found", e)
+            null
+        }
 
     /**
      * Determine if a given package has a launch intent. Will function correctly even if called
@@ -1633,10 +1637,13 @@ object KotlinUtils {
                 PackageManager.FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY to true,
                 filterPermissions = listOf(ACCESS_FINE_LOCATION)
             )
+            val fineIsOneTime =
+                group.permissions[Manifest.permission.ACCESS_FINE_LOCATION]?.isOneTime ?: false
             setGroupFlags(
                 app,
                 group,
                 PackageManager.FLAG_PERMISSION_SELECTED_LOCATION_ACCURACY to false,
+                PackageManager.FLAG_PERMISSION_ONE_TIME to fineIsOneTime,
                 filterPermissions = listOf(Manifest.permission.ACCESS_COARSE_LOCATION)
             )
         } else {
@@ -1758,15 +1765,14 @@ object KotlinUtils {
 
 /** Get the [value][LiveData.getValue], suspending until [isInitialized] if not yet so */
 suspend fun <T, LD : LiveData<T>> LD.getInitializedValue(
-    observe: LD.(Observer<T>) -> Unit = { observeForever(it) },
+    observe: LD.(Observer<T?>) -> Unit = { observeForever(it) },
     isValueInitialized: LD.() -> Boolean = { value != null }
-): T {
+): T? {
     return if (isValueInitialized()) {
-        @Suppress("UNCHECKED_CAST")
-        value as T
+        value
     } else {
-        suspendCoroutine { continuation: Continuation<T> ->
-            val observer = AtomicReference<Observer<T>>()
+        suspendCoroutine { continuation: Continuation<T?> ->
+            val observer = AtomicReference<Observer<T?>>()
             observer.set(
                 Observer { newValue ->
                     if (isValueInitialized()) {

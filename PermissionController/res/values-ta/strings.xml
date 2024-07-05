@@ -191,8 +191,7 @@
     <string name="app_permission_button_always_allow_all" msgid="4905699259378428855">"எப்போதும் அனைத்தையும் அனுமதி"</string>
     <string name="app_permission_button_ask" msgid="3342950658789427">"ஒவ்வொரு முறையும் கேள்"</string>
     <string name="app_permission_button_deny" msgid="6016454069832050300">"அனுமதிக்க வேண்டாம்"</string>
-    <!-- no translation found for app_permission_button_allow_limited_access (8824410215149764113) -->
-    <skip />
+    <string name="app_permission_button_allow_limited_access" msgid="8824410215149764113">"வரம்பிற்குட்பட்ட அணுகலை அனுமதித்தல்"</string>
     <string name="precise_image_description" msgid="6349638632303619872">"துல்லியமான இருப்பிடம்"</string>
     <string name="approximate_image_description" msgid="938803699637069884">"தோராயமான இருப்பிடம்"</string>
     <string name="app_permission_location_accuracy" msgid="7166912915040018669">"துல்லியமான இருப்பிடத்தைப் பயன்படுத்து"</string>
@@ -561,6 +560,8 @@
     <string name="blocked_mic_summary" msgid="8960466941528458347">"எனினும் அவசர உதவி எண்ணைத் தொடர்பு கொள்ளும்போது மைக்ரோஃபோன் தரவு பகிரப்படலாம்."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"மாற்று"</string>
     <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"கேமரா அணுகல் முடக்கப்பட்டுள்ளது"</string>
+    <string name="automotive_blocked_microphone_title" msgid="3956311098238620220">"மைக்ரோஃபோன் அணுகல் முடக்கப்பட்டுள்ளது"</string>
+    <string name="automotive_blocked_location_title" msgid="6047574747593264689">"இருப்பிட அணுகல் முடக்கப்பட்டுள்ளது"</string>
     <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"இன்ஃபோடெயின்மென்ட் ஆப்ஸுக்கு"</string>
     <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"தேவையான ஆப்ஸுக்கு"</string>
     <string name="automotive_required_app_title" msgid="2992168288249988735">"இந்த ஆப்ஸ் தேவை"</string>
@@ -673,7 +674,7 @@
     <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"<xliff:g id="PERMISSION_NAME">%1$s</xliff:g>க்கான ஆப்ஸ் அணுகல் நிராகரிக்கப்பட்டது"</string>
     <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"பாதுகாக்க வேண்டிய தகவல்களுக்கான அனுமதியை வழங்க ஆப்ஸ் கேட்டுள்ளது, இது உங்கள் தனிப்பட்ட மற்றும் நிதித் தகவல்களை ஆபத்துக்குள்ளாக்கலாம்.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>இந்தக் கட்டுப்படுத்தப்பட்ட அனுமதி இல்லாமல் ஆப்ஸ் சரியாக வேலை செய்யாமல் போகக்கூடும். &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;எப்படி அணுகல் வழங்குவதென அறிக&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"இயல்புநிலை <xliff:g id="ROLE_NAME">%1$s</xliff:g>க்கான ஆப்ஸ் அணுகல் நிராகரிக்கப்பட்டது"</string>
-    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"பாதுகாக்க வேண்டிய தகவல்களுக்கான அனுமதிகளை வழங்க ஆப்ஸ் கேட்டுள்ளது, இது உங்கள் தனிப்பட்ட மற்றும் நிதித் தகவல்களை ஆபத்துக்குள்ளாக்கலாம்.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>இந்தக் கட்டுப்படுத்தப்பட்ட அனுமதிகள் இல்லாமல் ஆப்ஸ் சரியாக வேலை செய்யாமல் போகக்கூடும். &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;எப்படி அணுகல் வழங்குவதென அறிக&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"பாதுகாக்க வேண்டிய தகவலை அணுவதற்கான அனுமதியை ஆப்ஸ் கேட்டுள்ளது, இது உங்கள் தனிப்பட்ட மற்றும் நிதித் தகவல்களை ஆபத்துக்குள்ளாக்கலாம்.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>இந்தக் கட்டுப்படுத்தப்பட்ட அனுமதிகள் இல்லாமல் ஆப்ஸ் சரியாக வேலை செய்யாமல் போகக்கூடும். &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;எப்படி அணுகல் வழங்குவதென அறிக&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"ஆப்ஸ் அணுகல் நிராகரிக்கப்பட்டது"</string>
     <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"இதற்கு அனுமதி அளிப்பதனால் உங்கள் தனிப்பட்ட மற்றும் நிதித் தகவல்கள் ஆபத்துக்குள்ளாகலாம்.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>இந்தக் கட்டுப்படுத்தப்பட்ட அனுமதி இல்லாமல் ஆப்ஸ் சரியாக வேலை செய்யாமல் போகக்கூடும். &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;எப்படி அணுகல் வழங்குவதென அறிக&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"மேலும் அறிக"</string>

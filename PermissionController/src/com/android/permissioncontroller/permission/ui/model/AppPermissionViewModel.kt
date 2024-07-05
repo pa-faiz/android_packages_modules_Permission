@@ -232,7 +232,7 @@ class AppPermissionViewModel(
             }
         }
 
-    /** A LiveData that tracks the status (blocked or available) of a sensor */
+    /** A LiveData that tracks whether to show or hide a warning banner for a sensor */
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     inner class SensorStatusLiveData() : SmartUpdateMediatorLiveData<Boolean>() {
         val sensorPrivacyManager = app.getSystemService(SensorPrivacyManager::class.java)!!
@@ -241,61 +241,92 @@ class AppPermissionViewModel(
         val isCamera = CAMERA.equals(permGroupName)
 
         init {
+            addSource(buttonStateLiveData) { update() }
             checkAndUpdateStatus()
         }
 
-        fun checkAndUpdateStatus() {
-            var blocked: Boolean
-            var state: Int
+        fun checkAndUpdateStatus(showBannerForSensorUpdate: Boolean? = null) {
+            var showBanner = showBannerForSensorUpdate ?: showBannerForSensor()
+            if (isPermissionDenied()) {
+                showBanner = false
+            }
+            value = showBanner
+        }
 
-            if (isLocation) {
-                blocked = !LocationUtils.isLocationEnabled(app.getApplicationContext())
+        fun showBannerForSensor(): Boolean {
+            return if (isLocation) {
+                !LocationUtils.isLocationEnabled(app.getApplicationContext())
             } else if (isCamera) {
-                state =
+                val state =
                     sensorPrivacyManager.getSensorPrivacyState(
                         SensorPrivacyManager.TOGGLE_TYPE_SOFTWARE,
                         SensorPrivacyManager.Sensors.CAMERA
                     )
-                blocked = (state != SensorPrivacyManager.StateTypes.DISABLED)
+                state != SensorPrivacyManager.StateTypes.DISABLED
             } else {
-                blocked = sensorPrivacyManager.isSensorPrivacyEnabled(sensor)
+                sensorPrivacyManager.isSensorPrivacyEnabled(sensor)
             }
+        }
 
-            value = blocked
+        fun isPermissionDenied(): Boolean {
+            if (buttonStateLiveData.isInitialized) {
+                val buttonState = buttonStateLiveData.value
+                return buttonState?.get(DENY)?.isChecked == true ||
+                    buttonState?.get(DENY_FOREGROUND)?.isChecked == true
+            }
+            return false
         }
 
         override fun onActive() {
             super.onActive()
             checkAndUpdateStatus()
             if (isLocation) {
-                LocationUtils.addLocationListener(locListener)
+                LocationUtils.addLocationListener(mainLocListener)
+                if (
+                    LocationUtils.isAutomotiveLocationBypassAllowlistedPackage(
+                        app.getApplicationContext(),
+                        packageName
+                    )
+                ) {
+                    LocationUtils.addAutomotiveLocationBypassListener(locBypassListener)
+                }
             } else {
-                sensorPrivacyManager.addSensorPrivacyListener(sensor, listener)
+                sensorPrivacyManager.addSensorPrivacyListener(sensor, sensorPrivacyListener)
             }
         }
 
         override fun onInactive() {
             super.onInactive()
             if (isLocation) {
-                LocationUtils.removeLocationListener(locListener)
+                LocationUtils.removeLocationListener(mainLocListener)
+                if (
+                    LocationUtils.isAutomotiveLocationBypassAllowlistedPackage(
+                        app.getApplicationContext(),
+                        packageName
+                    )
+                ) {
+                    LocationUtils.removeAutomotiveLocationBypassListener(locBypassListener)
+                }
             } else {
-                sensorPrivacyManager.removeSensorPrivacyListener(sensor, listener)
+                sensorPrivacyManager.removeSensorPrivacyListener(sensor, sensorPrivacyListener)
             }
         }
 
-        var listener =
+        private val sensorPrivacyListener =
             object : OnSensorPrivacyChangedListener {
                 override fun onSensorPrivacyChanged(params: SensorPrivacyChangedParams) {
-                    value = (params.getState() != SensorPrivacyManager.StateTypes.DISABLED)
+                    val showBanner = (params.getState() != SensorPrivacyManager.StateTypes.DISABLED)
+                    checkAndUpdateStatus(showBanner)
                 }
 
                 @Deprecated("Please use onSensorPrivacyChanged(SensorPrivacyChangedParams)")
                 override fun onSensorPrivacyChanged(sensor: Int, enabled: Boolean) {}
             }
 
-        private val locListener = { status: Boolean -> value = !status }
+        private val mainLocListener = { isEnabled: Boolean -> checkAndUpdateStatus(!isEnabled) }
+        private val locBypassListener = { _: Boolean -> checkAndUpdateStatus() }
         override fun onUpdate() {
-            // Do nothing
+            checkAndUpdateStatus()
         }
     }
 
@@ -617,7 +648,7 @@ class AppPermissionViewModel(
 
                 if (shouldShowLocationAccuracy == null) {
                     shouldShowLocationAccuracy =
-                        isLocationAccuracyEnabled() &&
+                        isLocationAccuracyAvailableForApp(group) &&
                             group.permissions.containsKey(ACCESS_FINE_LOCATION)
                 }
                 val locationAccuracyState =
@@ -679,6 +710,11 @@ class AppPermissionViewModel(
         }
         val userSelectedPerm = group.permissions[READ_MEDIA_VISUAL_USER_SELECTED] ?: return false
         return !userSelectedPerm.isImplicit
+    }
+
+    private fun isLocationAccuracyAvailableForApp(group: LightAppPermGroup): Boolean {
+        return isLocationAccuracyEnabled() &&
+            group.packageInfo.targetSdkVersion >= Build.VERSION_CODES.S
     }
 
     private fun isFineLocationChecked(group: LightAppPermGroup): Boolean {

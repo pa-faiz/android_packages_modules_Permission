@@ -191,8 +191,7 @@
     <string name="app_permission_button_always_allow_all" msgid="4905699259378428855">"Ruhusu zote kila wakati"</string>
     <string name="app_permission_button_ask" msgid="3342950658789427">"Uliza kila wakati"</string>
     <string name="app_permission_button_deny" msgid="6016454069832050300">"Usiruhusu"</string>
-    <!-- no translation found for app_permission_button_allow_limited_access (8824410215149764113) -->
-    <skip />
+    <string name="app_permission_button_allow_limited_access" msgid="8824410215149764113">"Ruhusu ufikiaji wa baadhi ya vipengele"</string>
     <string name="precise_image_description" msgid="6349638632303619872">"Eneo mahususi"</string>
     <string name="approximate_image_description" msgid="938803699637069884">"Mahali palipokadiriwa"</string>
     <string name="app_permission_location_accuracy" msgid="7166912915040018669">"Tumia eneo mahususi"</string>
@@ -561,11 +560,13 @@
     <string name="blocked_mic_summary" msgid="8960466941528458347">"Huenda bado data ya maikrofoni ikashirikiwa unapopigia namba ya dharura."</string>
     <string name="blocked_sensor_button_label" msgid="6742092634984289658">"Badilisha"</string>
     <string name="automotive_blocked_camera_title" msgid="6142362431548829416">"Idhini ya kufikia kamera imezimwa"</string>
+    <string name="automotive_blocked_microphone_title" msgid="3956311098238620220">"Umezima uwezo wa kufikia maikrofoni"</string>
+    <string name="automotive_blocked_location_title" msgid="6047574747593264689">"Umezima uwezo wa kufikia maelezo ya mahali"</string>
     <string name="automotive_blocked_infotainment_app_summary" msgid="8217099645064950860">"Kwa programu za habari na burudani"</string>
     <string name="automotive_blocked_required_app_summary" msgid="8591513745681168088">"Kwa programu zinazotakiwa kuwepo"</string>
-    <string name="automotive_required_app_title" msgid="2992168288249988735">"Programu hii inatakiwa kuwepo"</string>
+    <string name="automotive_required_app_title" msgid="2992168288249988735">"Programu hii inatakikana"</string>
     <string name="automotive_required_app_summary" msgid="6514902316658090465">"Mtengenezaji wa gari lako anataka programu hii iwepo"</string>
-    <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Usalama na faragha"</string>
+    <string name="safety_center_dashboard_page_title" msgid="2810774008694315854">"Ulinzi na faragha"</string>
     <string name="safety_center_rescan_button" msgid="4517514567809409596">"Kagua kifaa"</string>
     <string name="safety_center_issue_card_dismiss_button" msgid="5113965506144222402">"Ondoa"</string>
     <string name="safety_center_issue_card_dismiss_confirmation_title" msgid="2734809473425036382">"Ungependa kuondoa arifa hii?"</string>
@@ -576,7 +577,7 @@
     <string name="safety_status_preference_title_and_summary_content_description" msgid="3511373256505058464">"Hali ya usalama na faragha. <xliff:g id="OVERALL_SAFETY_STATUS">%1$s</xliff:g>. <xliff:g id="SUMMARY_OF_DEVICE_STATUS">%2$s</xliff:g>"</string>
     <string name="security_settings" msgid="3808106921175271317">"Mipangilio ya Usalama"</string>
     <string name="sensor_permissions_qs" msgid="1022267900031317472">"Ruhusa"</string>
-    <string name="safety_privacy_qs_tile_title" msgid="727301867710374052">"Usalama na faragha"</string>
+    <string name="safety_privacy_qs_tile_title" msgid="727301867710374052">"Ulinzi na faragha"</string>
     <string name="safety_privacy_qs_tile_subtitle" msgid="3621544532041936749">"Kagua hali"</string>
     <string name="privacy_controls_qs" msgid="5780144882040591169">"Vidhibiti vyako vya faragha"</string>
     <string name="security_settings_button_label_qs" msgid="8280343822465962330">"Mipangilio zaidi"</string>
@@ -673,9 +674,9 @@
     <string name="enhanced_confirmation_dialog_title_permission" msgid="2149144789394238266">"Programu haijapewa idhini ya kufikia <xliff:g id="PERMISSION_NAME">%1$s</xliff:g>"</string>
     <string name="enhanced_confirmation_dialog_desc_permission" msgid="3150778951946468945">"Programu imeomba kufikia ruhusa nyeti, hali ambayo inaweza kuhatarisha maelezo yako ya kifedha na ya binafsi.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kuna uwezekano kuwa programu haitafanya kazi vizuri bila ruhusa hii inayodhibitiwa. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Pata maelezo kuhusu jinsi ya kuruhusu ufikiaji&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_title_role" msgid="1737023798483772780">"Programu haijapewa idhini ya kuwa <xliff:g id="ROLE_NAME">%1$s</xliff:g> chaguomsingi"</string>
-    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Programu imeomba kufikia ruhusa nyeti, hali ambayo inaweza kuhatarisha maelezo yako ya kifedha na ya binafsi.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kuna uwezekano kuwa programu haitafanya kazi vizuri bila ruhusa hii inayodhibitiwa. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Pata maelezo kuhusu jinsi ya kuruhusu ufikiaji&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_desc_role" msgid="6369601947905234551">"Programu imeomba kufikia ruhusa nyeti, hali ambayo inaweza kuhatarisha taarifa zako za kifedha na za binafsi.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kuna uwezekano kuwa programu haitafanya kazi vizuri bila ruhusa hii inayodhibitiwa. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Pata maelezo kuhusu jinsi ya kuruhusu ufikiaji&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_title_settings_default" msgid="1858092969721041576">"Programu haijapewa idhini"</string>
-    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Ufikiaji wa ruhusa hii unaweza kuhatarisha maelezo yako ya kifedha na ya binafsi.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kuna uwezekano kuwa programu haitafanya kazi vizuri bila ruhusa hii inayodhibitiwa. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Pata maelezo kuhusu jinsi ya kuruhusu ufikiaji&lt;/a&gt;"</string>
+    <string name="enhanced_confirmation_dialog_desc_settings_default" msgid="6911632348359332981">"Ufikiaji wa ruhusa hii unaweza kuhatarisha taarifa zako za kifedha na za binafsi.<xliff:g id="ID_1">&lt;br&gt;&lt;br&gt;</xliff:g>Kuna uwezekano kuwa programu haitafanya kazi vizuri bila ruhusa hii inayodhibitiwa. &lt;a href=<xliff:g id="LEARN_MORE_LINK">%1$s</xliff:g>&gt;Pata maelezo kuhusu jinsi ya kuruhusu ufikiaji&lt;/a&gt;"</string>
     <string name="enhanced_confirmation_dialog_learn_more" msgid="5226619861379095709">"Pata maelezo zaidi"</string>
     <string name="enhanced_confirmation_dialog_ok" msgid="8560373821598619924">"Sawa"</string>
     <string name="permission_grant_dialog_streaming_blocked_title" msgid="8905241017017043649">"Ombi la ruhusa limezuiwa"</string>
