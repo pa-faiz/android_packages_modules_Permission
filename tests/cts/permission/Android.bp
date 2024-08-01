@@ -30,7 +30,6 @@ android_test {
         "general-tests",
         "sts",
         "mts-permission",
-        "mcts-permission",
     ],
     // Include both the 32 and 64 bit versions
     compile_multilib: "both",
@@ -103,6 +102,7 @@ android_test {
         ":CtsAppThatRequestsOneTimePermission",
         ":CtsAppThatRequestsPermissionAandB",
         ":CtsAppThatRequestsPermissionAandC",
+        ":CtsAppThatRequestsStoragePermission22",
         ":CtsAppThatRequestsStoragePermission28",
         ":CtsAppThatRequestsStoragePermission29",
         ":CtsAppThatRunsRationaleTests",
