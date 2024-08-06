@@ -33,7 +33,6 @@ import android.util.Log
 import androidx.test.InstrumentationRegistry
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.SdkSuppress
-import com.android.bedstead.harrier.BedsteadJUnit4
 import com.android.bedstead.harrier.DeviceState
 import com.android.bedstead.harrier.annotations.RequireNotAutomotive
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
@@ -42,18 +41,17 @@ import junit.framework.Assert.assertTrue
 import junit.framework.AssertionFailedError
 import org.junit.After
 import org.junit.Assert.assertNotEquals
+import org.junit.Assume.assumeFalse
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 
 private const val LOG_TAG = "PermissionTest30WithBluetooth"
 
 /** Runtime Bluetooth-permission behavior of apps targeting API 30 */
 @SdkSuppress(minSdkVersion = Build.VERSION_CODES.S, codeName = "S")
-@RunWith(BedsteadJUnit4::class)
 @FlakyTest
 class PermissionTest30WithBluetooth : BaseUsePermissionTest() {
     @ClassRule
@@ -116,6 +114,9 @@ class PermissionTest30WithBluetooth : BaseUsePermissionTest() {
     @Test
     @RequireNotAutomotive(reason = "Permission scroll is not working on auto portrait")
     fun testGivenBluetoothIsDeniedWhenScanIsAttemptedThenThenGetEmptyScanResult() {
+        // TODO:(b/317442167) Fix permission scroll on auto portrait
+        assumeFalse(isAutomotive)
+
         assumeTrue(supportsBluetoothLe())
 
         assertTrue(
@@ -167,6 +168,9 @@ class PermissionTest30WithBluetooth : BaseUsePermissionTest() {
     @Test
     @RequireNotAutomotive(reason = "Permission scroll is not working on auto portrait")
     fun testRevokedCompatPersistsOnReinstall() {
+        // TODO:(b/317442167) Fix permission scroll on auto portrait
+        assumeFalse(isAutomotive)
+
         assertBluetoothRevokedCompatState(revoked = false)
         revokeAppPermissionsByUi(BLUETOOTH_SCAN, isLegacyApp = true)
         assertBluetoothRevokedCompatState(revoked = true)
